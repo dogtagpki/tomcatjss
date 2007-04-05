@@ -148,15 +148,19 @@
   -->
   <zip destfile="${dist.base.source}/${src.dist.name}.zip">
      <zipfileset dir="." filemode="755" prefix="${src.dist.name}">
+        <include name="README"/>
+        <include name="LICENSE"/>
         <include name="tomcatjss.spec"/>
-        <include name="ant.xml"/>
+        <include name="build.xml"/>
         <include name="src/**"/>
       </zipfileset>
     </zip>
     <tar longfile="gnu" destfile="${dist.base.source}/${src.dist.name}.tar">
       <tarfileset dir="." mode="755" prefix="${src.dist.name}">
+        <include name="README"/>
+        <include name="LICENSE"/>
         <include name="tomcatjss.spec"/>
-        <include name="ant.xml"/>
+        <include name="build.xml"/>
         <include name="src/**"/>
       </tarfileset>
     </tar>
