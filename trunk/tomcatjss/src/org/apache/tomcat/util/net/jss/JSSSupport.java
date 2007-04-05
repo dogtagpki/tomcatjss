@@ -50,7 +50,7 @@ class JSSSupport implements SSLSupport{
             X509Certificate peerCert = status.getPeerCertificate();
        
             if (peerCert == null) {
-                ssl.setNeedClientAuth(true);
+                ssl.requireClientAuth(SSLSocket.SSL_REQUIRE_NO_ERROR);
                 try {
                     ssl.redoHandshake();
                     ssl.forceHandshake();
