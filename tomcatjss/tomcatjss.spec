@@ -8,7 +8,7 @@
 
 Name:     tomcatjss
 Version:  1.1.0
-Release:  7%{?dist}
+Release:  8%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -74,6 +74,9 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Fri Apr 20 2007 Thomas Kwan <nkwan@redhat.com> 1.1.0-8
+- Re-integrated Solaris logic into the spec file
+
 * Wed Apr 4 2007 Thomas Kwan <nkwan@redhat.com> 1.1.0-7
 - Called new JSS api for client authentication
 
