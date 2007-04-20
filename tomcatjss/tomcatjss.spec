@@ -2,6 +2,9 @@
 %define debug_package %{nil}
 # No need to strip
 %define __os_install_post %{nil}
+%ifos Solaris
+%define _javadir %{_datadir}/java
+%endif
 
 Name:     tomcatjss
 Version:  1.1.0
@@ -11,9 +14,15 @@ URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
 License:  LGPL
 Group:    System Environment/Libraries
+%ifos Solaris
+SUNW_pkg: RHATtomcatjssx
+SourcePackage: RHATtomcatjss-src
+%endif
+
 BuildArch:      noarch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
+%ifos Linux
 BuildRequires:  java-devel
 BuildRequires:  jpackage-utils >= 0:1.6.0
 BuildRequires:  eclipse-ecj >= 0:3.0.1
@@ -23,6 +32,11 @@ BuildRequires:  dirsec-jss >= 4.2
 Requires:       java >= 0:1.4.2
 Requires:       tomcat5 >= 5.5.9
 Requires:       dirsec-jss >= 4.2
+%else
+BuildRequires:  RHATdirsec-jssx >= 4.2
+Requires:       RHATtomcat5x >= 5.5.9
+Requires:       RHATdirsec-jssx >= 4.2
+%endif
 
 %description
 A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
