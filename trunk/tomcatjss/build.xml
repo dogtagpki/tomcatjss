@@ -48,6 +48,7 @@
   <!--
     Set the properties related to the source tree
   -->
+  <exec executable="pwd" failonerror="true" outputproperty="cwd"/>
   <property name="src.dir" value="src"/>
   <property name="script.dir" value="${src.dir}/script"/>
   <property name="lib.dir" value="lib"/>
@@ -84,6 +85,7 @@
   <property name="src.dist.src" value="${src.dist.dir}/src"/>
   <property name="src.dist.docs" value="${src.dist.dir}/docs"/>
   <property name="src.dist.lib" value="${src.dist.dir}/lib"/>
+  <property name="rpm.dist.dir" value="${cwd}/${dist.base}/rpmpkg"/>
 
 
   <!--
@@ -93,7 +95,7 @@
   <property name="commons-logging.jar" value="${jar.home}/commons-logging-api.jar" />
   <property name="tomcat.lib" value="/var/lib/tomcat5/server/lib" />
   <property name="tomcat-util.jar" value="${tomcat.lib}/tomcat-util.jar" />
-  <property name="jss.home" value="/usr/lib/java/dirsec" />
+  <property name="jss.home" value="/usr/lib/java" />
   <property name="jss.jar" value="${jss.home}/jss4.jar" />
 
   <!--
@@ -150,7 +152,7 @@
      <zipfileset dir="." filemode="755" prefix="${src.dist.name}">
         <include name="README"/>
         <include name="LICENSE"/>
-        <include name="tomcatjss.spec"/>
+        <include name="tomcatjss.el5.spec"/>
         <include name="build.xml"/>
         <include name="src/**"/>
       </zipfileset>
@@ -159,7 +161,7 @@
       <tarfileset dir="." mode="755" prefix="${src.dist.name}">
         <include name="README"/>
         <include name="LICENSE"/>
-        <include name="tomcatjss.spec"/>
+        <include name="tomcatjss.el5.spec"/>
         <include name="build.xml"/>
         <include name="src/**"/>
       </tarfileset>
@@ -219,4 +221,22 @@
     <delete dir="${dist.base}"/>
     <delete dir="${build.dir}"/>
   </target>
+
+  <target name="rpms" depends="dist">
+    <mkdir dir="${rpm.dist.dir}"/>
+    <mkdir dir="${rpm.dist.dir}/SOURCES"/>
+    <mkdir dir="${rpm.dist.dir}/RPMS"/>
+    <mkdir dir="${rpm.dist.dir}/SRPMS"/>
+    <mkdir dir="${rpm.dist.dir}/SPECS"/>
+    <mkdir dir="${rpm.dist.dir}/BUILD"/>
+
+
+    <exec executable="rpmbuild">
+      <arg value="--define"/>
+      <arg value="_topdir ${rpm.dist.dir}"/>
+      <arg value="-ta"/>
+      <arg value="${dist.base.source}/${src.dist.name}.tar.gz"/>
+    </exec>
+  </target>
+
 </project>
