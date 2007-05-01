@@ -44,6 +44,7 @@
   <property name="chmod.maxparallel" value="250"/>
   <property name="deprecation" value="false"/>
   <property name="optimize" value="true"/>
+  <property name="specfile" value="tomcatjss.el5.spec"/>
 
   <!--
     Set the properties related to the source tree
@@ -152,7 +153,7 @@
      <zipfileset dir="." filemode="755" prefix="${src.dist.name}">
         <include name="README"/>
         <include name="LICENSE"/>
-        <include name="tomcatjss.el5.spec"/>
+        <include name="${specfile}"/>
         <include name="build.xml"/>
         <include name="src/**"/>
       </zipfileset>
@@ -161,7 +162,7 @@
       <tarfileset dir="." mode="755" prefix="${src.dist.name}">
         <include name="README"/>
         <include name="LICENSE"/>
-        <include name="tomcatjss.el5.spec"/>
+        <include name="${specfile}"/>
         <include name="build.xml"/>
         <include name="src/**"/>
       </tarfileset>

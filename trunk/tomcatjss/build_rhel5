@@ -1,0 +1,3 @@
+#! /bin/bash
+
+ant -f build.xml -Djss.home=/usr/lib/java -Dspecfile=tomcatjss.el5.spec rpms
