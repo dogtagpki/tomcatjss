@@ -32,8 +32,8 @@ A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
 %setup -q
 
 %build
-ant -f build.xml -Djss.home=/usr/lib/java -Dspecfile=tomcatjss.el5.spec
-ant -f build.xml -Djss.home=/usr/lib/java -Dspecfile=tomcatjss.el5.spec dist
+ant -f build.xml -Dspecfile=tomcatjss.el5.spec
+ant -f build.xml -Dspecfile=tomcatjss.el5.spec dist
 
 %install
 rm -rf $RPM_BUILD_ROOT

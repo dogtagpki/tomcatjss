@@ -27,6 +27,10 @@
   <property file="${user.home}/.ant.properties"/>
   <property environment="env"/>
 
+  <exec executable="uname" failonerror="true" outputproperty="arch">
+    <arg line="-i"/>
+  </exec>
+
   <!--
     Set the properties that control names and versions
   -->
@@ -96,8 +100,15 @@
   <property name="commons-logging.jar" value="${jar.home}/commons-logging-api.jar" />
   <property name="tomcat.lib" value="/var/lib/tomcat5/server/lib" />
   <property name="tomcat-util.jar" value="${tomcat.lib}/tomcat-util.jar" />
-  <property name="jss.home" value="/usr/lib/java" />
-  <property name="jss.jar" value="${jss.home}/jss4.jar" />
+  <condition property="jss.home" value="/usr/lib/java">
+    <equals arg1="${arch}" arg2="i386"/>
+  </condition>
+  <condition property="jss.home" value="/usr/lib64/java">
+    <equals arg1="${arch}" arg2="x86_64"/>
+  </condition>
+  <!-- This property is set to '/dirsec' when built on rhel4 -->
+  <property name="dirsec" value="" />
+  <property name="jss.jar" value="${jss.home}${dirsec}/jss4.jar" />
 
   <!--
     Classpath
