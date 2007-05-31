@@ -20,4 +20,4 @@ if [ ${RHEL_VERSION} != "5" ]; then
 	exit 255
 fi
 
-ant -f build.xml -Dspecfile=tomcatjss.el5.spec rpms
+ant -f build.xml -Dspecfile=tomcatjss.spec rpms
