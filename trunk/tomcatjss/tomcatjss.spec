@@ -5,7 +5,7 @@
 
 Name:     tomcatjss
 Version:  1.1.0
-Release:  9%{?dist}
+Release:  10%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -19,10 +19,10 @@ BuildRequires:  jpackage-utils >= 0:1.6.0
 BuildRequires:  eclipse-ecj >= 0:3.0.1
 BuildRequires:  ant >= 0:1.6.2
 BuildRequires:  tomcat5 >= 5.5.9
-BuildRequires:  jss >= 4.2
+BuildRequires:  jss >= 4.2.5
 Requires:       java >= 0:1.4.2
 Requires:       tomcat5 >= 5.5.9
-Requires:       jss >= 4.2
+Requires:       jss >= 4.2.5
 
 %description
 A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
@@ -32,8 +32,8 @@ A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
 %setup -q
 
 %build
-ant -f build.xml -Dspecfile=tomcatjss.el5.spec
-ant -f build.xml -Dspecfile=tomcatjss.el5.spec dist
+ant -f build.xml
+ant -f build.xml dist
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -60,6 +60,9 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Thu Aug 02 2007 Thomas kwan <nkwan@redhat.com> 1.1.0-10
+- Required JSS 4.2.5
+
 * Fri Apr 26 2007 Kevin McCarthy <kmccarth@redhat.com> 1.1.0-9
 - Change specfile to RHEL5 dependencies
 
