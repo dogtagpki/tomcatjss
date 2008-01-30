@@ -100,6 +100,8 @@
   <property name="commons-logging.jar" value="${jar.home}/commons-logging-api.jar" />
   <property name="tomcat.lib" value="/var/lib/tomcat5/server/lib" />
   <property name="tomcat-util.jar" value="${tomcat.lib}/tomcat-util.jar" />
+  <property name="alt.tomcat.lib" value="/usr/share/java/tomcat5" />
+  <property name="alt-tomcat-util.jar" value="${alt.tomcat.lib}/tomcat-util.jar" />
   <property name="jss.home" value="/usr/lib/java" />
   <!-- This property is set to '/dirsec' when built on rhel4 -->
   <property name="dirsec" value="" />
@@ -111,6 +113,7 @@
   <path id="classpath">
     <pathelement location="${jss.jar}"/>
     <pathelement location="${tomcat-util.jar}"/>
+    <pathelement location="${alt-tomcat-util.jar}"/>
     <pathelement location="${commons-logging.jar}"/>
   </path>
 
