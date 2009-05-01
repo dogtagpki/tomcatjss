@@ -38,7 +38,12 @@ Group:    System Environment/Libraries
 BuildArch:      noarch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
-BuildRequires:  java-devel >= 1:1.6.0
+## Helper Definitions
+%define pki_jdk           java-devel >= 1:1.6.0
+# Override the default 'pki_jdk' on Fedora 8 platforms
+%{?fc8:%define pki_jdk    java-devel >= 1.7.0}
+
+BuildRequires:  %{pki_jdk}
 BuildRequires:  jpackage-utils >= 0:1.6.0
 BuildRequires:  eclipse-ecj >= 0:3.0.1
 BuildRequires:  ant >= 0:1.6.2
