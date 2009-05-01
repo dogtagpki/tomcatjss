@@ -3,9 +3,33 @@
 # No need to strip
 %define __os_install_post %{nil}
 
+%ifos Linux
+## A distribution model is required on certain Linux operating systems!
+##
+## check for a pre-defined distribution model
+%define undefined_distro  %(test "%{dist}" = "" && echo 1 || echo 0)
+%if %{undefined_distro}
+%define is_fedora         %(test -e /etc/fedora-release && echo 1 || echo 0)
+%if %{is_fedora}
+## define a default distribution model on Fedora Linux
+%define dist_prefix       .fc
+%define dist_version      %(echo `rpm -qf --qf='%{VERSION}' /etc/fedora-release` | tr -d [A-Za-z])
+%define dist              %{dist_prefix}%{dist_version}
+%else
+%define is_redhat         %(test -e /etc/redhat-release && echo 1 || echo 0)
+%if %{is_redhat}
+## define a default distribution model on Red Hat Linux
+%define dist_prefix       .el
+%define dist_version      %(echo `rpm -qf --qf='%{VERSION}' /etc/redhat-release` | tr -d [A-Za-z])
+%define dist              %{dist_prefix}%{dist_version}
+%endif
+%endif
+%endif
+%endif
+
 Name:     tomcatjss
 Version:  1.1.0
-Release:  10%{?dist}
+Release:  13%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -14,13 +38,13 @@ Group:    System Environment/Libraries
 BuildArch:      noarch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
-BuildRequires:  java-devel
+BuildRequires:  java-devel >= 1:1.6.0
 BuildRequires:  jpackage-utils >= 0:1.6.0
 BuildRequires:  eclipse-ecj >= 0:3.0.1
 BuildRequires:  ant >= 0:1.6.2
 BuildRequires:  tomcat5 >= 5.5.9
 BuildRequires:  jss >= 4.2.5
-Requires:       java >= 0:1.4.2
+Requires:       java >= 1:1.6.0
 Requires:       tomcat5 >= 5.5.9
 Requires:       jss >= 4.2.5
 
@@ -32,6 +56,7 @@ A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
 %setup -q
 
 %build
+
 ant -f build.xml
 ant -f build.xml dist
 
@@ -60,6 +85,15 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Fri May 1 2009 Christina Fu <cfu@redhat.com> - 1.1.0-13
+- Bugzilla #498652 - SSL handshake Failure on RHCS java subsystems with nethsm2000
+ 
+* Thu Feb  26 2009 Kevin Wright <kwright@redhat.com> - 1.1.0-12
+- Updated to release 1.1.0-12 to build with idm extension
+
+* Sat Nov 22 2008 Matthew Harmsen <mharmsen@redhat.com> 1.1.0-11
+- Updated to require "java" and "java-devel" >= 1.6.0
+
 * Thu Aug 02 2007 Thomas kwan <nkwan@redhat.com> 1.1.0-10
 - Required JSS 4.2.5
 
