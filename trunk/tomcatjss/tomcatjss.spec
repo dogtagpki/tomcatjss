@@ -93,6 +93,7 @@ rm -rf $RPM_BUILD_ROOT
 * Wed Jun 3 2009 Christina Fu <cfu@redhat.com> 1.1.0-14
 - Bugzilla Bug #455305 - CA ECC signing Key Failure
   Bugzilla Bug #223279 - ECC: Ca: unable to perform agent auth on a machine with nCipher ECC HSM
+- This log entry does not apply to tomcatjss.  Ignore.
 * Fri May 1 2009 Christina Fu <cfu@redhat.com> - 1.1.0-13
 - Bugzilla #498652 - SSL handshake Failure on RHCS java subsystems with nethsm2000
  
