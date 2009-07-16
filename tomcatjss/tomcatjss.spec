@@ -29,7 +29,7 @@
 
 Name:     tomcatjss
 Version:  1.1.0
-Release:  14%{?dist}
+Release:  15%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -90,6 +90,9 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Thu Jul 16 2009 Matthew Harmsen <mharmsen@redhat.com> 1.1.0-15
+- Release Candidate 4 build
+
 * Wed Jun 3 2009 Christina Fu <cfu@redhat.com> 1.1.0-14
 - Bugzilla Bug #455305 - CA ECC signing Key Failure
   Bugzilla Bug #223279 - ECC: Ca: unable to perform agent auth on a machine with nCipher ECC HSM
