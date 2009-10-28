@@ -123,6 +123,7 @@ public class JSSSocketFactory
     public final static int TLS_ECDH_anon_WITH_AES_256_CBC_SHA = 0xC019;
 
 
+    protected static boolean ocspConfigured = false;
     protected boolean requireClientAuth = false;
     protected boolean wantClientAuth = false;
     private Vector enabledCiphers = new Vector(); 
@@ -142,7 +143,6 @@ public class JSSSocketFactory
     private void debugWrite(String m) throws IOException {
 	if (debug)
 	    debugFile.write(m);
-	    //	    System.out.println(m);
     }
 
     public int toCipherId(String str)
@@ -516,12 +516,54 @@ public class JSSSocketFactory
             } else if (clientAuthStr.equalsIgnoreCase("want")) {
                 wantClientAuth = true;
             }
+            debugWrite("JSSSocketFActory init - requireClientAuth " + requireClientAuth +
+                          " wantClientAuth " + wantClientAuth + " ocspConfigured " 
+                          + ocspConfigured);
+            if (requireClientAuth == true || wantClientAuth == true 
+                   && ocspConfigured == false ) {
+                debugWrite("JSSSocketFactory init - checking for OCSP settings. \n" ); 
+                boolean enableOCSP = false; 
+                String doOCSP = (String) attributes.get("enableOCSP");
+
+                debugWrite("JSSSocketFactory init - doOCSP flag:  \n" + doOCSP);
+
+                if (doOCSP != null &&  doOCSP.equalsIgnoreCase("true"))  {
+                   enableOCSP = true;
+                } 
+               
+                debugWrite("JSSSocketFactory init - enableOCSP \n" + enableOCSP); 
+                
+                if( enableOCSP == true ) {
+                    String ocspResponderURL = (String) attributes.get("ocspResponderURL");
+                    debugWrite("JSSSocketFactory init - ocspResponderURL \n" + ocspResponderURL);
+                    String ocspResponderCertNickname = (String) attributes.get("ocspResponderCertNickname");
+		    debugWrite("JSSSocketFactory init - ocspResponderCertNickname \n" + ocspResponderCertNickname);
+                    if( (ocspResponderURL != null && ocspResponderURL.length() > 0) && 
+                        (ocspResponderCertNickname != null && 
+                         ocspResponderCertNickname.length() > 0 ))   {
+
+                       ocspConfigured = true;
+                       try {
+                           manager.configureOCSP(true,ocspResponderURL,ocspResponderCertNickname);
+                       } catch(java.security.GeneralSecurityException e) {
+                          ocspConfigured = false;
+                          debugWrite("JSSSocketFactory init - error initializing OCSP e: \n" + e.toString());
+                          throw new  java.security.GeneralSecurityException("Error setting up OCSP. Check configuraion!");
+                       }
+                    }  else  {
+                        debugWrite("JSSSocketFactory init - error ocsp misconfigured! \n");
+                        throw new java.security.GeneralSecurityException("Error setting up OCSP. Check configuration!");
+                    } 
+                }
+            }
             //serverCertNick = "Server-Cert cert-tks";
             // 12 hours = 43200 seconds
             SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
 
             setSSLOptions();
         } catch (Exception ex) {
+           if(ex instanceof java.security.GeneralSecurityException)
+              throw  new IOException(ex.toString());
         }
         if (debugFile != null)
             debugFile.close();
