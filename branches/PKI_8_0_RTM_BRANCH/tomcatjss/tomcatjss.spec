@@ -29,7 +29,7 @@
 
 Name:     tomcatjss
 Version:  1.1.1
-Release:  1%{?dist}
+Release:  2%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -90,6 +90,8 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Mon Nov 0 2009 Christina Fu <cfu@redhat.com> 1.1.1-2
+- Bugzilla Bug #529945 - added ocsp cache setting.  Requires new JSS (jss-4.2.6-6) interfaces
 * Wed Oct 28 2009 Jack Magne <jmagne@redhat.com> 1.1.1-1
 - Bugzilla Bug #529945 -  CS 8,0 GA release -- DRM and TKS do not seem to have CRL checking enabled
 

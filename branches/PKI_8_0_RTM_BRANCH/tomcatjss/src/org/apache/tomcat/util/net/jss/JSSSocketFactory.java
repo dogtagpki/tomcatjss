@@ -20,6 +20,7 @@
 package org.apache.tomcat.util.net.jss;
 
 import java.util.*;
+import java.lang.NumberFormatException;
 import org.mozilla.jss.ssl.*;
 import org.mozilla.jss.crypto.*;
 import org.mozilla.jss.CryptoManager;
@@ -525,19 +526,22 @@ public class JSSSocketFactory
                 boolean enableOCSP = false; 
                 String doOCSP = (String) attributes.get("enableOCSP");
 
-                debugWrite("JSSSocketFactory init - doOCSP flag:  \n" + doOCSP);
+                debugWrite("JSSSocketFactory init - doOCSP flag:"+
+                          doOCSP+ " \n");
 
                 if (doOCSP != null &&  doOCSP.equalsIgnoreCase("true"))  {
                    enableOCSP = true;
                 } 
                
-                debugWrite("JSSSocketFactory init - enableOCSP \n" + enableOCSP); 
+                debugWrite("JSSSocketFactory init - enableOCSP "+
+                             enableOCSP+ "\n"); 
                 
                 if( enableOCSP == true ) {
                     String ocspResponderURL = (String) attributes.get("ocspResponderURL");
-                    debugWrite("JSSSocketFactory init - ocspResponderURL \n" + ocspResponderURL);
+                    debugWrite("JSSSocketFactory init - ocspResponderURL "+
+                             ocspResponderURL+ "\n");
                     String ocspResponderCertNickname = (String) attributes.get("ocspResponderCertNickname");
-		    debugWrite("JSSSocketFactory init - ocspResponderCertNickname \n" + ocspResponderCertNickname);
+		    debugWrite("JSSSocketFactory init - ocspResponderCertNickname" + ocspResponderCertNickname + "\n");
                     if( (ocspResponderURL != null && ocspResponderURL.length() > 0) && 
                         (ocspResponderCertNickname != null && 
                          ocspResponderCertNickname.length() > 0 ))   {
@@ -545,10 +549,52 @@ public class JSSSocketFactory
                        ocspConfigured = true;
                        try {
                            manager.configureOCSP(true,ocspResponderURL,ocspResponderCertNickname);
+                           int ocspCacheSize_i = 1000;
+                           int ocspMinCacheEntryDuration_i = 3600;
+                           int ocspMaxCacheEntryDuration_i = 86400;
+
+                           String ocspCacheSize = (String) attributes.get("ocspCacheSize");
+                           String ocspMinCacheEntryDuration = (String) attributes.get("ocspMinCacheEntryDuration");
+                           String ocspMaxCacheEntryDuration = (String) attributes.get("ocspMaxCacheEntryDuration");
+
+                           if (ocspCacheSize != null ||
+                             ocspMinCacheEntryDuration != null ||
+                             ocspMaxCacheEntryDuration != null) {
+                             // not specified then takes the default
+                             if (ocspCacheSize != null) {
+		    debugWrite("JSSSocketFactory init - ocspCacheSize= " + ocspCacheSize+"\n");
+                               ocspCacheSize_i = Integer.parseInt(ocspCacheSize);
+                             }
+                             if (ocspMinCacheEntryDuration != null) {
+		    debugWrite("JSSSocketFactory init - ocspMinCacheEntryDuration= " + ocspMinCacheEntryDuration+"\n");
+                               ocspMinCacheEntryDuration_i = Integer.parseInt(ocspMinCacheEntryDuration);
+                             }
+                             if (ocspMaxCacheEntryDuration != null) {
+		    debugWrite("JSSSocketFactory init - ocspMaxCacheEntryDuration= " + ocspMaxCacheEntryDuration+"\n");
+                               ocspMaxCacheEntryDuration_i = Integer.parseInt(ocspMaxCacheEntryDuration);
+                             }
+                             manager.OCSPCacheSettings(ocspCacheSize_i,
+                               ocspMinCacheEntryDuration_i, ocspMaxCacheEntryDuration_i);
+                           }
+
+                           // defualt to 60 seconds;
+                           String ocspTimeout = (String) attributes.get("ocspTimeout");
+                           if (ocspTimeout != null) {
+		    debugWrite("JSSSocketFactory init - ocspTimeout= \n" + ocspTimeout);
+                               int ocspTimeout_i = Integer.parseInt(ocspTimeout);
+                               if (ocspTimeout_i < 0)
+                                  ocspTimeout_i = 60; 
+                               manager.setOCSPTimeout(ocspTimeout_i);
+                           }
+
                        } catch(java.security.GeneralSecurityException e) {
                           ocspConfigured = false;
-                          debugWrite("JSSSocketFactory init - error initializing OCSP e: \n" + e.toString());
+                          debugWrite("JSSSocketFactory init - error initializing OCSP e: " + e.toString()+"\n");
                           throw new  java.security.GeneralSecurityException("Error setting up OCSP. Check configuraion!");
+                       } catch (java.lang.NumberFormatException e) {
+                          ocspConfigured = false;
+                          debugWrite("JSSSocketFactory init - error setting OCSP cache e: " + e.toString()+"\n");
+                          throw new  java.lang.NumberFormatException("Error setting OCSP cache. Check configuraion!");
                        }
                     }  else  {
                         debugWrite("JSSSocketFactory init - error ocsp misconfigured! \n");
@@ -562,7 +608,17 @@ public class JSSSocketFactory
 
             setSSLOptions();
         } catch (Exception ex) {
-           if(ex instanceof java.security.GeneralSecurityException)
+            debugWrite("JSSSocketFactory init - exception thrown:"+
+                   ex.toString()+"\n");
+	        System.err.println("JSSSocketFactory init - exception thrown:"+
+                   ex.toString()+"\n");
+            if (debugFile != null)
+                debugFile.close();
+            // The idea is, if admin take the trouble to configure the
+            // ocsp cache, and made a mistake, we want to make server
+            // unavailable until they get it right
+            if((ex instanceof java.security.GeneralSecurityException) ||
+               (ex instanceof java.lang.NumberFormatException))
               throw  new IOException(ex.toString());
         }
         if (debugFile != null)
