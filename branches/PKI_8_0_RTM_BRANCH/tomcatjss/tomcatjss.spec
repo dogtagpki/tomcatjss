@@ -29,7 +29,7 @@
 
 Name:     tomcatjss
 Version:  1.1.1
-Release:  2%{?dist}
+Release:  3%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -49,9 +49,11 @@ BuildRequires:  eclipse-ecj >= 0:3.0.1
 BuildRequires:  ant >= 0:1.6.2
 BuildRequires:  tomcat5 >= 5.5.9
 BuildRequires:  jss >= 4.2.6
+BuildRequires:  pki-dog-devel >= 8.0.1
 Requires:       java >= 1:1.6.0
 Requires:       tomcat5 >= 5.5.9
 Requires:       jss >= 4.2.6
+Requires:       pki-dog >= 8.0.1
 
 %description
 A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
@@ -90,8 +92,12 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Mon Nov 23 2009 Ade Lee <alee@redhat.com> 1.1.0-16
+- Bugzilla Bug #518123 - Prompt for passwords if password.conf is removed
+
 * Mon Nov 10 2009 Christina Fu <cfu@redhat.com> 1.1.1-2
 - Bugzilla Bug #529945 - added ocsp cache setting.  Requires new JSS (jss-4.2.6-6) interfaces
+
 * Wed Oct 28 2009 Jack Magne <jmagne@redhat.com> 1.1.1-1
 - Bugzilla Bug #529945 -  CS 8,0 GA release -- DRM and TKS do not seem to have CRL checking enabled
 
