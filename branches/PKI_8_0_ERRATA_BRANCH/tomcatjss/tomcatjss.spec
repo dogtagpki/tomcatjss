@@ -92,7 +92,7 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
-* Mon Nov 23 2009 Ade Lee <alee@redhat.com> 1.1.0-16
+* Mon Nov 23 2009 Ade Lee <alee@redhat.com> 1.1.1-3
 - Bugzilla Bug #518123 - Prompt for passwords if password.conf is removed
 
 * Mon Nov 10 2009 Christina Fu <cfu@redhat.com> 1.1.1-2
