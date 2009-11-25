@@ -37,8 +37,8 @@
 
   <property name="Name" value="Tomcat JSS"/>
   <property name="name" value="tomcatjss"/>
-  <property name="version" value="1.2.0"/>
-  <property name="manifest-version" value="1.2.0"/>
+  <property name="version" value="1.1.1"/>
+  <property name="manifest-version" value="1.1.1"/>
 
   <!--
     Set the properties that control various build options
@@ -106,6 +106,9 @@
   <!-- This property is set to '/dirsec' when built on rhel4 -->
   <property name="dirsec" value="" />
   <property name="jss.jar" value="${jss.home}${dirsec}/jss4.jar" />
+  <property name="jni-jar.home" value="/usr/lib/java"/>
+  <property name="osutil.jar" value="${jni-jar.home}/osutil.jar"/>
+  <property name="pkidog.jar" value="${jni-jar.home}/pkidog.jar"/>
 
   <!--
     Classpath
@@ -115,6 +118,8 @@
     <pathelement location="${tomcat-util.jar}"/>
     <pathelement location="${alt-tomcat-util.jar}"/>
     <pathelement location="${commons-logging.jar}"/>
+    <pathelement location="${osutil.jar}"/>
+    <pathelement location="${pkidog.jar}"/>
   </path>
 
   <!--

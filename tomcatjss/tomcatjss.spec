@@ -1,29 +1,62 @@
-Name:     tomcatjss
-Version:  1.2.0
-Release:  2%{?dist}
-Summary:  JSSE implementation using JSS for Tomcat
-URL:      http://pki.fedoraproject.org/
-License:  LGPLv2+
-Group:    System Environment/Libraries
+# Don't build the debug packages
+%define debug_package %{nil}
+# No need to strip
+%define __os_install_post %{nil}
 
+%ifos Linux
+## A distribution model is required on certain Linux operating systems!
+##
+## check for a pre-defined distribution model
+%define undefined_distro  %(test "%{dist}" = "" && echo 1 || echo 0)
+%if %{undefined_distro}
+%define is_fedora         %(test -e /etc/fedora-release && echo 1 || echo 0)
+%if %{is_fedora}
+## define a default distribution model on Fedora Linux
+%define dist_prefix       .fc
+%define dist_version      %(echo `rpm -qf --qf='%{VERSION}' /etc/fedora-release` | tr -d [A-Za-z])
+%define dist              %{dist_prefix}%{dist_version}
+%else
+%define is_redhat         %(test -e /etc/redhat-release && echo 1 || echo 0)
+%if %{is_redhat}
+## define a default distribution model on Red Hat Linux
+%define dist_prefix       .el
+%define dist_version      %(echo `rpm -qf --qf='%{VERSION}' /etc/redhat-release` | tr -d [A-Za-z])
+%define dist              %{dist_prefix}%{dist_version}
+%endif
+%endif
+%endif
+%endif
+
+Name:     tomcatjss
+Version:  1.1.1
+Release:  3%{?dist}
+Summary:  JSSE implementation using JSS for Tomcat
+URL:      http://www.redhat.com/software/rha/certificate
+Source0:  %{name}-%{version}.tar.gz
+License:  LGPL
+Group:    System Environment/Libraries
 BuildArch:      noarch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
-Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.tar.gz
+## Helper Definitions
+%define pki_jdk           java-devel >= 1:1.6.0
+# Override the default 'pki_jdk' on Fedora 8 platforms
+%{?fc8:%define pki_jdk    java-devel >= 1.7.0}
 
-BuildRequires:    ant
-BuildRequires:    java-devel >= 1:1.6.0
-BuildRequires:    jpackage-utils
-BuildRequires:    tomcat5
-BuildRequires:    jss >= 4.2.6
-Requires:         java >= 1:1.6.0
-Requires:         jpackage-utils
-Requires:         tomcat5
-Requires:         jss >= 4.2.6
+BuildRequires:  %{pki_jdk}
+BuildRequires:  jpackage-utils >= 0:1.6.0
+BuildRequires:  eclipse-ecj >= 0:3.0.1
+BuildRequires:  ant >= 0:1.6.2
+BuildRequires:  tomcat5 >= 5.5.9
+BuildRequires:  jss >= 4.2.6
+BuildRequires:  pki-dog-devel >= 8.0.1
+Requires:       java >= 1:1.6.0
+Requires:       tomcat5 >= 5.5.9
+Requires:       jss >= 4.2.6
+Requires:       pki-dog >= 8.0.1
 
 %description
-A Java Secure Socket Extension (JSSE) implementation
-using Java Security Services (JSS) for Tomcat 5.5.
+A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
 
 %prep
 
@@ -35,37 +68,38 @@ ant -f build.xml
 ant -f build.xml dist
 
 %install
-rm -rf %{buildroot}
+rm -rf $RPM_BUILD_ROOT
 
 # Unpack the files we just built
 cd dist/binary
-unzip %{name}-%{version}.zip -d %{buildroot}
+unzip %{name}-%{version}.zip -d $RPM_BUILD_ROOT
 
 # Install our files
-cd %{buildroot}%{_javadir}
-mv %{name}.jar %{name}-%{version}.jar
-ln -s %{name}-%{version}.jar %{name}.jar
-mkdir -p %{buildroot}%{_sharedstatedir}/tomcat5/server/lib
-cd %{buildroot}%{_sharedstatedir}/tomcat5/server/lib
-ln -s ../../../../../usr/share/java/%{name}.jar %{name}.jar
-mkdir -p %{buildroot}%{_datadir}/doc/%{name}-%{version}
+cd $RPM_BUILD_ROOT%{_javadir}
+mv tomcatjss.jar tomcatjss-%{version}.jar
+ln -s tomcatjss-%{version}.jar tomcatjss.jar
+mkdir -p $RPM_BUILD_ROOT/var/lib/tomcat5/server/lib
+cd $RPM_BUILD_ROOT/var/lib/tomcat5/server/lib
+ln -s ../../../../../usr/share/java/tomcatjss.jar tomcatjss.jar
 
 %clean
-rm -rf %{buildroot}
+rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc %attr(644,root,root) README LICENSE
-%attr(00755,root,root) %{_datadir}/doc/%{name}-%{version}
+%doc README LICENSE
 %{_javadir}/*
-%{_sharedstatedir}/tomcat5/server/lib/%{name}.jar
+/var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
-* Fri Sep 11 2009 Kevin Wright <kwright@redhat.com> 1.2.0-2
-- Bugzilla Bug #521979 - Removed references to jre, fedora 8, etc
+* Mon Nov 23 2009 Ade Lee <alee@redhat.com> 1.1.0-16
+- Bugzilla Bug #518123 - Prompt for passwords if password.conf is removed
 
-* Fri Aug 28 2009 Matthew Harmsen <mharmsen@redhat.com> 1.2.0-1
-- Bugzilla Bug #521979 -  New Package for Dogtag PKI: tomcatjss
+* Mon Nov 10 2009 Christina Fu <cfu@redhat.com> 1.1.1-2
+- Bugzilla Bug #529945 - added ocsp cache setting.  Requires new JSS (jss-4.2.6-6) interfaces
+
+* Wed Oct 28 2009 Jack Magne <jmagne@redhat.com> 1.1.1-1
+- Bugzilla Bug #529945 -  CS 8,0 GA release -- DRM and TKS do not seem to have CRL checking enabled
 
 * Thu Jul 16 2009 Matthew Harmsen <mharmsen@redhat.com> 1.1.0-15
 - Release Candidate 4 build
