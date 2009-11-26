@@ -28,8 +28,8 @@
 %endif
 
 Name:     tomcatjss
-Version:  1.1.1
-Release:  3%{?dist}
+Version:  1.1.2
+Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -92,6 +92,9 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Wed Nov 25 2009 Kevin Wright <kwright@redhat.com> 1.1.2-1
+- Bumped the rev to correspond to CS80 errata 3.
+
 * Mon Nov 23 2009 Ade Lee <alee@redhat.com> 1.1.1-3
 - Bugzilla Bug #518123 - Prompt for passwords if password.conf is removed
 
