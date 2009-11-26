@@ -29,7 +29,7 @@
 
 Name:     tomcatjss
 Version:  1.1.2
-Release:  1%{?dist}
+Release:  2%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -54,6 +54,7 @@ Requires:       java >= 1:1.6.0
 Requires:       tomcat5 >= 5.5.9
 Requires:       jss >= 4.2.6
 Requires:       pki-dog >= 8.0.1
+Requires:       osutil >= 1.1.0
 
 %description
 A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
@@ -92,6 +93,9 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Thu Nov 26 2009 Kevin Wright <kwright@redhat.com> 1.1.2-2
+- Added BuildRequires osutil.
+
 * Wed Nov 25 2009 Kevin Wright <kwright@redhat.com> 1.1.2-1
 - Bumped the rev to correspond to CS80 errata 3.
 
