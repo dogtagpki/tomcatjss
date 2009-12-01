@@ -49,11 +49,11 @@ BuildRequires:  eclipse-ecj >= 0:3.0.1
 BuildRequires:  ant >= 0:1.6.2
 BuildRequires:  tomcat5 >= 5.5.9
 BuildRequires:  jss >= 4.2.6
-BuildRequires:  pki-dog-devel >= 8.0.1
+BuildRequires:  nuxwdog-client-devel 
 Requires:       java >= 1:1.6.0
 Requires:       tomcat5 >= 5.5.9
 Requires:       jss >= 4.2.6
-Requires:       pki-dog >= 8.0.1
+Requires:       nuxwdog 
 
 %description
 A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
@@ -92,7 +92,7 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
-* Mon Nov 23 2009 Ade Lee <alee@redhat.com> 1.1.0-16
+* Mon Nov 23 2009 Ade Lee <alee@redhat.com> 1.1.1-3
 - Bugzilla Bug #518123 - Prompt for passwords if password.conf is removed
 
 * Mon Nov 10 2009 Christina Fu <cfu@redhat.com> 1.1.1-2
