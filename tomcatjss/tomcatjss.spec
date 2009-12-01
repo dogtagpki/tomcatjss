@@ -53,7 +53,6 @@ BuildRequires:  nuxwdog-client-devel
 Requires:       java >= 1:1.6.0
 Requires:       tomcat5 >= 5.5.9
 Requires:       jss >= 4.2.6
-Requires:       nuxwdog 
 
 %description
 A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
