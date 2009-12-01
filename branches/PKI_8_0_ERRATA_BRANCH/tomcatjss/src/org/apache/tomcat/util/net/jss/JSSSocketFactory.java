@@ -28,8 +28,7 @@ import org.mozilla.jss.util.*;
 import org.mozilla.jss.pkcs11.*;
 import java.net.*;
 import java.io.*;
-import com.netscape.osutil.*;
-import com.redhat.pkidog.*;
+import com.redhat.nuxwdog.*;
 
 public class JSSSocketFactory
   extends org.apache.tomcat.util.net.ServerSocketFactory {
@@ -396,8 +395,14 @@ public class JSSSocketFactory
 	    //	    System.out.println("no tomcatjss debugging");
         }
 
-        // check if started by the pkidog
-        String wdPipeName = OSUtil.getenv("WD_PIPE_NAME");
+        // check if started by the nuxwdog
+        String wdPipeName = null;
+        try {
+            wdPipeName = System.getenv("WD_PIPE_NAME");
+        } catch (Exception e) {
+            debugWrite("JSSSocketFactory init - exception in getting WD_PIPE_NAME environment variable:" + e);
+        }
+
         if ((wdPipeName != null) && (! wdPipeName.equals(""))) {
             WatchdogClient.init();
             startedByWD = true;

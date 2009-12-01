@@ -107,8 +107,7 @@
   <property name="dirsec" value="" />
   <property name="jss.jar" value="${jss.home}${dirsec}/jss4.jar" />
   <property name="jni-jar.home" value="/usr/lib/java"/>
-  <property name="osutil.jar" value="${jni-jar.home}/osutil.jar"/>
-  <property name="pkidog.jar" value="${jni-jar.home}/pkidog.jar"/>
+  <property name="nuxwdog.jar" value="${jni-jar.home}/nuxwdog.jar"/>
 
   <!--
     Classpath
@@ -118,8 +117,7 @@
     <pathelement location="${tomcat-util.jar}"/>
     <pathelement location="${alt-tomcat-util.jar}"/>
     <pathelement location="${commons-logging.jar}"/>
-    <pathelement location="${osutil.jar}"/>
-    <pathelement location="${pkidog.jar}"/>
+    <pathelement location="${nuxwdog.jar}"/>
   </path>
 
   <!--
