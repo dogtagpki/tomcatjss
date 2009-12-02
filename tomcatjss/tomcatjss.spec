@@ -29,7 +29,7 @@
 
 Name:     tomcatjss
 Version:  1.1.2
-Release:  4%{?dist}
+Release:  5%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
