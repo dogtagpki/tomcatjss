@@ -29,7 +29,7 @@
 
 Name:     tomcatjss
 Version:  1.1.2
-Release:  5%{?dist}
+Release:  6%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -50,6 +50,7 @@ BuildRequires:  ant >= 0:1.6.2
 BuildRequires:  tomcat5 >= 5.5.9
 BuildRequires:  jss >= 4.2.6
 BuildRequires:  nuxwdog-client-devel 
+BuildRequires:  nuxwdog-client-java 
 Requires:       java >= 1:1.6.0
 Requires:       tomcat5 >= 5.5.9
 Requires:       jss >= 4.2.6
@@ -91,6 +92,9 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Wed Dec 2 2009 Ade Lee <alee@redhat.com> 1.1.2-6
+- Added BuildRequires nuxwdog-client-java
+
 * Mon Nov 30 2009 Ade Lee <alee@redhat.com> 1.1.2-5
 - removed osutil dependency and changed to nuxwdog
 
