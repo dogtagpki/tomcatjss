@@ -20,6 +20,7 @@
 package org.apache.tomcat.util.net.jss;
 
 import java.util.*;
+import java.lang.NumberFormatException;
 import org.mozilla.jss.ssl.*;
 import org.mozilla.jss.crypto.*;
 import org.mozilla.jss.CryptoManager;
@@ -27,6 +28,7 @@ import org.mozilla.jss.util.*;
 import org.mozilla.jss.pkcs11.*;
 import java.net.*;
 import java.io.*;
+import com.redhat.nuxwdog.*;
 
 public class JSSSocketFactory
   extends org.apache.tomcat.util.net.ServerSocketFactory {
@@ -128,10 +130,13 @@ public class JSSSocketFactory
     protected boolean wantClientAuth = false;
     private Vector enabledCiphers = new Vector(); 
     private boolean initialized = false;
+    private boolean mPWInitialized = false;
+    private boolean startedByWD = false;
     private String serverCertNick = "";
     private String mServerCertNickPath ="";
     private String mPwdPath ="";
     private String mPwdClass ="";
+    private String mConfigPath = "";
     FileWriter debugFile = null;
     boolean debug = false;
     private IPasswordStore mPasswordStore = null;
@@ -390,23 +395,20 @@ public class JSSSocketFactory
 	    //	    System.out.println("no tomcatjss debugging");
         }
 
+        // check if started by the nuxwdog
+        String wdPipeName = null;
         try {
-            try {
-                mPwdPath = (String)attributes.get("passwordFile");
-		mPwdClass = (String)attributes.get("passwordClass");
-		if (mPwdClass != null) {
-		    mPasswordStore = (IPasswordStore)Class.forName(mPwdClass).newInstance();
-                    mPasswordStore.init(mPwdPath);
-                    debugWrite("JSSSocketFactory init - password reader initialized\n");
-		}
-             } catch (Exception e) {
-                debugWrite("JSSSocketFactory init - Exception caught: "
-                   +e.toString() + "\n");
-                if (debugFile != null)
-                    debugFile.close();
-                throw new IOException("JSSSocketFactory: no passwordFilePath defined");
-            }
+            wdPipeName = System.getenv("WD_PIPE_NAME");
+        } catch (Exception e) {
+            debugWrite("JSSSocketFactory init - exception in getting WD_PIPE_NAME environment variable:" + e);
+        }
 
+        if ((wdPipeName != null) && (! wdPipeName.equals(""))) {
+            WatchdogClient.init();
+            startedByWD = true;
+        }
+
+        try {
             String certDir = (String)attributes.get("certdbDir");
    
             CryptoManager.InitializationValues vals = 
@@ -421,6 +423,64 @@ public class JSSSocketFactory
                 // do nothing
             }
             CryptoManager manager = CryptoManager.getInstance();
+
+            if (!mPWInitialized) {
+                try {
+                    mPwdPath = (String)attributes.get("passwordFile");
+                    mPwdClass = (String)attributes.get("passwordClass");
+		    if (mPwdClass != null) {
+		        mPasswordStore = (IPasswordStore)Class.forName(mPwdClass).newInstance();
+                        try {
+                            mPasswordStore.init(mPwdPath);
+                        } catch (IOException io) {
+                            // Error in reading file at mPwdPath 
+                            // This might be because the file has been removed for security reasons.
+                            // Prompt for the passwords instead
+
+                            // First handle the internal token
+                            debugWrite("JSSSocketFactory init(): prompting for password for internal\n");
+                            mPasswordStore.putPassword("internal",
+                                    WatchdogClient.getPassword("Please provide password for internal:", 0));
+
+                            // now handle any external tokens
+                            String [] tokenList = null;
+                            mConfigPath = (String)attributes.get("configFile");
+                            try {
+                                BufferedReader cf = new BufferedReader(new FileReader(mConfigPath));
+                                String marker = "cms.tokenPasswordList=";
+                                String line;
+                                while ((line = cf.readLine()) != null) {
+                                    int indx = line.indexOf(marker);
+                                    if (indx != -1) {
+                                       tokenList = line.substring(indx + marker.length()).split(",");
+                                       break;
+                                    }
+                                }
+                            } catch (Exception e) {
+                                debugWrite("JSSSocketFactory init(): Exception in reading config file");
+                            }
+
+                            if ((tokenList != null) && (tokenList.length > 0)) {
+                                for (int i=0; i< tokenList.length; i++) {
+                                    if (!tokenList[i].equals("")) {
+                                        debugWrite("JSSSocketFactory init(): prompting for password for " + tokenList[i] + "\n");
+                                        mPasswordStore.putPassword("hardware-" + tokenList[i],
+                                            WatchdogClient.getPassword("Please provide password for hardware-" + tokenList[i] + ":", 0));
+                                    }
+                                }
+                            }
+                        }   
+                    } 
+                    debugWrite("JSSSocketFactory init - password reader initialized\n");
+                    mPWInitialized = true;
+                } catch (Exception e) {
+                    debugWrite("JSSSocketFactory init - Exception caught: "
+                       +e.toString() + "\n");
+                    if (debugFile != null)
+                        debugFile.close();
+                    throw new IOException("JSSSocketFactory: no passwordFilePath defined");
+                }
+            }
 
             //JSSSocketFactory init - handle crypto tokens
             debugWrite("JSSSocketFactory init - about to handle crypto unit logins\n");
@@ -525,19 +585,22 @@ public class JSSSocketFactory
                 boolean enableOCSP = false; 
                 String doOCSP = (String) attributes.get("enableOCSP");
 
-                debugWrite("JSSSocketFactory init - doOCSP flag:  \n" + doOCSP);
+                debugWrite("JSSSocketFactory init - doOCSP flag:"+
+                          doOCSP+ " \n");
 
                 if (doOCSP != null &&  doOCSP.equalsIgnoreCase("true"))  {
                    enableOCSP = true;
                 } 
                
-                debugWrite("JSSSocketFactory init - enableOCSP \n" + enableOCSP); 
+                debugWrite("JSSSocketFactory init - enableOCSP "+
+                             enableOCSP+ "\n"); 
                 
                 if( enableOCSP == true ) {
                     String ocspResponderURL = (String) attributes.get("ocspResponderURL");
-                    debugWrite("JSSSocketFactory init - ocspResponderURL \n" + ocspResponderURL);
+                    debugWrite("JSSSocketFactory init - ocspResponderURL "+
+                             ocspResponderURL+ "\n");
                     String ocspResponderCertNickname = (String) attributes.get("ocspResponderCertNickname");
-		    debugWrite("JSSSocketFactory init - ocspResponderCertNickname \n" + ocspResponderCertNickname);
+		    debugWrite("JSSSocketFactory init - ocspResponderCertNickname" + ocspResponderCertNickname + "\n");
                     if( (ocspResponderURL != null && ocspResponderURL.length() > 0) && 
                         (ocspResponderCertNickname != null && 
                          ocspResponderCertNickname.length() > 0 ))   {
@@ -545,10 +608,52 @@ public class JSSSocketFactory
                        ocspConfigured = true;
                        try {
                            manager.configureOCSP(true,ocspResponderURL,ocspResponderCertNickname);
+                           int ocspCacheSize_i = 1000;
+                           int ocspMinCacheEntryDuration_i = 3600;
+                           int ocspMaxCacheEntryDuration_i = 86400;
+
+                           String ocspCacheSize = (String) attributes.get("ocspCacheSize");
+                           String ocspMinCacheEntryDuration = (String) attributes.get("ocspMinCacheEntryDuration");
+                           String ocspMaxCacheEntryDuration = (String) attributes.get("ocspMaxCacheEntryDuration");
+
+                           if (ocspCacheSize != null ||
+                             ocspMinCacheEntryDuration != null ||
+                             ocspMaxCacheEntryDuration != null) {
+                             // not specified then takes the default
+                             if (ocspCacheSize != null) {
+		    debugWrite("JSSSocketFactory init - ocspCacheSize= " + ocspCacheSize+"\n");
+                               ocspCacheSize_i = Integer.parseInt(ocspCacheSize);
+                             }
+                             if (ocspMinCacheEntryDuration != null) {
+		    debugWrite("JSSSocketFactory init - ocspMinCacheEntryDuration= " + ocspMinCacheEntryDuration+"\n");
+                               ocspMinCacheEntryDuration_i = Integer.parseInt(ocspMinCacheEntryDuration);
+                             }
+                             if (ocspMaxCacheEntryDuration != null) {
+		    debugWrite("JSSSocketFactory init - ocspMaxCacheEntryDuration= " + ocspMaxCacheEntryDuration+"\n");
+                               ocspMaxCacheEntryDuration_i = Integer.parseInt(ocspMaxCacheEntryDuration);
+                             }
+                             manager.OCSPCacheSettings(ocspCacheSize_i,
+                               ocspMinCacheEntryDuration_i, ocspMaxCacheEntryDuration_i);
+                           }
+
+                           // defualt to 60 seconds;
+                           String ocspTimeout = (String) attributes.get("ocspTimeout");
+                           if (ocspTimeout != null) {
+		    debugWrite("JSSSocketFactory init - ocspTimeout= \n" + ocspTimeout);
+                               int ocspTimeout_i = Integer.parseInt(ocspTimeout);
+                               if (ocspTimeout_i < 0)
+                                  ocspTimeout_i = 60; 
+                               manager.setOCSPTimeout(ocspTimeout_i);
+                           }
+
                        } catch(java.security.GeneralSecurityException e) {
                           ocspConfigured = false;
-                          debugWrite("JSSSocketFactory init - error initializing OCSP e: \n" + e.toString());
+                          debugWrite("JSSSocketFactory init - error initializing OCSP e: " + e.toString()+"\n");
                           throw new  java.security.GeneralSecurityException("Error setting up OCSP. Check configuraion!");
+                       } catch (java.lang.NumberFormatException e) {
+                          ocspConfigured = false;
+                          debugWrite("JSSSocketFactory init - error setting OCSP cache e: " + e.toString()+"\n");
+                          throw new  java.lang.NumberFormatException("Error setting OCSP cache. Check configuraion!");
                        }
                     }  else  {
                         debugWrite("JSSSocketFactory init - error ocsp misconfigured! \n");
@@ -562,7 +667,17 @@ public class JSSSocketFactory
 
             setSSLOptions();
         } catch (Exception ex) {
-           if(ex instanceof java.security.GeneralSecurityException)
+            debugWrite("JSSSocketFactory init - exception thrown:"+
+                   ex.toString()+"\n");
+	        System.err.println("JSSSocketFactory init - exception thrown:"+
+                   ex.toString()+"\n");
+            if (debugFile != null)
+                debugFile.close();
+            // The idea is, if admin take the trouble to configure the
+            // ocsp cache, and made a mistake, we want to make server
+            // unavailable until they get it right
+            if((ex instanceof java.security.GeneralSecurityException) ||
+               (ex instanceof java.lang.NumberFormatException))
               throw  new IOException(ex.toString());
         }
         if (debugFile != null)
