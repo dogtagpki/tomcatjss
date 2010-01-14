@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  1.2.0
-Release:  2%{?dist}
+Release:  3%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -16,14 +16,25 @@ BuildRequires:    java-devel >= 1:1.6.0
 BuildRequires:    jpackage-utils
 BuildRequires:    tomcat5
 BuildRequires:    jss >= 4.2.6
+
 Requires:         java >= 1:1.6.0
 Requires:         jpackage-utils
 Requires:         tomcat5
 Requires:         jss >= 4.2.6
 
+# The 'tomcatjss' package conflicts with the 'tomcat-native' package
+# because it uses an underlying NSS security model rather than the
+# OpenSSL security model, so these two packages may not co-exist.
+# (see Bugzilla Bug #441974 for details)
+Conflicts:        tomcat-native
+
 %description
 A Java Secure Socket Extension (JSSE) implementation
 using Java Security Services (JSS) for Tomcat 5.5.
+
+NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
+       because it uses an underlying NSS security model rather than the
+       OpenSSL security model, so these two packages may not co-exist.
 
 %prep
 
@@ -61,6 +72,11 @@ rm -rf %{buildroot}
 %{_sharedstatedir}/tomcat5/server/lib/%{name}.jar
 
 %changelog
+* Thu Jan 14 2010 Matthew Harmsen <mharmsen@redhat.com> 1.2.0-3
+- Bugzilla Bug #441974 -  CA Setup Wizard cannot create new Security Domain.
+- Added 'Conflicts: tomcat-native' plus descriptive comment
+- Updated 'description' section with this information
+
 * Fri Sep 11 2009 Kevin Wright <kwright@redhat.com> 1.2.0-2
 - Bugzilla Bug #521979 - Removed references to jre, fedora 8, etc
 
