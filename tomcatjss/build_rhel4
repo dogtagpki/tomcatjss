@@ -1,0 +1,23 @@
+#! /bin/bash
+
+# This script may ONLY be run on Linux!
+OS=`uname`
+if [ ${OS} != "Linux" ]; then
+	printf "The '$0' script is ONLY executable on a 'Linux' machine!\n"
+	exit 255
+fi
+
+# This script may ONLY be run on a Red Hat Linux machine!
+if [ ! -e /etc/redhat-release ]; then
+	printf "The '$0' script is ONLY executable on a Red Hat 'Linux' machine!\n"
+	exit 255
+fi
+
+# This script may ONLY be run on a RHEL4 Linux machine!
+RHEL_VERSION=`rpm -qf --qf='%{VERSION}' /etc/redhat-release | tr -d [A-Za-z]`
+if [ ${RHEL_VERSION} != "4" ]; then
+	printf "The '$0' script is ONLY executable on a 'RHEL4' machine!\n"
+	exit 255
+fi
+
+ant -f build.xml -Ddirsec=/dirsec -Dspecfile=tomcatjss.el4.spec rpms
