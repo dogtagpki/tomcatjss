@@ -20,4 +20,4 @@ if [ ${RHEL_VERSION} != "4" ]; then
 	exit 255
 fi
 
-ant -f build.xml -Ddirsec=/dirsec -Dspecfile=tomcatjss.el4.spec rpms
+ant -f build.xml -Ddirsec=/dirsec -Dspecfile=tomcatjss.spec rpms
