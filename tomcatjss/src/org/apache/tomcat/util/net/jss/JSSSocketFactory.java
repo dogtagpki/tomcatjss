@@ -424,24 +424,6 @@ public class JSSSocketFactory
 
             //JSSSocketFactory init - handle crypto tokens
             debugWrite("JSSSocketFactory init - about to handle crypto unit logins\n");
-	    // first, log out all tokens
-            Enumeration modules = manager.getModules();
-            while (modules.hasMoreElements()) {
-                PK11Module mod = (PK11Module) modules.nextElement();
-		Enumeration tokens = mod.getTokens();
-		while (tokens.hasMoreElements()) {
-		    CryptoToken token = (CryptoToken) tokens.nextElement();
-		    if (token.isLoggedIn()) {
-			debugWrite("JSSSocketFactory init - logout from "+
-				   token.getName()+"\n");
-			token.logout();
-		    } else {
-			debugWrite("JSSSocketFactory init - token "+
-				   token.getName()+" not logged in\n");
-		    }
-		}
-            } // while
-
 
             if (mPasswordStore != null) {
                 Enumeration en = mPasswordStore.getTags();

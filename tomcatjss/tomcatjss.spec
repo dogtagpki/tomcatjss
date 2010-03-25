@@ -2,27 +2,41 @@
 %define debug_package %{nil}
 # No need to strip
 %define __os_install_post %{nil}
+%ifos Solaris
+%define _javadir %{_datadir}/java
+%endif
 
 Name:     tomcatjss
-Version:  1.1.0
-Release:  9%{?dist}
+Version:  1.1.0.73
+Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
 License:  LGPL
 Group:    System Environment/Libraries
+%ifos Solaris
+SUNW_pkg: RHATtomcatjssx
+SourcePackage: RHATtomcatjss-src
+%endif
+
 BuildArch:      noarch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
+%ifos Linux
 BuildRequires:  java-devel
 BuildRequires:  jpackage-utils >= 0:1.6.0
 BuildRequires:  eclipse-ecj >= 0:3.0.1
 BuildRequires:  ant >= 0:1.6.2
 BuildRequires:  tomcat5 >= 5.5.9
-BuildRequires:  jss >= 4.2
+BuildRequires:  dirsec-jss >= 4.2
 Requires:       java >= 0:1.4.2
 Requires:       tomcat5 >= 5.5.9
-Requires:       jss >= 4.2
+Requires:       dirsec-jss >= 4.2
+%else
+BuildRequires:  RHATdirsec-jssx >= 4.2
+Requires:       RHATtomcat5x >= 5.5.9
+Requires:       RHATdirsec-jssx >= 4.2
+%endif
 
 %description
 A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
@@ -32,8 +46,8 @@ A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
 %setup -q
 
 %build
-ant -f build.xml -Dspecfile=tomcatjss.el5.spec
-ant -f build.xml -Dspecfile=tomcatjss.el5.spec dist
+ant -f build.xml -Ddirsec=/dirsec -Dspecfile=tomcatjss.spec
+ant -f build.xml -Ddirsec=/dirsec -Dspecfile=tomcatjss.spec dist
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -60,8 +74,11 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
-* Fri Apr 26 2007 Kevin McCarthy <kmccarth@redhat.com> 1.1.0-9
-- Change specfile to RHEL5 dependencies
+* Thu Mar 25 2010 Ade Lee <alee@redhat.com> 1.1.0.73-1
+- Renamed to be specific for CS 7.3 branch
+- Removed rhel5, fc6 build scripts, make build RHEL4 specific
+- Bugzilla BZ 575803 - Attempt to access CA(configured with HSM) 
+  Agent pages fail with SSL_ERROR_HANDSHAKE_FAILURE_ALERT
 
 * Fri Apr 20 2007 Thomas Kwan <nkwan@redhat.com> 1.1.0-8
 - Re-integrated Solaris logic into the spec file
