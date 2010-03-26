@@ -31,6 +31,10 @@
     <arg line="-i"/>
   </exec>
 
+  <exec executable="uname" failonerror="true" outputproperty="sunarch">
+    <arg line="-p"/>
+  </exec>
+
   <!--
     Set the properties that control names and versions
   -->
@@ -106,6 +110,10 @@
   <condition property="jss.home" value="/usr/lib64/java">
     <equals arg1="${arch}" arg2="x86_64"/>
   </condition>
+  <condition property="jss.home" value="/usr/lib/java">
+    <equals arg1="${sunarch}" arg2="sparc"/>
+  </condition>
+
   <!-- This property is set to '/dirsec' when built on rhel4 -->
   <property name="dirsec" value="" />
   <property name="jss.jar" value="${jss.home}${dirsec}/jss4.jar" />
