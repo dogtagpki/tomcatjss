@@ -244,6 +244,8 @@
     <exec executable="rpmbuild">
       <arg value="--define"/>
       <arg value="_topdir ${rpm.dist.dir}"/>
+      <arg value="--define"/>
+      <arg value="rhel ${rhel}"/>
       <arg value="-ta"/>
       <arg value="${dist.base.source}/${src.dist.name}.tar.gz"/>
     </exec>

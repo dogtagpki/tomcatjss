@@ -7,4 +7,11 @@ if [ ${OS} != "Linux" ]; then
 	exit 255
 fi
 
-ant -f build.xml -Dspecfile=tomcatjss.spec rpms
+if [ -f /etc/fedora-release ]; then
+	# Script is being run on Fedora
+	ant -f build.xml -Drhel=0 -Dspecfile=tomcatjss.spec rpms
+elif [ -f /etc/redhat-release ]; then
+	# Script is being run on RHEL
+	ant -f build.xml -Drhel=1 -Dspecfile=tomcatjss.spec rpms
+fi
+
