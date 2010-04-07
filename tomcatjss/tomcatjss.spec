@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  1.2.0
-Release:  3%{?dist}
+Release:  4%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -27,6 +27,11 @@ Requires:         jss >= 4.2.6
 # OpenSSL security model, so these two packages may not co-exist.
 # (see Bugzilla Bug #441974 for details)
 Conflicts:        tomcat-native
+
+%if 0%{?rhel}
+# For EPEL, override the '_sharedstatedir' macro on RHEL
+%define           _sharedstatedir    /var/lib
+%endif
 
 %description
 A Java Secure Socket Extension (JSSE) implementation
@@ -72,6 +77,10 @@ rm -rf %{buildroot}
 %{_sharedstatedir}/tomcat5/server/lib/%{name}.jar
 
 %changelog
+* Tue Apr 6 2010 Matthew Harmsen <mharmsen@redhat.com> 1.2.0-4
+- Bugzilla Bug #568787 - pki-ca fails to create SSL connectors
+- Bugzilla Bug #573038 - Unable to login on Dogtag EPEL installation
+
 * Thu Jan 14 2010 Matthew Harmsen <mharmsen@redhat.com> 1.2.0-3
 - Bugzilla Bug #441974 -  CA Setup Wizard cannot create new Security Domain.
 - Added 'Conflicts: tomcat-native' plus descriptive comment
