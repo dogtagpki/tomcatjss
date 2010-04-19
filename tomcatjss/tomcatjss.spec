@@ -1,6 +1,6 @@
 Name:     tomcatjss
-Version:  1.2.0
-Release:  4%{?dist}
+Version:  1.2.1
+Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -77,6 +77,9 @@ rm -rf %{buildroot}
 %{_sharedstatedir}/tomcat5/server/lib/%{name}.jar
 
 %changelog
+* Thu Apr 8 2010 Matthew Harmsen <mharmsen@redhat.com> 1.2.1-1
+- Update source tarball
+
 * Tue Apr 6 2010 Matthew Harmsen <mharmsen@redhat.com> 1.2.0-4
 - Bugzilla Bug #568787 - pki-ca fails to create SSL connectors
 - Bugzilla Bug #573038 - Unable to login on Dogtag EPEL installation
@@ -99,6 +102,7 @@ rm -rf %{buildroot}
 - Bugzilla Bug #455305 - CA ECC signing Key Failure
   Bugzilla Bug #223279 - ECC: Ca: unable to perform agent auth on a machine with nCipher ECC HSM
 - This log entry does not apply to tomcatjss.  Ignore.
+
 * Fri May 1 2009 Christina Fu <cfu@redhat.com> - 1.1.0-13
 - Bugzilla #498652 - SSL handshake Failure on RHCS java subsystems with nethsm2000
  
