@@ -1,0 +1,254 @@
+<!--
+ BEGIN COPYRIGHT BLOCK
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+ Copyright (C) 2007 Red Hat, Inc.
+ All rights reserved.
+ END COPYRIGHT BLOCK -->
+<project name="tomcatjss" default="main" basedir=".">
+  <!--
+     Give user a chance to override without editing this file
+       (and without typing -D each time it compiles it) 
+   -->
+
+  <property file=".ant.properties"/>
+  <property file="${user.home}/.ant.properties"/>
+  <property environment="env"/>
+
+  <exec executable="uname" failonerror="true" outputproperty="arch">
+    <arg line="-i"/>
+  </exec>
+
+  <!--
+    Set the properties that control names and versions
+  -->
+
+  <property name="Name" value="Tomcat JSS"/>
+  <property name="name" value="tomcatjss"/>
+  <property name="version" value="1.2.1"/>
+  <property name="manifest-version" value="1.2.1"/>
+
+  <!--
+    Set the properties that control various build options
+  -->
+  <property name="debug" value="true"/>
+  <property name="chmod.fail" value="true"/>
+  <property name="chmod.maxparallel" value="250"/>
+  <property name="deprecation" value="false"/>
+  <property name="optimize" value="true"/>
+  <property name="specfile" value="tomcatjss.el5.spec"/>
+
+  <!--
+    Set the properties related to the source tree
+  -->
+  <exec executable="pwd" failonerror="true" outputproperty="cwd"/>
+  <property name="src.dir" value="src"/>
+  <property name="script.dir" value="${src.dir}/script"/>
+  <property name="lib.dir" value="lib"/>
+  <property name="docs.dir" value="docs"/>
+  <property name="etc.dir" value="src/etc"/>
+
+  <!--
+    Set the properties for the build area
+  -->
+  <property name="build.dir" value="build"/>
+  <property name="bootstrap.dir" value="bootstrap"/>
+  <property name="build.jars" value="${build.dir}/jars"/>
+  <property name="build.classes" value="${build.dir}/classes"/>
+  <property name="build.lib" value="${build.dir}/lib"/>
+  <property name="build.javadocs" value="${build.dir}/javadocs"/>
+  <property name="build.tests" value="${build.dir}/testcases"/>
+  <property name="build.tests.javadocs" value="${build.dir}/javadocs.test/"/>
+  <property name="manifest.tmp" value="${build.dir}/optional.manifest"/>
+
+  <!--
+    Set up properties for the distribution area
+  -->
+  <property name="dist.name" value="${name}-${version}"/>
+  <property name="dist.base" value="dist"/>
+  <property name="dist.base.source" value="${dist.base}/source"/>
+  <property name="dist.base.binaries" value="${dist.base}/binary"/>
+  <property name="dist.dir" value="dist"/>
+  <property name="dist.bin" value="${dist.dir}/bin"/>
+  <property name="dist.lib" value="${dist.dir}/lib"/>
+  <property name="dist.docs" value="${dist.dir}/docs"/>
+  <property name="dist.etc" value="${dist.dir}/etc"/>
+  <property name="src.dist.name" value="${name}-${version}"/>
+  <property name="src.dist.dir" value="dist-src"/>
+  <property name="src.dist.src" value="${src.dist.dir}/src"/>
+  <property name="src.dist.docs" value="${src.dist.dir}/docs"/>
+  <property name="src.dist.lib" value="${src.dist.dir}/lib"/>
+  <property name="rpm.dist.dir" value="${cwd}/${dist.base}/rpmpkg"/>
+
+
+  <!--
+    JARs
+  -->
+  <property name="jar.home" value="/usr/share/java" />
+  <property name="commons-logging.jar" value="${jar.home}/commons-logging-api.jar" />
+  <property name="tomcat.lib" value="/var/lib/tomcat5/server/lib" />
+  <property name="tomcat-util.jar" value="${tomcat.lib}/tomcat-util.jar" />
+  <property name="alt.tomcat.lib" value="/usr/share/java/tomcat5" />
+  <property name="alt-tomcat-util.jar" value="${alt.tomcat.lib}/tomcat-util.jar" />
+  <property name="jss.home" value="/usr/lib/java" />
+  <!-- This property is set to '/dirsec' when built on rhel4 -->
+  <property name="dirsec" value="" />
+  <property name="jss.jar" value="${jss.home}${dirsec}/jss4.jar" />
+
+  <!--
+    Classpath
+  -->
+  <path id="classpath">
+    <pathelement location="${jss.jar}"/>
+    <pathelement location="${tomcat-util.jar}"/>
+    <pathelement location="${alt-tomcat-util.jar}"/>
+    <pathelement location="${commons-logging.jar}"/>
+  </path>
+
+  <!--
+    Create binary distributions
+  -->
+  <target name="main_distribution" description="--> creates the zip and tar distributions">
+    <delete dir="${dist.name}"/>
+    <mkdir dir="${dist.base}"/>
+    <mkdir dir="${dist.base.source}"/>
+    <mkdir dir="${dist.base.binaries}"/>
+	<zip destfile="${dist.base.binaries}/${dist.name}.zip">
+  	  <zipfileset dir="./build/jars" filemode="755" prefix="usr/share/java">
+        <include name="**"/>
+      </zipfileset>
+    </zip>
+
+  <tar longfile="gnu" destfile="${dist.base.binaries}/${dist.name}.tar">
+  	<tarfileset dir="./build/jars" mode="755" prefix="${dist.name}/usr/share/java">
+      <include name="**"/>
+    </tarfileset>
+  </tar>
+
+    <gzip destfile="${dist.base.binaries}/${dist.name}.tar.gz" src="${dist.base.binaries}/${dist.name}.tar"/>
+    <delete file="${dist.base.binaries}/${dist.name}.tar"/>
+    <delete dir="${dist.name}"/>
+	<checksum fileext=".md5">
+   	  <fileset dir="${dist.base.binaries}/">
+        <include name="**/*"/>
+        <exclude name="**/*.asc"/>
+        <exclude name="**/*.md5"/>
+     </fileset>
+   </checksum>
+   <checksum fileext=".sha1" algorithm="SHA">
+     <fileset dir="${dist.base.binaries}/">
+       <include name="**/*"/>
+       <exclude name="**/*.asc"/>
+       <exclude name="**/*.md5"/>
+     </fileset>
+   </checksum>
+
+  <!--
+    Create source distributions
+  -->
+  <zip destfile="${dist.base.source}/${src.dist.name}.zip">
+     <zipfileset dir="." filemode="755" prefix="${src.dist.name}">
+        <include name="README"/>
+        <include name="LICENSE"/>
+        <include name="${specfile}"/>
+        <include name="build.xml"/>
+        <include name="src/**"/>
+      </zipfileset>
+    </zip>
+    <tar longfile="gnu" destfile="${dist.base.source}/${src.dist.name}.tar">
+      <tarfileset dir="." mode="755" prefix="${src.dist.name}">
+        <include name="README"/>
+        <include name="LICENSE"/>
+        <include name="${specfile}"/>
+        <include name="build.xml"/>
+        <include name="src/**"/>
+      </tarfileset>
+    </tar>
+
+    <gzip destfile="${dist.base.source}/${src.dist.name}.tar.gz" src="${dist.base.source}/${src.dist.name}.tar"/>
+    <delete file="${dist.base.source}/${src.dist.name}.tar"/>
+    <delete dir="${dist.name}"/>
+
+	<checksum fileext=".md5">
+	  <fileset dir="${dist.base.source}/">
+        <include name="**/*"/>
+        <exclude name="**/*.asc"/>
+        <exclude name="**/*.md5"/>
+      </fileset>
+    </checksum>
+
+	<checksum fileext=".sha1" algorithm="SHA">
+	  <fileset dir="${dist.base.source}/">
+        <include name="**/*"/>
+        <exclude name="**/*.asc"/>
+        <exclude name="**/*.md5"/>
+      </fileset>
+    </checksum>
+
+  </target>
+
+  <target name="download"
+          description="Builds and download dependent components">
+  </target>
+
+  <target name="compile" depends=""
+        description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build.classes}"/>
+    <javac debug="on" srcdir="${src.dir}/org" destdir="${build.classes}">
+      <classpath refid="classpath"/>
+    </javac>
+  </target>
+
+  <target name="package" >
+    <mkdir dir="${build.jars}"/>
+    <jar jarfile="${build.jars}/tomcatjss.jar">
+      <fileset dir="${build.classes}">
+        <include name="org/**" />
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="dist" depends="compile,package,main_distribution" description="--> creates the full Apache Ant distribution">
+  </target>
+
+  <target name="main" depends="compile,package">
+  </target>
+
+  <target name="clean">
+    <delete dir="${dist.base}"/>
+    <delete dir="${build.dir}"/>
+  </target>
+
+  <target name="rpms" depends="dist">
+    <mkdir dir="${rpm.dist.dir}"/>
+    <mkdir dir="${rpm.dist.dir}/SOURCES"/>
+    <mkdir dir="${rpm.dist.dir}/RPMS"/>
+    <mkdir dir="${rpm.dist.dir}/SRPMS"/>
+    <mkdir dir="${rpm.dist.dir}/SPECS"/>
+    <mkdir dir="${rpm.dist.dir}/BUILD"/>
+
+
+    <exec executable="rpmbuild">
+      <arg value="--define"/>
+      <arg value="_topdir ${rpm.dist.dir}"/>
+      <arg value="--define"/>
+      <arg value="rhel ${rhel}"/>
+      <arg value="-ta"/>
+      <arg value="${dist.base.source}/${src.dist.name}.tar.gz"/>
+    </exec>
+  </target>
+
+</project>
