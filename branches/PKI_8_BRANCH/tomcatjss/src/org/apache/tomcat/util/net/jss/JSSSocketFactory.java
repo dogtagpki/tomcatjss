@@ -139,7 +139,7 @@ public class JSSSocketFactory
     private String mConfigPath = "";
     FileWriter debugFile = null;
     boolean debug = false;
-    private IPasswordStore mPasswordStore = null;
+    private PasswordCallback mPasswordCB = null;
 
     public JSSSocketFactory() {
         super();
@@ -423,114 +423,77 @@ public class JSSSocketFactory
                 // do nothing
             }
             CryptoManager manager = CryptoManager.getInstance();
+            CryptoToken token = null;
+
+            mPwdPath = (String)attributes.get("passwordFile");
+            mPwdClass = (String)attributes.get("passwordClass");
 
             if (!mPWInitialized) {
                 try {
-                    mPwdPath = (String)attributes.get("passwordFile");
-                    mPwdClass = (String)attributes.get("passwordClass");
-		    if (mPwdClass != null) {
-		        mPasswordStore = (IPasswordStore)Class.forName(mPwdClass).newInstance();
-                        try {
-                            mPasswordStore.init(mPwdPath);
-                        } catch (IOException io) {
-                            // Error in reading file at mPwdPath 
-                            // This might be because the file has been removed for security reasons.
-                            // Prompt for the passwords instead
-
-                            // First handle the internal token
-                            debugWrite("JSSSocketFactory init(): prompting for password for internal\n");
-                            mPasswordStore.putPassword("internal",
-                                    WatchdogClient.getPassword("Please provide password for internal:", 0));
-
-                            // now handle any external tokens
-                            String [] tokenList = null;
-                            mConfigPath = (String)attributes.get("configFile");
-                            try {
-                                BufferedReader cf = new BufferedReader(new FileReader(mConfigPath));
-                                String marker = "cms.tokenPasswordList=";
-                                String line;
-                                while ((line = cf.readLine()) != null) {
-                                    int indx = line.indexOf(marker);
-                                    if (indx != -1) {
-                                       tokenList = line.substring(indx + marker.length()).split(",");
-                                       break;
-                                    }
-                                }
-                            } catch (Exception e) {
-                                debugWrite("JSSSocketFactory init(): Exception in reading config file");
-                            }
-
-                            if ((tokenList != null) && (tokenList.length > 0)) {
-                                for (int i=0; i< tokenList.length; i++) {
-                                    if (!tokenList[i].equals("")) {
-                                        debugWrite("JSSSocketFactory init(): prompting for password for " + tokenList[i] + "\n");
-                                        mPasswordStore.putPassword("hardware-" + tokenList[i],
-                                            WatchdogClient.getPassword("Please provide password for hardware-" + tokenList[i] + ":", 0));
-                                    }
-                                }
-                            }
-                        }   
-                    } 
-                    debugWrite("JSSSocketFactory init - password reader initialized\n");
+                    mPasswordCB = new PasswordCB(mPwdPath, mPwdClass, startedByWD);
                     mPWInitialized = true;
                 } catch (Exception e) {
-                    debugWrite("JSSSocketFactory init - Exception caught: "
-                       +e.toString() + "\n");
-                    if (debugFile != null)
-                        debugFile.close();
-                    throw new IOException("JSSSocketFactory: no passwordFilePath defined");
+                    debugWrite("JSSSocketFactory init - unable to instantiate password callback: " + e);
+                    throw new IOException("JSSSocketFactory init - unable to instantiate password callback: " + e);
+                }
+            } 
+
+            // log into internal token
+            token = manager.getInternalKeyStorageToken();
+            if (token == null) {
+                debugWrite("JSSSocketFactory init - internal token is null! \n");
+            } else {
+                if (!token.isLoggedIn()) {
+                    debugWrite("JSSSocketFactory init - logging into internal software token\n");
+                    try {
+                        token.login(mPasswordCB);
+                    } catch (Exception e) {
+                       throw new IOException("Unable to log into internal software token: " + e); 
+                    }
+                } else {
+                    debugWrite("JSSSocketFactory init - already logged into internal software token\n");
                 }
             }
 
-            //JSSSocketFactory init - handle crypto tokens
-            debugWrite("JSSSocketFactory init - about to handle crypto unit logins\n");
-
-            if (mPasswordStore != null) {
-                Enumeration en = mPasswordStore.getTags();
-                while (en.hasMoreElements()){
-                    String pwd = "";
-                    Password pw = null;
-                    String tokenName = "";
-                    String st = (String) en.nextElement();
-                    debugWrite("JSSSocketFactory init - tag name="+st+"\n");
-                    pwd = mPasswordStore.getPassword(st);
-                
-                    if (pwd != null) {
-                        debugWrite("JSSSocketFactory init - got password\n");
-                        pw = new Password(pwd.toCharArray()); 
-                    } else {
-                        debugWrite("JSSSocketFactory init - no pwd found in password.conf\n");
-                        continue;
+            // log into hardware tokens
+            String [] tokenList = null;
+            mConfigPath = (String)attributes.get("configFile");
+            try {
+                BufferedReader cf = new BufferedReader(new FileReader(mConfigPath));
+                String marker = "cms.tokenPasswordList=";
+                String line;
+                while ((line = cf.readLine()) != null) {
+                    int indx = line.indexOf(marker);
+                    if (indx != -1) {
+                        tokenList = line.substring(indx + marker.length()).split(",");
+                        break;
                     }
+                }
+            } catch (Exception e) {
+                debugWrite("JSSSocketFactory init(): Exception in reading config file");
+            }
 
-                    CryptoToken token = null;
-                    if (st.equals("internal")) {
-                        debugWrite("JSSSocketFactory init - got internal software token\n");
-                        token = manager.getInternalKeyStorageToken();
-                    } else if (st.startsWith("hardware-")) {
-                        debugWrite("JSSSocketFactory init - got hardware\n");
+            if ((tokenList != null) && (tokenList.length > 0)) {
+                for (int i=0; i< tokenList.length; i++) {
+                    if (!tokenList[i].equals("")) {
+                        debugWrite("JSSSocketFactory init - tokenName="+tokenList[i]+"\n");
 
-                        tokenName = st.substring(9);
-                        debugWrite("JSSSocketFactory init - tokenName="+tokenName+"\n");
-
-                        // find the hsm and log in
-                        token = manager.getTokenByName(tokenName);
-                    } else {
-                        //non-token entries
-                    }
-                    if (token != null) {
-                        if (!token.isLoggedIn()) {
-                            debugWrite("JSSSocketFactory init -not logged in...about to log in\n");
-                            token.login(pw);
-                        } else {
-                            debugWrite("JSSSocketFactory init - already logged in\n");
+                        token = manager.getTokenByName(tokenList[i]);
+                        if (token != null) {
+                            if (!token.isLoggedIn()) {
+                                debugWrite("JSSSocketFactory init -logging into " + tokenList[i] + "\n");
+                                try {
+                                    token.login(mPasswordCB);
+                                } catch (Exception e) {
+                                    throw new IOException("Unable to log into token: " + tokenList[i] + " : " + e);
+                                }
+                            } else {
+                                debugWrite("JSSSocketFactory init - already logged into " + tokenList[i] + "\n");
+                            }
                         }
                     }
-                } //while
-                debugWrite("JSSSocketFactory init - tokens initialized/logged in\n");
-            } else {
-                debugWrite("JSSSocketFactory init - no login done\n");
-            } //mPasswordStore not null
+                }
+            }
 
             String clientAuthStr = (String)attributes.get("clientauth");
             File file = null;
