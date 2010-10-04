@@ -28,8 +28,8 @@
 %endif
 
 Name:     tomcatjss
-Version:  1.1.1
-Release:  3%{?dist}
+Version:  1.1.3
+Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -50,6 +50,7 @@ BuildRequires:  ant >= 0:1.6.2
 BuildRequires:  tomcat5 >= 5.5.9
 BuildRequires:  jss >= 4.2.6
 BuildRequires:  nuxwdog-client-devel 
+BuildRequires:  nuxwdog-client-java
 Requires:       java >= 1:1.6.0
 Requires:       tomcat5 >= 5.5.9
 Requires:       jss >= 4.2.6
@@ -91,6 +92,12 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Mon Oct 4 2010 Ade Lee <alee@redhat.com> 1.1.3-1
+- Bugzilla BZ536891 - If wrong passwords are presented to pki subsystems, 
+  restart of the subsytem hangs indefintely (password.conf related)
+  Add nuxwdog-client-java build dependency
+  Update build numbers
+
 * Mon Nov 23 2009 Ade Lee <alee@redhat.com> 1.1.1-3
 - Bugzilla Bug #518123 - Prompt for passwords if password.conf is removed
 
