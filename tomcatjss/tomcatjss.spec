@@ -14,12 +14,12 @@ Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.ta
 BuildRequires:    ant
 BuildRequires:    java-devel >= 1:1.6.0
 BuildRequires:    jpackage-utils
-BuildRequires:    tomcat5
+BuildRequires:    tomcat6
 BuildRequires:    jss >= 4.2.6
 
 Requires:         java >= 1:1.6.0
 Requires:         jpackage-utils
-Requires:         tomcat5
+Requires:         tomcat6
 Requires:         jss >= 4.2.6
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
@@ -35,7 +35,7 @@ Conflicts:        tomcat-native
 
 %description
 A Java Secure Socket Extension (JSSE) implementation
-using Java Security Services (JSS) for Tomcat 5.5.
+using Java Security Services (JSS) for Tomcat 6.
 
 NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
        because it uses an underlying NSS security model rather than the
@@ -61,9 +61,6 @@ unzip %{name}-%{version}.zip -d %{buildroot}
 cd %{buildroot}%{_javadir}
 mv %{name}.jar %{name}-%{version}.jar
 ln -s %{name}-%{version}.jar %{name}.jar
-mkdir -p %{buildroot}%{_sharedstatedir}/tomcat5/server/lib
-cd %{buildroot}%{_sharedstatedir}/tomcat5/server/lib
-ln -s ../../../../../usr/share/java/%{name}.jar %{name}.jar
 mkdir -p %{buildroot}%{_datadir}/doc/%{name}-%{version}
 
 %clean
@@ -74,8 +71,7 @@ rm -rf %{buildroot}
 %doc %attr(644,root,root) README LICENSE
 %attr(00755,root,root) %{_datadir}/doc/%{name}-%{version}
 %{_javadir}/*
-%{_sharedstatedir}/tomcat5/server/lib/%{name}.jar
 
 %changelog
-* Tue Aug 10 2010 Matthew Harmsen <mharmsen@redhat.com> 2.0.0-1
-- Updated Dogtag 1.3.x --> Dogtag 2.0.0.
+* Tue Dec 14 2010 John Dennis <jdennis@redhat.com> 
+- Updated 'tomcatjss' to utilize 'tomcat6'.
