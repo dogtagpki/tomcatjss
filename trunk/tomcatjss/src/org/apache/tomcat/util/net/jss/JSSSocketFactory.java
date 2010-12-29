@@ -566,7 +566,12 @@ public class JSSSocketFactory
 
     private void initializeSocket(SSLServerSocket s) {
         try {
-            s.setSoTimeout(120*1000);
+            /*
+             * Timeout's should not be enabled by default.
+             * Upper layers will call setSoTimeout() as needed.
+             * Zero means disable.
+             */
+            s.setSoTimeout(0);
             if (wantClientAuth || requireClientAuth) {
                 s.requestClientAuth(requireClientAuth);
             } 
