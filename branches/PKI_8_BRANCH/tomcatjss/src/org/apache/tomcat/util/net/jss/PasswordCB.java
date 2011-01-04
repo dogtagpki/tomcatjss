@@ -29,6 +29,7 @@ public class PasswordCB implements PasswordCallback {
 
     private IPasswordStore mPasswordStore = null;
     private boolean mStartedByWD = false;
+    private int mSerial = 0;
 
     public PasswordCB(String pwdPath, String pwdClass, boolean startedByWD) 
         throws ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -66,7 +67,8 @@ public class PasswordCB implements PasswordCallback {
                 "Password for " + tag + " not found in password.conf, and server not started by nuxwdog");
         } 
 
-        pwd = WatchdogClient.getPassword("Please provide password for " + tag + ":", 1);
+        mSerial++;
+        pwd = WatchdogClient.getPassword("Please provide password for " + tag + ":", mSerial);
         mPasswordStore.putPassword(tag, pwd);
 
         return new Password(pwd.toCharArray());
@@ -97,7 +99,7 @@ public class PasswordCB implements PasswordCallback {
                 throw new PasswordCallback.GiveUpException(
                     "Password for " + tag + " not found in password.conf, and server not started by nuxwdog");
             }
-            pwd = WatchdogClient.getPassword("Please provide password for " + tag + ":", 0);
+            pwd = WatchdogClient.getPassword("Please provide password for " + tag + ":", mSerial);
             mPasswordStore.putPassword(tag, pwd);
         }
 
