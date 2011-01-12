@@ -1,5 +1,5 @@
 Name:     tomcatjss
-Version:  2.0.0
+Version:  2.1.0
 Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
@@ -73,5 +73,11 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Wed Jan 12 2011 John Dennis <jdennis@redhat.com> - 2.1.0-1
+- bump version to 2.1.0
+  Bug #588323 - Failed to enable cipher 0xc001 (svn rev 105)
+  Bug #634375 - Build tomcatjss against tomcat6 (svn rev 106)
+  Bug #655915 - Disable socket timeouts when socket is first created. (svn rev 107)
+
 * Tue Dec 14 2010 John Dennis <jdennis@redhat.com> 
 - Updated 'tomcatjss' to utilize 'tomcat6'.
