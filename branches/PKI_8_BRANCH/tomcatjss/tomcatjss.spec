@@ -29,7 +29,7 @@
 
 Name:     tomcatjss
 Version:  1.1.4
-Release:  1%{?dist}
+Release:  2%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -44,16 +44,16 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %{?fc8:%define pki_jdk    java-devel >= 1.7.0}
 
 BuildRequires:  %{pki_jdk}
-BuildRequires:  jpackage-utils >= 0:1.6.0
-BuildRequires:  eclipse-ecj >= 0:3.0.1
-BuildRequires:  ant >= 0:1.6.2
-BuildRequires:  tomcat5 >= 5.5.9
-BuildRequires:  jss >= 4.2.6
+BuildRequires:  jpackage-utils >= 1.7.3
+BuildRequires:  eclipse-ecj >= 1:3.2.1
+BuildRequires:  ant >= 1.6.5
+BuildRequires:  tomcat5 >= 5.5.23
+BuildRequires:  jss >= 4.2.6-15
 BuildRequires:  nuxwdog-devel 
 BuildRequires:  nuxwdog-client-java
 Requires:       java >= 1:1.6.0
-Requires:       tomcat5 >= 5.5.9
-Requires:       jss >= 4.2.6
+Requires:       tomcat5 >= 5.5.23
+Requires:       jss >= 4.2.6-15
 
 %description
 A JSSE implementation using Java Security Services (JSS) for Tomcat 5.5.
@@ -92,6 +92,9 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Thu Mar 24 2011 Matthew Harmsen <mharmsen@redhat.com> 1.1.4-2
+- Bugzilla Bug #690646 - Update Build and Runtime Dependencies for RHCS 8.1
+
 * Mon Jan 3 2011 Ade Lee <alee@redhat.com> 1.1.4-1
 - Bugzilla Bug #667181 Fix nuxwdog dependencies and getPassword call
 
