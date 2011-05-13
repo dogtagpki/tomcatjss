@@ -652,7 +652,12 @@ public class JSSSocketFactory
         try {
             asock = (SSLSocket)socket.accept();
             if (wantClientAuth || requireClientAuth) {
-                asock.requestClientAuth(requireClientAuth);
+                asock.requestClientAuth(true);
+                if (requireClientAuth == true) {
+                    asock.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
+                } else {
+                    asock.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
+                }
             }
         } catch (Exception e) {
             throw new SocketException("SSL handshake error "+e.toString());
@@ -694,7 +699,12 @@ public class JSSSocketFactory
         try {
             s.setSoTimeout(120*1000);
             if (wantClientAuth || requireClientAuth) {
-                s.requestClientAuth(requireClientAuth);
+                s.requestClientAuth(true);
+                if (requireClientAuth == true) {
+                    s.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
+                } else {
+                    s.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
+                }
             } 
             s.setServerCertNickname(serverCertNick);
         } catch (Exception e) {
