@@ -29,7 +29,7 @@
 
 Name:     tomcatjss
 Version:  1.1.4
-Release:  2%{?dist}
+Release:  3%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -92,6 +92,10 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Fri May 13 2011 Jack Magne <jmagne@redhat.com> 1.1.4-3
+- Bugzilla Bug #702716 - rhcs80 cannot do client auth with pkiconsole
+  (ok with 7.3)
+
 * Thu Mar 24 2011 Matthew Harmsen <mharmsen@redhat.com> 1.1.4-2
 - Bugzilla Bug #690646 - Update Build and Runtime Dependencies for RHCS 8.1
 
