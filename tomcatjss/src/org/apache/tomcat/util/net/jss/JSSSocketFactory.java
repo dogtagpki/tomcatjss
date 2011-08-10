@@ -140,6 +140,7 @@ public class JSSSocketFactory
     FileWriter debugFile = null;
     boolean debug = false;
     private PasswordCallback mPasswordCB = null;
+    private boolean mStrictCiphers = false;
 
     public JSSSocketFactory() {
         super();
@@ -346,8 +347,13 @@ public class JSSSocketFactory
         } else {
           state = false;
         }
-        if (cipherid >= 0) {
-          SSLSocket.setCipherPreferenceDefault(cipherid, state);
+        try {
+          if (cipherid >= 0) {
+            debugWrite("JSSSocketFactory setSSLCiphers:  "+
+               cipherstr+": 0x"+Integer.toHexString(cipherid) +"\n");
+            SSLSocket.setCipherPreferenceDefault(cipherid, state);
+          }
+        } catch (Exception e) {
         }
       }
     }
@@ -378,10 +384,47 @@ public class JSSSocketFactory
           }
         }
         if (name.equals("tls")) {
-          // JSS does not have a way to enable TLS
+          if (value.equals("true")) {
+            SSLSocket.enableTLSDefault(true);
+            setSSLCiphers("tlsCiphers");
+          } else {
+            SSLSocket.enableTLSDefault(false);
+          }
         }
       }
     }
+
+    // print out current ciphers in debug file
+    /*
+    public void whatSSLCiphers() throws SocketException
+    {
+        int ciphers[] = SSLSocket.getImplementedCipherSuites();
+        try {
+          for (int i = 0; ciphers != null && i < ciphers.length; i++) {
+            
+            debugWrite("JSSSocketFactory whatSSLCiphers - '0x"+
+               Integer.toHexString(ciphers[i]) + "'\n");
+          }
+        } catch (Exception e) {
+        }
+    }
+    */
+
+    // remove all to start with a clean slate
+    public void unsetSSLCiphers() throws SocketException
+    {
+        int ciphers[] = SSLSocket.getImplementedCipherSuites();
+        try {
+          for (int i = 0; ciphers != null && i < ciphers.length; i++) {
+            
+            debugWrite("JSSSocketFactory unsetSSLCiphers - turning off '0x"+
+               Integer.toHexString(ciphers[i]) + "'\n");
+            SSLSocket.setCipherPreferenceDefault(ciphers[i], false);
+          }
+        } catch (Exception e) {
+        }
+    }
+
 
     void init() throws IOException {
         try {
@@ -439,6 +482,7 @@ public class JSSSocketFactory
             } 
 
             // log into internal token
+
             token = manager.getInternalKeyStorageToken();
             if (token == null) {
                 debugWrite("JSSSocketFactory init - internal token is null! \n");
@@ -454,6 +498,7 @@ public class JSSSocketFactory
                     debugWrite("JSSSocketFactory init - already logged into internal software token\n");
                 }
             }
+
 
             // log into hardware tokens
             String [] tokenList = null;
@@ -541,7 +586,7 @@ public class JSSSocketFactory
             }
             debugWrite("JSSSocketFActory init - requireClientAuth " + requireClientAuth +
                           " wantClientAuth " + wantClientAuth + " ocspConfigured " 
-                          + ocspConfigured);
+                          + ocspConfigured + "\n");
             if (requireClientAuth == true || wantClientAuth == true 
                    && ocspConfigured == false ) {
                 debugWrite("JSSSocketFactory init - checking for OCSP settings. \n" ); 
@@ -628,7 +673,22 @@ public class JSSSocketFactory
             // 12 hours = 43200 seconds
             SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
 
+            String strictCiphersStr = (String)attributes.get("strictCiphers");
+            if (strictCiphersStr.equalsIgnoreCase("true") ||
+              strictCiphersStr.equalsIgnoreCase("yes")) {
+                mStrictCiphers = true;
+            }
+            if (mStrictCiphers == true) {
+                // what ciphers do we have to start with? turn them all off
+                debugWrite("SSSocketFactory init - before setSSLOptions, strictCiphers is true\n");
+                unsetSSLCiphers();
+            } else {
+                debugWrite("SSSocketFactory init - before setSSLOptions, strictCiphers is false\n");
+            }
+
             setSSLOptions();
+            debugWrite("SSSocketFactory init - after setSSLOptions\n");
+            //whatSSLCiphers();
         } catch (Exception ex) {
             debugWrite("JSSSocketFactory init - exception thrown:"+
                    ex.toString()+"\n");
