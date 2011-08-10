@@ -1,0 +1,35 @@
+diff -up tomcatjss-2.1.0/src/org/apache/tomcat/util/net/jss/JSSSocketFactory.java.tomcatjss-client-auth.patch tomcatjss-2.1.0/src/org/apache/tomcat/util/net/jss/JSSSocketFactory.java
+--- tomcatjss-2.1.0/src/org/apache/tomcat/util/net/jss/JSSSocketFactory.java.tomcatjss-client-auth.patch	2011-08-05 16:50:42.836705429 -0700
++++ tomcatjss-2.1.0/src/org/apache/tomcat/util/net/jss/JSSSocketFactory.java	2011-08-05 16:59:59.290478156 -0700
+@@ -526,8 +526,14 @@ public class JSSSocketFactory
+         try {
+             asock = (SSLSocket)socket.accept();
+             if (wantClientAuth || requireClientAuth) {
+-                asock.requestClientAuth(requireClientAuth);
++                asock.requestClientAuth(true);
++                if (requireClientAuth == true) {
++                    asock.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
++                } else {
++                    asock.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
++                }
+             }
++
+         } catch (Exception e) {
+             throw new SocketException("SSL handshake error "+e.toString());
+         } 
+@@ -573,8 +579,13 @@ public class JSSSocketFactory
+              */
+             s.setSoTimeout(0);
+             if (wantClientAuth || requireClientAuth) {
+-                s.requestClientAuth(requireClientAuth);
+-            } 
++                s.requestClientAuth(true);
++                if (requireClientAuth == true) {
++                    s.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
++                } else {
++                    s.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
++                }
++            }
+             s.setServerCertNickname(serverCertNick);
+         } catch (Exception e) {
+         }
