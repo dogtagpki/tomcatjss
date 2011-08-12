@@ -1,6 +1,6 @@
 Name:     tomcatjss
-Version:  6.0.0
-Release:  1%{?dist}
+Version:  2.1.0
+Release:  2%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -14,21 +14,15 @@ Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.ta
 BuildRequires:    ant
 BuildRequires:    java-devel >= 1:1.6.0
 BuildRequires:    jpackage-utils
-%if 0%{?fedora} >= 15
-BuildRequires:    tomcat6 >= 6.0.30-6
-%else
 BuildRequires:    tomcat6
-%endif
-BuildRequires:    jss >= 4.2.6-17
+BuildRequires:    jss >= 4.2.6
 
 Requires:         java >= 1:1.6.0
 Requires:         jpackage-utils
-%if 0%{?fedora} >= 15
-Requires:         tomcat6 >= 6.0.30-6
-%else
 Requires:         tomcat6
-%endif
-Requires:         jss >= 4.2.6-17
+Requires:         jss >= 4.2.6
+
+Patch1:           tomcatjss-client-auth.patch 
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
 # because it uses an underlying NSS security model rather than the
@@ -52,6 +46,7 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
 %prep
 
 %setup -q
+%patch1 -p1
 
 %build
 
@@ -81,18 +76,12 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
-* Thu Jul 14 2011 Matthew Harmsen <mharmsen@redhat.com> - 6.0.0-1
-- Bugzilla Bug #702716 - rhcs80 cannot do client auth with pkiconsole
-  (ok with 7.3) (jmagne)
-- Require "jss >= 4.2.6-17" as a build and runtime requirement
-- Bump version 2.1.1 --> 6.0.0 (to better coincide with tomcat6)
-
-* Fri Mar 25 2011 Matthew Harmsen <mharmsen@redhat.com> - 2.1.1-1
-- Require "jss >= 4.2.6-15" as a build and runtime requirement
-- Require "tomcat6 >= 6.0.30-6" as a build and runtime requirement
-  for Fedora 15 and later platforms
+* Fri Aug 05 2011 Jack Magne  <jmagne@redhat.com>  - 2.1.0-2
+- Resolves: #705107 - rhch80 cannot do client auth with pkiconsole
+  (ok with 7.3)
 
 * Wed Jan 12 2011 John Dennis <jdennis@redhat.com> - 2.1.0-1
+- Resolves: Bug 643544
 - bump version to 2.1.0
   Bug #588323 - Failed to enable cipher 0xc001 (svn rev 105)
   Bug #634375 - Build tomcatjss against tomcat6 (svn rev 106)

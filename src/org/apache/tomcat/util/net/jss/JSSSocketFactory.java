@@ -533,6 +533,7 @@ public class JSSSocketFactory
                     asock.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
                 }
             }
+
         } catch (Exception e) {
             throw new SocketException("SSL handshake error "+e.toString());
         } 
@@ -584,7 +585,7 @@ public class JSSSocketFactory
                 } else {
                     s.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
                 }
-            } 
+            }
             s.setServerCertNickname(serverCertNick);
         } catch (Exception e) {
         }
