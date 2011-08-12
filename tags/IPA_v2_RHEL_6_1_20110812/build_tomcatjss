@@ -1,0 +1,17 @@
+#! /bin/bash
+
+# This script may ONLY be run on Linux!
+OS=`uname`
+if [ ${OS} != "Linux" ]; then
+	printf "The '$0' script is ONLY executable on a 'Linux' machine!\n"
+	exit 255
+fi
+
+if [ -f /etc/fedora-release ]; then
+	# Script is being run on Fedora
+	ant -f build.xml -Drhel=0 -Dspecfile=tomcatjss.spec rpms
+elif [ -f /etc/redhat-release ]; then
+	# Script is being run on RHEL
+	ant -f build.xml -Drhel=1 -Dspecfile=tomcatjss.spec rpms
+fi
+
