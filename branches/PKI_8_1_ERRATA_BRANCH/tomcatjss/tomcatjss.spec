@@ -29,7 +29,7 @@
 
 Name:     tomcatjss
 Version:  1.1.4
-Release:  4%{?dist}
+Release:  5%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://www.redhat.com/software/rha/certificate
 Source0:  %{name}-%{version}.tar.gz
@@ -92,6 +92,9 @@ rm -rf $RPM_BUILD_ROOT
 /var/lib/tomcat5/server/lib/tomcatjss.jar
 
 %changelog
+* Wed Aug 24 2011 Matthew Harmsen <mharmsen@redhat.com> 1.1.4-5
+- respin to pick up previous Bugzilla Bug #724848
+
 * Thu Aug 11 2011 Christina Fu <cfu@redhat.com> 1.1.4-4
 - Bugzilla Bug #724848 - CC_LAB_EVAL: none-FIPS ciphers allowed in CC mode
 
