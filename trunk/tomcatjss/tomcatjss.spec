@@ -1,5 +1,5 @@
 Name:     tomcatjss
-Version:  6.0.0
+Version:  6.0.1
 Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
@@ -13,7 +13,11 @@ Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.ta
 
 BuildRequires:    ant
 BuildRequires:    java-devel >= 1:1.6.0
+%if 0%{?fedora} >= 16
+BuildRequires:    jpackage-utils >= 0:1.7.5-10
+%else
 BuildRequires:    jpackage-utils
+%endif
 %if 0%{?fedora} >= 15
 BuildRequires:    tomcat6 >= 6.0.30-6
 %else
@@ -22,7 +26,11 @@ BuildRequires:    tomcat6
 BuildRequires:    jss >= 4.2.6-17
 
 Requires:         java >= 1:1.6.0
+%if 0%{?fedora} >= 16
+Requires:         jpackage-utils >= 0:1.7.5-10
+%else
 Requires:         jpackage-utils
+%endif
 %if 0%{?fedora} >= 15
 Requires:         tomcat6 >= 6.0.30-6
 %else
@@ -55,8 +63,8 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
 
 %build
 
-ant -f build.xml
-ant -f build.xml dist
+ant -f build.xml -Djnidir=%{_jnidir}
+ant -f build.xml -Djnidir=%{_jnidir} dist
 
 %install
 rm -rf %{buildroot}
@@ -81,6 +89,9 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Mon Sep 12 2011 Matthew Harmsen <mharmsen@redhat.com> 6.0.1-1
+- Bugzilla Bug #734590 - Refactor JNI libraries for Fedora 16+ . . .
+
 * Thu Jul 14 2011 Matthew Harmsen <mharmsen@redhat.com> - 6.0.0-1
 - Bugzilla Bug #702716 - rhcs80 cannot do client auth with pkiconsole
   (ok with 7.3) (jmagne)
