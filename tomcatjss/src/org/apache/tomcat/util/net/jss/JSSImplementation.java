@@ -62,30 +62,4 @@ public class JSSImplementation extends SSLImplementation
         ssls = factory.getSSLSupport(s);
         return ssls;
     }
-
-    public SSLSupport getSSLSupport(javax.net.ssl.SSLSession session) {
-        /*
-         * The Tomcat 6.0.26 docs says:
-         *     This method has been deprecated since it adds a JSSE dependency
-         *     to this interface. It will be removed in versions after 6.0.x.
-         *
-         * But we have to provide a implementation of this method because it's
-         * declared as abstract.
-         *
-         * Unfortunately there does not appear to be any way to get SSLSupport
-         * information from a session with JSS. JSS looks up the information
-         * based on a socket, not a session. This done in SSLSocket.c
-         * Java_org_mozilla_jss_ssl_SSLSocket_getStatus().
-         *
-         * So while it would be nice to provide a working implmentation there
-         * doesn't seem to be an easy way to do this. Given that this method is
-         * already deprecated and there hasn't been any evidence of it being
-         * called it therefore seems reasonable to just return null to satify
-         * the compiler's demand for an implementation.
-         *
-         * Once this abstract method is removed from SSLImplementation in a
-         * future release we can remove this stub.
-         */
-        return null;
-    }
 }
