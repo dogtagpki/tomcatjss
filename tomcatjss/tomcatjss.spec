@@ -1,5 +1,5 @@
 Name:     tomcatjss
-Version:  6.0.1
+Version:  6.0.2
 Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
@@ -11,32 +11,39 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.tar.gz
 
+# jpackage-utils requires versioning to meet both build and runtime requirements
+# jss requires versioning to meet both build and runtime requirements
+# tomcat6 requires versioning to meet both build and runtime requirements
 BuildRequires:    ant
 BuildRequires:    java-devel >= 1:1.6.0
 %if 0%{?fedora} >= 16
 BuildRequires:    jpackage-utils >= 0:1.7.5-10
-%else
+BuildRequires:    jss >= 4.2.6-19.1
+BuildRequires:    tomcat6 >= 6.0.32-16
+%elseif 0%{?fedora} >= 15
 BuildRequires:    jpackage-utils
-%endif
-%if 0%{?fedora} >= 15
+BuildRequires:    jss >= 4.2.6-17
 BuildRequires:    tomcat6 >= 6.0.30-6
 %else
+BuildRequires:    jpackage-utils
+BuildRequires:    jss >= 4.2.6-17
 BuildRequires:    tomcat6
 %endif
-BuildRequires:    jss >= 4.2.6-17
 
 Requires:         java >= 1:1.6.0
 %if 0%{?fedora} >= 16
 Requires:         jpackage-utils >= 0:1.7.5-10
-%else
+Requires:         jss >= 4.2.6-19.1
+Requires:         tomcat6 >= 6.0.32-16
+%elseif 0%{?fedora} >= 15
 Requires:         jpackage-utils
-%endif
-%if 0%{?fedora} >= 15
+Requires:         jss >= 4.2.6-17
 Requires:         tomcat6 >= 6.0.30-6
 %else
+Requires:         jpackage-utils
+Requires:         jss >= 4.2.6-17
 Requires:         tomcat6
 %endif
-Requires:         jss >= 4.2.6-17
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
 # because it uses an underlying NSS security model rather than the
@@ -89,6 +96,10 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Thu Sep 22 2011 Matthew Harmsen <mharmsen@redhat.com> 6.0.2-1
+- Bugzilla Bug #734590 - Refactor JNI libraries for Fedora 16+ . . . (mharmsen)
+- Bugzilla Bug #699809 - Convert CS to use systemd (alee)
+
 * Mon Sep 12 2011 Matthew Harmsen <mharmsen@redhat.com> 6.0.1-1
 - Bugzilla Bug #734590 - Refactor JNI libraries for Fedora 16+ . . .
 
