@@ -20,7 +20,8 @@ BuildRequires:    java-devel >= 1:1.6.0
 BuildRequires:    jpackage-utils >= 0:1.7.5-10
 BuildRequires:    jss >= 4.2.6-19.1
 BuildRequires:    tomcat6 >= 6.0.32-16
-%elseif 0%{?fedora} >= 15
+%else
+%if 0%{?fedora} >= 15
 BuildRequires:    jpackage-utils
 BuildRequires:    jss >= 4.2.6-17
 BuildRequires:    tomcat6 >= 6.0.30-6
@@ -29,13 +30,15 @@ BuildRequires:    jpackage-utils
 BuildRequires:    jss >= 4.2.6-17
 BuildRequires:    tomcat6
 %endif
+%endif
 
 Requires:         java >= 1:1.6.0
 %if 0%{?fedora} >= 16
 Requires:         jpackage-utils >= 0:1.7.5-10
 Requires:         jss >= 4.2.6-19.1
 Requires:         tomcat6 >= 6.0.32-16
-%elseif 0%{?fedora} >= 15
+%else
+%if 0%{?fedora} >= 15
 Requires:         jpackage-utils
 Requires:         jss >= 4.2.6-17
 Requires:         tomcat6 >= 6.0.30-6
@@ -43,6 +46,7 @@ Requires:         tomcat6 >= 6.0.30-6
 Requires:         jpackage-utils
 Requires:         jss >= 4.2.6-17
 Requires:         tomcat6
+%endif
 %endif
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
