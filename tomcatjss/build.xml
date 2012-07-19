@@ -37,8 +37,8 @@
 
   <property name="Name" value="Tomcat JSS"/>
   <property name="name" value="tomcatjss"/>
-  <property name="version" value="6.0.2"/>
-  <property name="manifest-version" value="6.0.2"/>
+  <property name="version" value="7.0.0"/>
+  <property name="manifest-version" value="7.0.0"/>
 
   <!--
     Set the properties that control various build options
@@ -98,7 +98,7 @@
   -->
   <property name="jar.home" value="/usr/share/java" />
   <property name="commons-logging.jar" value="${jar.home}/commons-logging-api.jar" />
-  <property name="tomcat.lib" value="${jar.home}/tomcat6" />
+  <property name="tomcat.lib" value="${jar.home}/tomcat" />
   <property name="tomcat-coyote.jar" value="${tomcat.lib}/tomcat-coyote.jar" />
   <property name="jss.home" value="${jnidir}" />
   <!-- This property is set to '/dirsec' when built on rhel4 -->

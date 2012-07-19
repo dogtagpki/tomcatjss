@@ -1,5 +1,5 @@
 Name:     tomcatjss
-Version:  6.0.2
+Version:  7.0.0
 Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
@@ -13,41 +13,17 @@ Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.ta
 
 # jpackage-utils requires versioning to meet both build and runtime requirements
 # jss requires versioning to meet both build and runtime requirements
-# tomcat6 requires versioning to meet both build and runtime requirements
+# tomcat requires versioning to meet both build and runtime requirements
 BuildRequires:    ant
-BuildRequires:    java-devel >= 1:1.6.0
-%if 0%{?fedora} >= 16
-BuildRequires:    jpackage-utils >= 0:1.7.5-10
-BuildRequires:    jss >= 4.2.6-19.1
-BuildRequires:    tomcat6 >= 6.0.32-16
-%else
-%if 0%{?fedora} >= 15
-BuildRequires:    jpackage-utils
-BuildRequires:    jss >= 4.2.6-17
-BuildRequires:    tomcat6 >= 6.0.30-6
-%else
-BuildRequires:    jpackage-utils
-BuildRequires:    jss >= 4.2.6-17
-BuildRequires:    tomcat6
-%endif
-%endif
+BuildRequires:    java-devel
+BuildRequires:    jpackage-utils >= 0:1.7.5-15
+BuildRequires:    jss >= 4.2.6-24
+BuildRequires:    tomcat >= 7.0.27
 
-Requires:         java >= 1:1.6.0
-%if 0%{?fedora} >= 16
-Requires:         jpackage-utils >= 0:1.7.5-10
-Requires:         jss >= 4.2.6-19.1
-Requires:         tomcat6 >= 6.0.32-16
-%else
-%if 0%{?fedora} >= 15
-Requires:         jpackage-utils
-Requires:         jss >= 4.2.6-17
-Requires:         tomcat6 >= 6.0.30-6
-%else
-Requires:         jpackage-utils
-Requires:         jss >= 4.2.6-17
-Requires:         tomcat6
-%endif
-%endif
+Requires:         java
+BuildRequires:    jpackage-utils >= 0:1.7.5-15
+BuildRequires:    jss >= 4.2.6-24
+BuildRequires:    tomcat >= 7.0.27
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
 # because it uses an underlying NSS security model rather than the
@@ -100,6 +76,9 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Wed Jun 06 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-1
+- Bugzilla Bug #819554 - tomcatjss: Please migrate from tomcat6 to tomcat7
+
 * Thu Sep 22 2011 Matthew Harmsen <mharmsen@redhat.com> 6.0.2-1
 - Bugzilla Bug #734590 - Refactor JNI libraries for Fedora 16+ . . . (mharmsen)
 - Bugzilla Bug #699809 - Convert CS to use systemd (alee)
