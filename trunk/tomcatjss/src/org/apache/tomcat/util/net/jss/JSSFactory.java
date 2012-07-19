@@ -27,8 +27,8 @@ class JSSFactory implements IJSSFactory {
     JSSFactory() {
     }
 
-    public ServerSocketFactory getSocketFactory() {
-        return new JSSSocketFactory();
+    public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint) {
+        return new JSSSocketFactory(endpoint);
     }
 
     public SSLSupport getSSLSupport(Socket socket) {

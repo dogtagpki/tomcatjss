@@ -31,8 +31,15 @@ import org.mozilla.jss.pkcs11.*;
 import java.net.*;
 import java.io.*;
 
+// Imports required to "implement" Tomcat 7 Interface
+import org.apache.tomcat.util.net.AbstractEndpoint;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
 public class JSSSocketFactory
-  extends org.apache.tomcat.util.net.ServerSocketFactory {
+  implements org.apache.tomcat.util.net.ServerSocketFactory,
+             org.apache.tomcat.util.net.SSLUtil {
 
     private static HashMap cipherMap = new HashMap();
     static {
@@ -157,6 +164,8 @@ public class JSSSocketFactory
         eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_NULL_SHA,          "TLS_ECDH_ECDSA_WITH_NULL_SHA");
     }
 
+    private AbstractEndpoint endpoint;
+
     static org.apache.commons.logging.Log log = 
       org.apache.commons.logging.LogFactory.getLog(JSSSocketFactory.class);
 
@@ -176,8 +185,8 @@ public class JSSSocketFactory
     private IPasswordStore mPasswordStore = null;
     private boolean mStrictCiphers = false;
 
-    public JSSSocketFactory() {
-        super();
+    public JSSSocketFactory (AbstractEndpoint endpoint) {
+        this.endpoint = endpoint;
     }
 
     private void debugWrite(String m) throws IOException {
@@ -190,7 +199,7 @@ public class JSSSocketFactory
 
     public void setSSLCiphers(String attr) throws SocketException
     {
-      String ciphers = (String)attributes.get(attr);
+      String ciphers = (String)endpoint.getAttribute(attr);
       StringTokenizer st = new StringTokenizer(ciphers, ",");
       while (st.hasMoreTokens()) {
         String cipherstr = st.nextToken();
@@ -250,7 +259,7 @@ public class JSSSocketFactory
 
     public void setSSLOptions() throws SocketException
     {
-      String options = (String)attributes.get("sslOptions");
+      String options = (String)endpoint.getAttribute("sslOptions");
       StringTokenizer st = new StringTokenizer(options, ",");
       while (st.hasMoreTokens()) {
         String option = st.nextToken();
@@ -301,7 +310,7 @@ public class JSSSocketFactory
 
     void init() throws IOException {
         try {
-            String deb = (String)attributes.get("debug");
+            String deb = (String)endpoint.getAttribute("debug");
             if (deb.equals("true")) {
             debug = true;
             debugFile =  new FileWriter("/tmp/tomcatjss.log", true);
@@ -313,8 +322,8 @@ public class JSSSocketFactory
 
         try {
             try {
-                mPwdPath = (String)attributes.get("passwordFile");
-		mPwdClass = (String)attributes.get("passwordClass");
+                mPwdPath = (String)endpoint.getAttribute("passwordFile");
+		mPwdClass = (String)endpoint.getAttribute("passwordClass");
 		if (mPwdClass != null) {
 		    mPasswordStore = (IPasswordStore)Class.forName(mPwdClass).newInstance();
                     mPasswordStore.init(mPwdPath);
@@ -328,7 +337,7 @@ public class JSSSocketFactory
                 throw new IOException("JSSSocketFactory: no passwordFilePath defined");
             }
 
-            String certDir = (String)attributes.get("certdbDir");
+            String certDir = (String)endpoint.getAttribute("certdbDir");
    
             CryptoManager.InitializationValues vals = 
               new CryptoManager.InitializationValues(certDir,
@@ -355,7 +364,7 @@ public class JSSSocketFactory
                     String st = (String) en.nextElement();
                     debugWrite("JSSSocketFactory init - tag name="+st+"\n");
                     pwd = mPasswordStore.getPassword(st);
-                
+
                     if (pwd != null) {
                         debugWrite("JSSSocketFactory init - got password\n");
                         pw = new Password(pwd.toCharArray()); 
@@ -393,10 +402,12 @@ public class JSSSocketFactory
                 debugWrite("JSSSocketFactory init - no login done\n");
             } //mPasswordStore not null
 
-            String clientAuthStr = (String)attributes.get("clientauth");
+            // MUST look for "clientauth" (ALL lowercase) since "clientAuth"
+            // (camel case) has already been processed by Tomcat 7
+            String clientAuthStr = (String)endpoint.getAttribute("clientauth");
             File file = null;
             try {
-                mServerCertNickPath = (String)attributes.get("serverCertNickFile");
+                mServerCertNickPath = (String)endpoint.getAttribute("serverCertNickFile");
                 debugWrite("JSSSocketFactory init - got serverCertNickFile"+
                             mServerCertNickPath+"\n");
                 file = new File(mServerCertNickPath);
@@ -430,7 +441,7 @@ public class JSSSocketFactory
                 throw new IOException("JSSSocketFactory: no serverCertNickFile defined");
             }
 
-            //serverCertNick = (String)attributes.get("serverCert");
+            //serverCertNick = (String)endpoint.getAttribute("serverCert");
             if (clientAuthStr.equalsIgnoreCase("true") ||
               clientAuthStr.equalsIgnoreCase("yes")) {
                 requireClientAuth = true;
@@ -444,7 +455,7 @@ public class JSSSocketFactory
                    && ocspConfigured == false ) {
                 debugWrite("JSSSocketFactory init - checking for OCSP settings. \n" ); 
                 boolean enableOCSP = false; 
-                String doOCSP = (String) attributes.get("enableOCSP");
+                String doOCSP = (String) endpoint.getAttribute("enableOCSP");
 
                 debugWrite("JSSSocketFactory init - doOCSP flag:"+
                           doOCSP+ " \n");
@@ -457,10 +468,10 @@ public class JSSSocketFactory
                              enableOCSP+ "\n"); 
                 
                 if( enableOCSP == true ) {
-                    String ocspResponderURL = (String) attributes.get("ocspResponderURL");
+                    String ocspResponderURL = (String) endpoint.getAttribute("ocspResponderURL");
                     debugWrite("JSSSocketFactory init - ocspResponderURL "+
                              ocspResponderURL+ "\n");
-                    String ocspResponderCertNickname = (String) attributes.get("ocspResponderCertNickname");
+                    String ocspResponderCertNickname = (String) endpoint.getAttribute("ocspResponderCertNickname");
 		    debugWrite("JSSSocketFactory init - ocspResponderCertNickname" + ocspResponderCertNickname + "\n");
                     if( (ocspResponderURL != null && ocspResponderURL.length() > 0) && 
                         (ocspResponderCertNickname != null && 
@@ -473,9 +484,9 @@ public class JSSSocketFactory
                            int ocspMinCacheEntryDuration_i = 3600;
                            int ocspMaxCacheEntryDuration_i = 86400;
 
-                           String ocspCacheSize = (String) attributes.get("ocspCacheSize");
-                           String ocspMinCacheEntryDuration = (String) attributes.get("ocspMinCacheEntryDuration");
-                           String ocspMaxCacheEntryDuration = (String) attributes.get("ocspMaxCacheEntryDuration");
+                           String ocspCacheSize = (String) endpoint.getAttribute("ocspCacheSize");
+                           String ocspMinCacheEntryDuration = (String) endpoint.getAttribute("ocspMinCacheEntryDuration");
+                           String ocspMaxCacheEntryDuration = (String) endpoint.getAttribute("ocspMaxCacheEntryDuration");
 
                            if (ocspCacheSize != null ||
                              ocspMinCacheEntryDuration != null ||
@@ -498,7 +509,7 @@ public class JSSSocketFactory
                            }
 
                            // defualt to 60 seconds;
-                           String ocspTimeout = (String) attributes.get("ocspTimeout");
+                           String ocspTimeout = (String) endpoint.getAttribute("ocspTimeout");
                            if (ocspTimeout != null) {
 		    debugWrite("JSSSocketFactory init - ocspTimeout= \n" + ocspTimeout);
                                int ocspTimeout_i = Integer.parseInt(ocspTimeout);
@@ -525,7 +536,7 @@ public class JSSSocketFactory
             // 12 hours = 43200 seconds
             SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
 
-            String strictCiphersStr = (String)attributes.get("strictCiphers");
+            String strictCiphersStr = (String)endpoint.getAttribute("strictCiphers");
             if (strictCiphersStr.equalsIgnoreCase("true") ||
               strictCiphersStr.equalsIgnoreCase("yes")) {
                 mStrictCiphers = true;
@@ -538,7 +549,6 @@ public class JSSSocketFactory
                  debugWrite("SSSocketFactory init - before setSSLOptions, strictCiphers is false\n");
             }
 
-            setSSLOptions();
             setSSLOptions();
             debugWrite("SSSocketFactory init - after setSSLOptions\n");
         } catch (Exception ex) {
@@ -626,5 +636,22 @@ public class JSSSocketFactory
             s.setServerCertNickname(serverCertNick);
         } catch (Exception e) {
         }
+    }
+
+    // Methods required to "implement" Tomcat 7 Interface
+    public SSLContext createSSLContext() throws Exception {
+        return null;
+    }
+
+    public KeyManager[] getKeyManagers() throws Exception {
+        return null;
+    }
+
+    public TrustManager[] getTrustManagers() throws Exception {
+        return null;
+    }
+
+    public void configureSessionContext(javax.net.ssl.SSLSessionContext sslSessionContext) {
+        return;
     }
 }

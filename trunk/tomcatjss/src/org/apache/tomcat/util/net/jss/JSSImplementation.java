@@ -12,7 +12,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
+ *
  * Copyright (C) 2007 Red Hat, Inc.
  * All rights reserved.
  * END COPYRIGHT BLOCK */
@@ -21,8 +21,10 @@ package org.apache.tomcat.util.net.jss;
 
 import java.net.Socket;
 import java.io.*;
+import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.SSLSupport;
+import org.apache.tomcat.util.net.SSLUtil;
 import org.apache.tomcat.util.net.ServerSocketFactory;
 
 public class JSSImplementation extends SSLImplementation
@@ -38,7 +40,7 @@ public class JSSImplementation extends SSLImplementation
 
     public JSSImplementation() throws ClassNotFoundException {
         Class.forName(SSLSocketClass);
-  
+
         try {
             Class factcl = Class.forName(JSSFactory);
             factory = (JSSFactory)factcl.newInstance();
@@ -52,8 +54,9 @@ public class JSSImplementation extends SSLImplementation
         return "JSS";
     }
 
-    public ServerSocketFactory getServerSocketFactory() {
-        ServerSocketFactory ssf = factory.getSocketFactory();
+    public ServerSocketFactory getServerSocketFactory(AbstractEndpoint endpoint)
+    {
+        ServerSocketFactory ssf = factory.getSocketFactory(endpoint);
         return ssf;
     }
 
@@ -85,7 +88,13 @@ public class JSSImplementation extends SSLImplementation
          *
          * Once this abstract method is removed from SSLImplementation in a
          * future release we can remove this stub.
+         *
+         * NOTE:  This method has NOT yet been deprecated in Tomcat 7!
          */
+        return null;
+    }
+
+    public SSLUtil getSSLUtil(AbstractEndpoint endpoint) {
         return null;
     }
 }
