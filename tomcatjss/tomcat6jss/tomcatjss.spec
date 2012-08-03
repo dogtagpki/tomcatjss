@@ -1,6 +1,6 @@
 Name:     tomcatjss
-Version:  7.0.0
-Release:  3%{?dist}
+Version:  6.0.99
+Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -13,18 +13,41 @@ Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.ta
 
 # jpackage-utils requires versioning to meet both build and runtime requirements
 # jss requires versioning to meet both build and runtime requirements
-# tomcat requires versioning to meet both build and runtime requirements
+# tomcat6 requires versioning to meet both build and runtime requirements
 BuildRequires:    ant
-BuildRequires:    java-devel
-BuildRequires:    jpackage-utils >= 0:1.7.5-15
-BuildRequires:    jss >= 4.2.6-24
-BuildRequires:    tomcat >= 7.0.27
+BuildRequires:    java-devel >= 1:1.6.0
+%if 0%{?fedora} >= 16
+BuildRequires:    jpackage-utils >= 0:1.7.5-10
+BuildRequires:    jss >= 4.2.6-19.1
 BuildRequires:    tomcat6 >= 6.0.32-16
+%else
+%if 0%{?fedora} >= 15
+BuildRequires:    jpackage-utils
+BuildRequires:    jss >= 4.2.6-17
+BuildRequires:    tomcat6 >= 6.0.30-6
+%else
+BuildRequires:    jpackage-utils
+BuildRequires:    jss >= 4.2.6-17
+BuildRequires:    tomcat6
+%endif
+%endif
 
-Requires:         java
-Requires:         jpackage-utils >= 0:1.7.5-15
-Requires:         jss >= 4.2.6-24
-Requires:         tomcat >= 7.0.27
+Requires:         java >= 1:1.6.0
+%if 0%{?fedora} >= 16
+Requires:         jpackage-utils >= 0:1.7.5-10
+Requires:         jss >= 4.2.6-19.1
+Requires:         tomcat6 >= 6.0.32-16
+%else
+%if 0%{?fedora} >= 15
+Requires:         jpackage-utils
+Requires:         jss >= 4.2.6-17
+Requires:         tomcat6 >= 6.0.30-6
+%else
+Requires:         jpackage-utils
+Requires:         jss >= 4.2.6-17
+Requires:         tomcat6
+%endif
+%endif
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
 # because it uses an underlying NSS security model rather than the
@@ -51,19 +74,20 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
 
 %build
 
+ant -f build.xml -Djnidir=%{_jnidir}
 ant -f build.xml -Djnidir=%{_jnidir} dist
 
 %install
 rm -rf %{buildroot}
 
 # Unpack the files we just built
-unzip tomcat7jss/dist/binary/%{name}-%{version}.zip -d %{buildroot}
-mv %{buildroot}%{_javadir}/%{name}.jar %{buildroot}%{_javadir}/%{name}-%{version}.jar
-unzip tomcat6jss/dist/binary/%{name}-6.0.99.zip -d %{buildroot}
-mv %{buildroot}%{_javadir}/%{name}.jar %{buildroot}%{_javadir}/%{name}-6.0.99.jar
+cd dist/binary
+unzip %{name}-%{version}.zip -d %{buildroot}
+
+# Install our files
 cd %{buildroot}%{_javadir}
-ln -s %{name}-%{version}.jar tomcat7jss.jar
-ln -s %{name}-6.0.99.jar tomcatjss.jar
+mv %{name}.jar %{name}-%{version}.jar
+ln -s %{name}-%{version}.jar %{name}.jar
 mkdir -p %{buildroot}%{_datadir}/doc/%{name}-%{version}
 
 %clean
@@ -76,15 +100,9 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
-* Thu Aug  2 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-3
+* Thu Aug  2 2012 Matthew Harmsen <mharmsen@redhat.com> 6.0.99-1
 - PKI TRAC Ticket #283 - Dogtag 10: Integrate Tomcat 6 'tomcatjss.jar' and
   Tomcat 7 'tomcat7jss.jar' in Fedora 18 tomcatjss package
-
-* Wed Jul 26 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-2
-- Fixed runtime 'Requires' cut/paste typos
-
-* Wed Jun 06 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-1
-- Bugzilla Bug #819554 - tomcatjss: Please migrate from tomcat6 to tomcat7
 
 * Thu Sep 22 2011 Matthew Harmsen <mharmsen@redhat.com> 6.0.2-1
 - Bugzilla Bug #734590 - Refactor JNI libraries for Fedora 16+ . . . (mharmsen)
