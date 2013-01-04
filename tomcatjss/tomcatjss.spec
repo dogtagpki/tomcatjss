@@ -79,6 +79,10 @@ rm -rf %{buildroot}
 * Wed Dec 19 2012 Christina Fu <cfu@redhat.com> 7.1.0-1
 - Bugzila Bug #819554 tomcatjss: Please migrate from tomcat6 to tomcat7
 
+* Thu Aug  2 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-3
+- PKI TRAC Ticket #283 - Dogtag 10: Integrate Tomcat 6 'tomcatjss.jar' and
+  Tomcat 7 'tomcat7jss.jar' in Fedora 18 tomcatjss package
+
 * Wed Jul 26 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-2
 - Fixed runtime 'Requires' cut/paste typos
 
