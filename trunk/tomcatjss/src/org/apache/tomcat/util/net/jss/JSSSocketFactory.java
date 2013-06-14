@@ -654,4 +654,12 @@ public class JSSSocketFactory
     public void configureSessionContext(javax.net.ssl.SSLSessionContext sslSessionContext) {
         return;
     }
+
+    public String[] getEnableableCiphers(SSLContext context) {
+        return null;
+    }
+
+    public String[] getEnableableProtocols(SSLContext context) {
+        return null;
+    }
 }
