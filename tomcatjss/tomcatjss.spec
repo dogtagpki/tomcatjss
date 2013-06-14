@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  7.1.0
-Release:  1%{?dist}
+Release:  2%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -18,12 +18,12 @@ BuildRequires:    ant
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
 BuildRequires:    jss >= 4.2.6-24
-BuildRequires:    tomcat >= 7.0.27
+BuildRequires:    tomcat >= 7.0.40
 
 Requires:         java
 Requires:         jpackage-utils >= 0:1.7.5-15
 Requires:         jss >= 4.2.6-24
-Requires:         tomcat >= 7.0.27
+Requires:         tomcat >= 7.0.40
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
 # because it uses an underlying NSS security model rather than the
@@ -76,6 +76,10 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Thu Jun 13 2013 Matthew Harmsen <mharmsen@redhat.com> 7.1.0-2
+- Updated tomcatjss to utilize tomcat-7.0.40.
+- Updated JNIDIR to /usr/lib/java.
+
 * Wed Dec 19 2012 Christina Fu <cfu@redhat.com> 7.1.0-1
 - Bugzila Bug #819554 tomcatjss: Please migrate from tomcat6 to tomcat7
 
