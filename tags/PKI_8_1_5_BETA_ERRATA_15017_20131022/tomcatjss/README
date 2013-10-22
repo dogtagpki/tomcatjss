@@ -1,0 +1,58 @@
+tomcatjss, a JSSE module for Tomcat that uses JSS, a Java interface to
+Network Security Services(NSS). 
+
+tomcatjss defines a number of attributes for a Connector including:
+
+clientAuth: specify if client authentication is required in the connector (or
+port), it can be true or false. If true then client authentication is required.
+
+sslOptions: specify a comma-delimited list of ssl options to pass into the ssl
+implementation. Each option takes the form of: option=[true|false].
+tomcatjss supports the options: ssl2, ssl3, tls.
+
+ssl2Ciphers: specify a list of SSL2 ciphers that tomcatjss should  accept 
+or reject from the client. You can use + to denote "accept", - means "reject".
+
+ssl3Ciphers: specifies a list of SSL3 ciphers that tomcatjss should accept
+or reject from the client. You can use + to denote "accept", - means "reject".
+
+serverCertNickFile: a file in which specify the nickname of the
+server certificate. The file should contain a single line that contains
+the nickname.
+
+passwordFile: specify a file in which a password that is required to access
+NSS's security database. Each entry in the file needs to appear on its own
+line and has the form: token_name=password
+
+certdbDir: specify the directory the NSS security database resides in.
+
+passwordClass: specify the class that will be used to read the password.
+
+sslProtocol: needs to be SSL
+
+SSLImplementation: Needs to be org.apache.tomcat.util.net.jss.JSSImplementation
+in order to use the plugin
+
+Here is an example of a secure connector:
+
+<Connector port="9443"
+           maxHttpHeaderSize="8192"
+           maxThreads="150"
+           minSpareThreads="25"
+           maxSpareThreads="75"
+           enableLookups="false"
+           disableUploadTimeout="true"
+           acceptCount="100"
+           scheme="https"
+           secure="true"
+           clientAuth="false"
+           sslProtocol="SSL"
+           sslOptions="ssl2=true,ssl3=true,tls=true"
+           ssl2Ciphers="-SSL2_RC4_128_WITH_MD5,-SSL2_RC4_128_EXPORT40_WITH_MD5,-SSL2_RC2_128_CBC_WITH_MD5,-SSL2_RC2_128_CBC_EXPORT40_WITH_MD5,-SSL2_DES_64_CBC_WITH_MD5,-SSL2_DES_192_EDE3_CBC_WITH_MD5"
+           ssl3Ciphers="-SSL3_FORTEZZA_DMS_WITH_NULL_SHA,-SSL3_FORTEZZA_DMS_WITH_RC4_128_SHA,+SSL3_RSA_WITH_RC4_128_SHA,-SSL3_RSA_EXPORT_WITH_RC4_40_MD5,+SSL3_RSA_WITH_3DES_EDE_CBC_SHA,+SSL3_RSA_WITH_DES_CBC_SHA,-SSL3_RSA_EXPORT_WITH_RC2_CBC_40_MD5,-SSL3_FORTEZZA_DMS_WITH_FORTEZZA_CBC_SHA,-SSL_RSA_FIPS_WITH_DES_CBC_SHA,+SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA,-SSL3_RSA_WITH_NULL_MD5,-TLS_RSA_EXPORT1024_WITH_RC4_56_SHA,+TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA"
+           SSLImplementation="org.apache.tomcat.util.net.jss.JSSImplementation"
+           serverCertNickFile="/var/lib/rhpki-ca/conf/serverCertNick.conf"
+           passwordFile="/var/lib/rhpki-ca/conf/password.conf"
+           passwordClass="org.apache.tomcat.util.net.jss.PlainPasswordFile"
+           certdbDir="/var/lib/rhpki-ca/alias"
+/>
