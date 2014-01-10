@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  7.1.0
-Release:  3%{?dist}
+Release:  4%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -47,6 +47,7 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
 %prep
 
 %setup -q
+chmod -c -x LICENSE README
 
 %build
 
@@ -64,18 +65,19 @@ unzip %{name}-%{version}.zip -d %{buildroot}
 cd %{buildroot}%{_javadir}
 mv %{name}.jar %{name}-%{version}.jar
 ln -s %{name}-%{version}.jar %{name}.jar
-mkdir -p %{buildroot}%{_datadir}/doc/%{name}-%{version}
 
 %clean
 rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
-%doc %attr(644,root,root) README LICENSE
-%attr(00755,root,root) %{_datadir}/doc/%{name}-%{version}
+%doc README LICENSE
 %{_javadir}/*
 
 %changelog
+* Fri Aug  2 2013 Ville Skyttä <ville.skytta@iki.fi> - 7.1.0-4
+- Simplify installation of docs.
+
 * Thu Jun 13 2013 Matthew Harmsen <mharmsen@redhat.com> 7.1.0-3
 - Updated tomcatjss to utilize tomcat-7.0.40.
 - Updated JNIDIR to /usr/lib/java.
