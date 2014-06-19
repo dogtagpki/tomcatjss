@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  2.1.0
-Release:  2%{?dist}
+Release:  3%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -23,6 +23,7 @@ Requires:         tomcat6
 Requires:         jss >= 4.2.6
 
 Patch1:           tomcatjss-client-auth.patch 
+Patch2:           tomcatjss-strict-ciphers.patch
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
 # because it uses an underlying NSS security model rather than the
@@ -47,6 +48,7 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
 
 %setup -q
 %patch1 -p1
+%patch2 -p1
 
 %build
 
@@ -76,10 +78,11 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
-* Fri Aug 05 2011 Jack Magne  <jmagne@redhat.com>  - 2.1.0-2
-- Resolves: #705107 - rhch80 cannot do client auth with pkiconsole
-  (ok with 7.3)
+* Mon Jun 16 2014 Christina Fu <cfu@redhat.com> - 2.1.0-3
+- Resolves: Buzilla Bug #1084224 - Tomcatjss missing strictCiphers implementation
 
+* Fri Aug 05 2011 Jack Magne  <jmagne@redhat.com>  - 2.1.0-2
+- Resolves: #75107 - rhch80 cannot do client auth with pkiconsole (ok with 7.3)
 * Wed Jan 12 2011 John Dennis <jdennis@redhat.com> - 2.1.0-1
 - Resolves: Bug 643544
 - bump version to 2.1.0
