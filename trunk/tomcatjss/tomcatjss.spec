@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  7.1.0
-Release:  4%{?dist}
+Release:  5%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
