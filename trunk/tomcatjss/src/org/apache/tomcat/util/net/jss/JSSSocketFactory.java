@@ -138,6 +138,23 @@ public class JSSSocketFactory
         cipherMap.put("TLS_ECDH_anon_WITH_AES_128_CBC_SHA",      SSLSocket.TLS_ECDH_anon_WITH_AES_128_CBC_SHA);
         cipherMap.put("TLS_ECDH_anon_WITH_AES_256_CBC_SHA",      SSLSocket.TLS_ECDH_anon_WITH_AES_256_CBC_SHA);
 
+        //TLSv1_2
+        cipherMap.put("TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",     SSLSocket.TLS_DHE_RSA_WITH_AES_128_CBC_SHA256);
+        cipherMap.put("TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",     SSLSocket.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256);
+        cipherMap.put("TLS_RSA_WITH_NULL_SHA256",                SSLSocket.TLS_RSA_WITH_NULL_SHA256);
+        cipherMap.put("TLS_RSA_WITH_AES_128_CBC_SHA256",         SSLSocket.TLS_RSA_WITH_AES_128_CBC_SHA256);
+        cipherMap.put("TLS_RSA_WITH_AES_256_CBC_SHA256",         SSLSocket.TLS_RSA_WITH_AES_256_CBC_SHA256);
+        cipherMap.put("TLS_RSA_WITH_SEED_CBC_SHA",               SSLSocket.TLS_RSA_WITH_SEED_CBC_SHA);
+        cipherMap.put("TLS_RSA_WITH_AES_128_GCM_SHA256",         SSLSocket.TLS_RSA_WITH_AES_128_GCM_SHA256);
+        cipherMap.put("TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",     SSLSocket.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256);
+        cipherMap.put("TLS_DHE_DSS_WITH_AES_128_GCM_SHA256",     SSLSocket.TLS_DHE_DSS_WITH_AES_128_GCM_SHA256);
+        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256);
+        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",   SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256);
+        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256);
+        cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256",  SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256);
+        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",   SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256);
+        cipherMap.put("TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256",    SSLSocket.TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256);
+
     }
 
     private static HashMap eccCipherMap = new HashMap();
@@ -197,9 +214,13 @@ public class JSSSocketFactory
         }
     }
 
-    public void setSSLCiphers(String attr) throws SocketException
+    public void setSSLCiphers(String attr) throws SocketException, IOException
     {
       String ciphers = (String)endpoint.getAttribute(attr);
+      if (ciphers == null || ciphers.equals("")) {
+          debugWrite("JSSSocketFactory setSSLCiphers: "+ attr +" not found");
+          return;
+      }
       StringTokenizer st = new StringTokenizer(ciphers, ",");
       while (st.hasMoreTokens()) {
         String cipherstr = st.nextToken();
@@ -257,7 +278,14 @@ public class JSSSocketFactory
       }
     }
 
-    public void setSSLOptions() throws SocketException
+    /*
+     * note: the SSL_OptionSet-based API for controlling the enabled
+     * protocol versions are obsolete and replaced by the
+     * setSSLVersionRange calls.  If the "range" parameters are
+     * present in the attributes then the sslOptions parameter is
+     * ignored.
+     */
+    public void setSSLOptions() throws SocketException, IOException
     {
       String options = (String)endpoint.getAttribute("sslOptions");
       StringTokenizer st = new StringTokenizer(options, ",");
@@ -306,6 +334,61 @@ public class JSSSocketFactory
           }
         } catch (Exception e) {
         }
+    }
+
+ 
+    /*
+     * setSSLVersionRangeDefault sets the range of allowed ssl versions.
+     * This replaces the obsolete SSL_Option* API
+     *
+     * @param protoVariant indicates whether this setting is for 
+       type "stream" or "datagram"
+     * @param sslVersionRange_s takes on the form of "min:max" where
+     * min/max values can be "ssl3, tls1_0, tls1_1, or tls1_2"
+     * ssl2 is not supported for tomcatjss via this interface
+     * The format is "sslVersionRange=min:max"
+     */
+    public void setSSLVersionRangeDefault(
+            org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant protoVariant,
+            String sslVersionRange_s)
+        throws SocketException, IllegalArgumentException, IOException {
+
+        // process sslVersionRange_s
+        String[] sslVersionRange = sslVersionRange_s.split(":"); 
+        if (sslVersionRange.length != 2) {
+            debugWrite("JSSSocketFactory setSSLversionRangeDefault- SSL Version Range format error: " + sslVersionRange_s +"\n");
+            throw new SocketException("tomcatjss: setSSLversionRangeDefault format error");
+        }
+        String min_s = sslVersionRange[0];
+        String max_s = sslVersionRange[1];
+        int min = getSSLVersionRangeEnum(min_s);
+        int max = getSSLVersionRangeEnum(max_s);
+        if ((min == -1) || (max== -1)) {
+            debugWrite("JSSSocketFactory setSSLversionRangeDefault- SSL Version Range format error: " + sslVersionRange_s +"\n");
+            throw new SocketException("tomcatjss: setSSLversionRangeDefault format error");
+        }
+
+        debugWrite("JSSSocketFactory setSSLversionRangeDefault- SSL Version Range set to min=" + min + " max = " + max +"\n");
+        org.mozilla.jss.ssl.SSLSocket.SSLVersionRange range =
+            new org.mozilla.jss.ssl.SSLSocket.SSLVersionRange(min, max);
+
+        SSLSocket.setSSLVersionRangeDefault(protoVariant, range);
+        debugWrite("JSSSocketFactory setSSLversionRangeDefault- variant set\n");
+    }
+
+    int getSSLVersionRangeEnum (String rangeString) {
+        if (rangeString == null)
+            return -1;
+        if (rangeString.equals("ssl3"))
+            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.ssl3;
+        else if (rangeString.equals("tls1_0"))
+            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_0;
+        else if (rangeString.equals("tls1_1"))
+            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_1;
+        else if (rangeString.equals("tls1_2"))
+            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_2;
+
+        return -1;
     }
 
     void init() throws IOException {
@@ -547,14 +630,52 @@ public class JSSSocketFactory
             }
             if (mStrictCiphers == true) {
                 // what ciphers do we have to start with? turn them all off
-                 debugWrite("SSSocketFactory init - before setSSLOptions, strictCiphers is true\n");
+                 debugWrite("SSSocketFactory init - before setSSLCiphers, strictCiphers is true\n");
                  unsetSSLCiphers();
             } else {
-                 debugWrite("SSSocketFactory init - before setSSLOptions, strictCiphers is false\n");
+                 debugWrite("SSSocketFactory init - before setSSLCiphers, strictCiphers is false\n");
             }
 
-            setSSLOptions();
-            debugWrite("SSSocketFactory init - after setSSLOptions\n");
+            String sslVersionRangeStream = (String)endpoint.getAttribute("sslVersionRangeStream");
+            if ((sslVersionRangeStream != null) && !sslVersionRangeStream.equals("")) {
+                debugWrite("SSSocketFactory init - calling setSSLVersionRangeDefault() for type STREAM\n");
+                setSSLVersionRangeDefault(org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant.STREAM, sslVersionRangeStream);
+                debugWrite("SSSocketFactory init - after setSSLVersionRangeDefault() for type STREAM\n");
+            }
+
+            String sslVersionRangeDatagram = (String)endpoint.getAttribute("sslVersionRangeDatagram");
+            if ((sslVersionRangeDatagram != null) && !sslVersionRangeDatagram.equals("")) {
+                debugWrite("SSSocketFactory init - calling setSSLVersionRangeDefault() for type DATA_GRAM\n");
+                setSSLVersionRangeDefault(org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant.DATA_GRAM, sslVersionRangeDatagram);
+                debugWrite("SSSocketFactory init - after setSSLVersionRangeDefault() for type DATA_GRAM\n");
+            }
+
+            /*
+             * According to NSS:
+             * the SSL_OptionSet-based API for controlling the enabled
+             * protocol versions are obsolete and replaced by the
+             * setSSLVersionRange calls.
+             * Therefore, if the "range" parameters are
+             * present in the attributes then the sslOptions parameter is
+             * ignored.
+             * Using the new version range API in conjunction with the older
+             * SSL_OptionSet-based API for controlling the enabled protocol
+             * versions may cause unexpected results
+             */
+            if (((sslVersionRangeStream != null)
+                    && !sslVersionRangeStream.equals(""))
+                    || ((sslVersionRangeDatagram != null)
+                    && !sslVersionRangeDatagram.equals(""))) {
+                /* deliberately lose the ssl2 here */
+                debugWrite("SSSocketFactory init - calling setSSLCiphers() honoring only sslRangeCiphers\n");
+                setSSLCiphers("sslRangeCiphers");
+                debugWrite("SSSocketFactory init - after setSSLCiphers() honoring only sslRangeCiphers\n");
+            } else {
+                debugWrite("SSSocketFactory init - calling setSSLOptions()\n");
+                setSSLOptions();
+                debugWrite("SSSocketFactory init - after setSSLOptions()\n");
+            }
+
         } catch (Exception ex) {
             debugWrite("JSSSocketFactory init - exception thrown:"+
                    ex.toString()+"\n");
