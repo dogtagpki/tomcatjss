@@ -1,6 +1,6 @@
 Name:     tomcatjss
-Version:  7.1.0
-Release:  4%{?dist}
+Version:  7.1.1
+Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -20,7 +20,11 @@ BuildRequires:    jpackage-utils >= 0:1.7.5-15
 BuildRequires:    jss >= 4.2.6-24
 BuildRequires:    tomcat >= 7.0.40
 
+%if 0%{?fedora} >= 21
+Requires:         java-headless
+%else
 Requires:         java
+%endif
 Requires:         jpackage-utils >= 0:1.7.5-15
 Requires:         jss >= 4.2.6-24
 Requires:         tomcat >= 7.0.40
@@ -63,8 +67,10 @@ unzip %{name}-%{version}.zip -d %{buildroot}
 
 # Install our files
 cd %{buildroot}%{_javadir}
+%if 0%{?rhel} || 0%{?fedora} < 21
 mv %{name}.jar %{name}-%{version}.jar
 ln -s %{name}-%{version}.jar %{name}.jar
+%endif
 
 %clean
 rm -rf %{buildroot}
@@ -75,6 +81,23 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Tue Sep 30 2014 Christina Fu <cfu@redhat.com> 7.1.1-1
+- Bugzilla Bug #1058366 NullPointerException in tomcatjss searching
+  for attribute "clientauth" (cfu)
+- Bugzilla Bug #871171 - Provide Tomcat support for TLS v1.1 and
+  TLS v1.2 (cfu)
+- Bumped revision to 7.1.1
+
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.1.0-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Tue Mar 25 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 7.1.0-5
+- Move to java-headless
+- Resolves: rhbz#1068567
+
+* Tue Jan 07 2014 Michael Simacek <msimacek@redhat.com> - 7.1.0-5
+- Remove versioned symlink (rhbz#1022167)
+
 * Fri Aug  2 2013 Ville Skyttä <ville.skytta@iki.fi> - 7.1.0-4
 - Simplify installation of docs.
 
@@ -92,7 +115,7 @@ rm -rf %{buildroot}
 - PKI TRAC Ticket #283 - Dogtag 10: Integrate Tomcat 6 'tomcatjss.jar' and
   Tomcat 7 'tomcat7jss.jar' in Fedora 18 tomcatjss package
 
-* Wed Jul 26 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-2
+* Thu Jul 26 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-2
 - Fixed runtime 'Requires' cut/paste typos
 
 * Wed Jun 06 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-1
