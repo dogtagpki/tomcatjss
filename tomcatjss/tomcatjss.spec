@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  7.1.0
-Release:  4%{?dist}
+Release:  5%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -17,13 +17,16 @@ Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.ta
 BuildRequires:    ant
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
-BuildRequires:    jss >= 4.2.6-24
+BuildRequires:    jss >= 4.2.6-35
 BuildRequires:    tomcat >= 7.0.40
 
 Requires:         java
 Requires:         jpackage-utils >= 0:1.7.5-15
-Requires:         jss >= 4.2.6-24
+Requires:         jss >= 4.2.6-35
 Requires:         tomcat >= 7.0.40
+
+Patch1:           tomcatjss-clientauth-NullPtrException.patch
+Patch2:           tomcatjss-TLSv1.1-1.2-support.patch
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
 # because it uses an underlying NSS security model rather than the
@@ -45,9 +48,9 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
        OpenSSL security model, so these two packages may not co-exist.
 
 %prep
-
 %setup -q
-chmod -c -x LICENSE README
+%patch1 -p0
+%patch2 -p0
 
 %build
 
@@ -65,18 +68,26 @@ unzip %{name}-%{version}.zip -d %{buildroot}
 cd %{buildroot}%{_javadir}
 mv %{name}.jar %{name}-%{version}.jar
 ln -s %{name}-%{version}.jar %{name}.jar
+mkdir -p %{buildroot}%{_datadir}/doc/%{name}-%{version}
 
 %clean
 rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
-%doc README LICENSE
+%doc %attr(644,root,root) README LICENSE
+%attr(00755,root,root) %{_datadir}/doc/%{name}-%{version}
 %{_javadir}/*
 
 %changelog
-* Fri Aug  2 2013 Ville Skyttä <ville.skytta@iki.fi> - 7.1.0-4
-- Simplify installation of docs.
+* Mon Sep 29 2014 Christina Fu <cfu@redhat.com> - 7.1.0-5
+- Bugzilla Bug #1058366 NullPointerException in tomcatjss searching
+  for attribute "clientauth" (cfu)
+- Bugzilla Bug #871171 - Provide Tomcat support for TLS v1.1 and
+  TLS v1.2 (cfu)
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 7.1.0-4
+- Mass rebuild 2013-12-27
 
 * Thu Jun 13 2013 Matthew Harmsen <mharmsen@redhat.com> 7.1.0-3
 - Updated tomcatjss to utilize tomcat-7.0.40.
