@@ -405,6 +405,10 @@ public class JSSSocketFactory
             // MUST look for "clientauth" (ALL lowercase) since "clientAuth"
             // (camel case) has already been processed by Tomcat 7
             String clientAuthStr = (String)endpoint.getAttribute("clientauth");
+            if (clientAuthStr == null) {
+                debugWrite("JSSSocketFactory init - \"clientauth\" not found, default to want.");
+                clientAuthStr = "want";
+            }
             File file = null;
             try {
                 mServerCertNickPath = (String)endpoint.getAttribute("serverCertNickFile");
