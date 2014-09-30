@@ -17,7 +17,7 @@ Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.ta
 BuildRequires:    ant
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
-BuildRequires:    jss >= 4.2.6-24
+BuildRequires:    jss >= 4.2.6-35
 BuildRequires:    tomcat >= 7.0.40
 
 %if 0%{?fedora} >= 21
@@ -26,7 +26,7 @@ Requires:         java-headless
 Requires:         java
 %endif
 Requires:         jpackage-utils >= 0:1.7.5-15
-Requires:         jss >= 4.2.6-24
+Requires:         jss >= 4.2.6-35
 Requires:         tomcat >= 7.0.40
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
