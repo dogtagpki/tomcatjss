@@ -1,5 +1,5 @@
 Name:     tomcatjss
-Version:  7.1.1
+Version:  7.1.2
 Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
@@ -18,7 +18,11 @@ BuildRequires:    ant
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
 BuildRequires:    jss >= 4.2.6-35
+%if 0%{?fedora} >= 23
+BuildRequires:    tomcat >= 8.0.18
+%else
 BuildRequires:    tomcat >= 7.0.40
+%endif
 
 %if 0%{?fedora} >= 21
 Requires:         java-headless
@@ -27,7 +31,11 @@ Requires:         java
 %endif
 Requires:         jpackage-utils >= 0:1.7.5-15
 Requires:         jss >= 4.2.6-35
+%if 0%{?fedora} >= 23
+Requires:         tomcat >= 8.0.18
+%else
 Requires:         tomcat >= 7.0.40
+%endif
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
 # because it uses an underlying NSS security model rather than the
@@ -81,6 +89,9 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Wed Mar  4 2015 Endi Sukma Dewata <edewata@redhat.com> 7.1.2-1
+- Bugzilla Bug #1198450 - Support for Tomcat 8
+
 * Tue Sep 30 2014 Christina Fu <cfu@redhat.com> 7.1.1-1
 - Bugzilla Bug #1058366 NullPointerException in tomcatjss searching
   for attribute "clientauth" (cfu)

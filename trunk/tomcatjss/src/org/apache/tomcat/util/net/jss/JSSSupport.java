@@ -22,7 +22,7 @@ package org.apache.tomcat.util.net.jss;
 import org.apache.tomcat.util.net.*;
 import java.io.*;
 import java.net.*;
-import org.mozilla.jss.crypto.X509Certificate;
+import java.security.cert.X509Certificate;
 import org.mozilla.jss.ssl.*;
 import java.security.cert.*;
 
@@ -41,13 +41,13 @@ class JSSSupport implements SSLSupport{
         }
     }
 
-    public Object[] getPeerCertificateChain(boolean force) throws IOException {
+    public X509Certificate[] getPeerCertificateChain(boolean force) throws IOException {
         // retrieve the status when we need it. status cache
         // the client certificate which may not be available
         // at the creation of JSSSupport
         status = ssl.getStatus();
         if (status != null) {
-            X509Certificate peerCert = status.getPeerCertificate();
+            org.mozilla.jss.crypto.X509Certificate peerCert = status.getPeerCertificate();
        
             if (peerCert == null) {
                 ssl.requireClientAuth(SSLSocket.SSL_REQUIRE_NO_ERROR);
@@ -61,14 +61,13 @@ class JSSSupport implements SSLSupport{
             }
 
             if (peerCert != null) {
-                java.security.cert.X509Certificate[] certs = 
-                  new java.security.cert.X509Certificate[1];
+                X509Certificate[] certs = new X509Certificate[1];
                 try {
                     byte[] b = peerCert.getEncoded();
                     CertificateFactory cf = CertificateFactory.getInstance("X.509");
                     ByteArrayInputStream stream =
                       new ByteArrayInputStream(b);
-                    certs[0] = (java.security.cert.X509Certificate)cf.generateCertificate(stream);
+                    certs[0] = (X509Certificate)cf.generateCertificate(stream);
                 } catch (Exception e) {
                 }
                 return certs;
