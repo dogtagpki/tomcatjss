@@ -27,14 +27,14 @@ import org.apache.tomcat.util.net.ServerSocketFactory;
 import org.mozilla.jss.ssl.SSLSocket;
 
 class JSSFactory implements IJSSFactory {
-	JSSFactory() {
-	}
+    JSSFactory() {
+    }
 
-	public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint) {
-		return new JSSSocketFactory(endpoint);
-	}
+    public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint) {
+        return new JSSSocketFactory(endpoint);
+    }
 
-	public SSLSupport getSSLSupport(Socket socket) {
-		return new JSSSupport((SSLSocket) socket);
-	}
+    public SSLSupport getSSLSupport(Socket socket) {
+        return new JSSSupport((SSLSocket) socket);
+    }
 }

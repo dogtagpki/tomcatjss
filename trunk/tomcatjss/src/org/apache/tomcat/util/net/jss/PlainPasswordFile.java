@@ -26,39 +26,39 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 public class PlainPasswordFile implements IPasswordStore {
-	private String mPwdPath = "";
-	private Properties mPwdStore;
-	private static final String PASSWORD_WRITER_HEADER = "";
+    private String mPwdPath = "";
+    private Properties mPwdStore;
+    private static final String PASSWORD_WRITER_HEADER = "";
 
-	public PlainPasswordFile() {
-	}
+    public PlainPasswordFile() {
+    }
 
-	public void init(String pwdPath) throws IOException {
-		mPwdStore = new Properties();
-		// initialize mPwdStore
-		mPwdPath = pwdPath;
+    public void init(String pwdPath) throws IOException {
+        mPwdStore = new Properties();
+        // initialize mPwdStore
+        mPwdPath = pwdPath;
 
-		FileInputStream file = new FileInputStream(mPwdPath);
-		mPwdStore.load(file);
-	}
+        FileInputStream file = new FileInputStream(mPwdPath);
+        mPwdStore.load(file);
+    }
 
-	public String getPassword(String tag) {
-		return (String) mPwdStore.getProperty(tag);
-	}
+    public String getPassword(String tag) {
+        return (String) mPwdStore.getProperty(tag);
+    }
 
-	// return an array of String-based tag
-	@SuppressWarnings("unchecked")
-	public Enumeration<String> getTags() {
-		return (Enumeration<String>) mPwdStore.propertyNames();
-	}
+    // return an array of String-based tag
+    @SuppressWarnings("unchecked")
+    public Enumeration<String> getTags() {
+        return (Enumeration<String>) mPwdStore.propertyNames();
+    }
 
-	public Object putPassword(String tag, String password) {
-		return mPwdStore.setProperty(tag, password);
-	}
+    public Object putPassword(String tag, String password) {
+        return mPwdStore.setProperty(tag, password);
+    }
 
-	public void commit() throws IOException, ClassCastException,
-			NullPointerException {
-		FileOutputStream file = new FileOutputStream(mPwdPath);
-		mPwdStore.store(file, PASSWORD_WRITER_HEADER);
-	}
+    public void commit() throws IOException, ClassCastException,
+            NullPointerException {
+        FileOutputStream file = new FileOutputStream(mPwdPath);
+        mPwdStore.store(file, PASSWORD_WRITER_HEADER);
+    }
 }
