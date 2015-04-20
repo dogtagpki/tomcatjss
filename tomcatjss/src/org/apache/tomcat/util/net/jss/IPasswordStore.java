@@ -19,14 +19,18 @@
 
 package org.apache.tomcat.util.net.jss;
 
-import java.util.*;
-import java.io.*;
+import java.io.IOException;
+import java.util.Enumeration;
 
 public interface IPasswordStore {
-    public void init(String pwdPath) throws IOException;
-    public String getPassword(String tag);
-    public Enumeration getTags();
-    public Object putPassword(String tag, String password);
-    public void commit()
-        throws IOException, ClassCastException, NullPointerException;
+	public void init(String pwdPath) throws IOException;
+
+	public String getPassword(String tag);
+
+	public Enumeration<String> getTags();
+
+	public Object putPassword(String tag, String password);
+
+	public void commit() throws IOException, ClassCastException,
+			NullPointerException;
 }

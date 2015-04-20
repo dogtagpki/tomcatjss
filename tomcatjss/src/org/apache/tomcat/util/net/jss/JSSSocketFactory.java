@@ -19,772 +19,929 @@
 
 package org.apache.tomcat.util.net.jss;
 
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 import java.text.SimpleDateFormat;
-import java.lang.Thread;
-import java.lang.NumberFormatException;
-import org.mozilla.jss.ssl.*;
-import org.mozilla.jss.crypto.*;
-import org.mozilla.jss.CryptoManager;
-import org.mozilla.jss.util.*;
-import org.mozilla.jss.pkcs11.*;
-import java.net.*;
-import java.io.*;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.StringTokenizer;
 
-// Imports required to "implement" Tomcat 7 Interface
-import org.apache.tomcat.util.net.AbstractEndpoint;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-public class JSSSocketFactory
-  implements org.apache.tomcat.util.net.ServerSocketFactory,
-             org.apache.tomcat.util.net.SSLUtil {
 
-    private static HashMap cipherMap = new HashMap();
-    static {
-        // SSLv2
-        cipherMap.put("SSL2_RC4_128_WITH_MD5",                   SSLSocket.SSL2_RC4_128_WITH_MD5);
-        cipherMap.put("SSL2_RC4_128_EXPORT40_WITH_MD5",          SSLSocket.SSL2_RC4_128_EXPORT40_WITH_MD5);
-        cipherMap.put("SSL2_RC2_128_CBC_WITH_MD5",               SSLSocket.SSL2_RC2_128_CBC_WITH_MD5);
-        cipherMap.put("SSL2_RC2_128_CBC_EXPORT40_WITH_MD5",      SSLSocket.SSL2_RC2_128_CBC_EXPORT40_WITH_MD5);
-        cipherMap.put("SSL2_IDEA_128_CBC_WITH_MD5",              SSLSocket.SSL2_IDEA_128_CBC_WITH_MD5);
-        cipherMap.put("SSL2_DES_64_CBC_WITH_MD5",                SSLSocket.SSL2_DES_64_CBC_WITH_MD5);
-        cipherMap.put("SSL2_DES_192_EDE3_CBC_WITH_MD5",          SSLSocket.SSL2_DES_192_EDE3_CBC_WITH_MD5);
+// Imports required to "implement" Tomcat 7 Interface
+import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.mozilla.jss.CryptoManager;
+import org.mozilla.jss.crypto.AlreadyInitializedException;
+import org.mozilla.jss.crypto.CryptoToken;
+import org.mozilla.jss.ssl.SSLServerSocket;
+import org.mozilla.jss.ssl.SSLSocket;
+import org.mozilla.jss.util.Password;
 
-        // SSLv3
-        cipherMap.put("SSL3_RSA_WITH_NULL_MD5",                  SSLSocket.SSL3_RSA_WITH_NULL_MD5);
-        cipherMap.put("SSL3_RSA_WITH_NULL_SHA",                  SSLSocket.SSL3_RSA_WITH_NULL_SHA);
-        cipherMap.put("SSL3_RSA_EXPORT_WITH_RC4_40_MD5",         SSLSocket.SSL3_RSA_EXPORT_WITH_RC4_40_MD5);
-        cipherMap.put("SSL3_RSA_WITH_RC4_128_MD5",               SSLSocket.SSL3_RSA_WITH_RC4_128_MD5);
-        cipherMap.put("SSL3_RSA_WITH_RC4_128_SHA",               SSLSocket.SSL3_RSA_WITH_RC4_128_SHA);
-        cipherMap.put("SSL3_RSA_EXPORT_WITH_RC2_CBC_40_MD5",     SSLSocket.SSL3_RSA_EXPORT_WITH_RC2_CBC_40_MD5);
-        cipherMap.put("SSL3_RSA_WITH_IDEA_CBC_SHA",              SSLSocket.SSL3_RSA_WITH_IDEA_CBC_SHA);
-        cipherMap.put("SSL3_RSA_EXPORT_WITH_DES40_CBC_SHA",      SSLSocket.SSL3_RSA_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_RSA_WITH_DES_CBC_SHA",               SSLSocket.SSL3_RSA_WITH_DES_CBC_SHA);
-        cipherMap.put("SSL3_RSA_WITH_3DES_EDE_CBC_SHA",          SSLSocket.SSL3_RSA_WITH_3DES_EDE_CBC_SHA);
-                                                                                
-        cipherMap.put("SSL3_DH_DSS_EXPORT_WITH_DES40_CBC_SHA",   SSLSocket.SSL3_DH_DSS_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DH_DSS_WITH_DES_CBC_SHA",            SSLSocket.SSL3_DH_DSS_WITH_DES_CBC_SHA);
-        cipherMap.put("SSL3_DH_DSS_WITH_3DES_EDE_CBC_SHA",       SSLSocket.SSL3_DH_DSS_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("SSL3_DH_RSA_EXPORT_WITH_DES40_CBC_SHA",   SSLSocket.SSL3_DH_RSA_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DH_RSA_WITH_DES_CBC_SHA",            SSLSocket.SSL3_DH_RSA_WITH_DES_CBC_SHA);
-        cipherMap.put("SSL3_DH_RSA_WITH_3DES_EDE_CBC_SHA",       SSLSocket.SSL3_DH_RSA_WITH_3DES_EDE_CBC_SHA);
-                                                        
-        cipherMap.put("SSL3_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA",  SSLSocket.SSL3_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DHE_DSS_WITH_DES_CBC_SHA",           SSLSocket.SSL3_DHE_DSS_WITH_DES_CBC_SHA);
-        cipherMap.put("SSL3_DHE_DSS_WITH_3DES_EDE_CBC_SHA",      SSLSocket.SSL3_DHE_DSS_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("SSL3_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA",  SSLSocket.SSL3_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DHE_RSA_WITH_DES_CBC_SHA",           SSLSocket.SSL3_DHE_RSA_WITH_DES_CBC_SHA);
-        cipherMap.put("SSL3_DHE_RSA_WITH_3DES_EDE_CBC_SHA",      SSLSocket.SSL3_DHE_RSA_WITH_3DES_EDE_CBC_SHA);
-                                                                                
-        cipherMap.put("SSL3_DH_ANON_EXPORT_WITH_RC4_40_MD5",     SSLSocket.SSL3_DH_ANON_EXPORT_WITH_RC4_40_MD5);
-        cipherMap.put("SSL3_DH_ANON_WITH_RC4_128_MD5",           SSLSocket.SSL3_DH_ANON_WITH_RC4_128_MD5);
-        cipherMap.put("SSL3_DH_ANON_EXPORT_WITH_DES40_CBC_SHA",  SSLSocket.SSL3_DH_ANON_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DH_ANON_WITH_DES_CBC_SHA",           SSLSocket.SSL3_DH_ANON_WITH_DES_CBC_SHA);
-        cipherMap.put("SSL3_DH_ANON_WITH_3DES_EDE_CBC_SHA",      SSLSocket.SSL3_DH_ANON_WITH_3DES_EDE_CBC_SHA);
-                                                                                
-        cipherMap.put("SSL3_FORTEZZA_DMS_WITH_NULL_SHA",         SSLSocket.SSL3_FORTEZZA_DMS_WITH_NULL_SHA);
-        cipherMap.put("SSL3_FORTEZZA_DMS_WITH_FORTEZZA_CBC_SHA", SSLSocket.SSL3_FORTEZZA_DMS_WITH_FORTEZZA_CBC_SHA);
-        cipherMap.put("SSL3_FORTEZZA_DMS_WITH_RC4_128_SHA",      SSLSocket.SSL3_FORTEZZA_DMS_WITH_RC4_128_SHA);
-                                                                                
-        cipherMap.put("SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA",      SSLSocket.SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("SSL_RSA_FIPS_WITH_DES_CBC_SHA",           SSLSocket.SSL_RSA_FIPS_WITH_DES_CBC_SHA);
-                                                                                
-        // TLS
-        cipherMap.put("TLS_RSA_EXPORT1024_WITH_DES_CBC_SHA",     SSLSocket.TLS_RSA_EXPORT1024_WITH_DES_CBC_SHA);
-        cipherMap.put("TLS_RSA_EXPORT1024_WITH_RC4_56_SHA",      SSLSocket.TLS_RSA_EXPORT1024_WITH_RC4_56_SHA);
-                                                                                
-        cipherMap.put("TLS_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA", SSLSocket.TLS_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA);
-        cipherMap.put("TLS_DHE_DSS_EXPORT1024_WITH_RC4_56_SHA",  SSLSocket.TLS_DHE_DSS_EXPORT1024_WITH_RC4_56_SHA);
-        cipherMap.put("TLS_DHE_DSS_WITH_RC4_128_SHA",            SSLSocket.TLS_DHE_DSS_WITH_RC4_128_SHA);
-                                                                                
-        cipherMap.put("TLS_RSA_WITH_AES_128_CBC_SHA",            SSLSocket.TLS_RSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DH_DSS_WITH_AES_128_CBC_SHA",         SSLSocket.TLS_DH_DSS_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DH_RSA_WITH_AES_128_CBC_SHA",         SSLSocket.TLS_DH_RSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DHE_DSS_WITH_AES_128_CBC_SHA",        SSLSocket.TLS_DHE_DSS_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_128_CBC_SHA",        SSLSocket.TLS_DHE_RSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DH_ANON_WITH_AES_128_CBC_SHA",        SSLSocket.TLS_DH_ANON_WITH_AES_128_CBC_SHA);
-                                                                                
-        cipherMap.put("TLS_RSA_WITH_AES_256_CBC_SHA",            SSLSocket.TLS_RSA_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DH_DSS_WITH_AES_256_CBC_SHA",         SSLSocket.TLS_DH_DSS_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DH_RSA_WITH_AES_256_CBC_SHA",         SSLSocket.TLS_DH_RSA_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DHE_DSS_WITH_AES_256_CBC_SHA",        SSLSocket.TLS_DHE_DSS_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_256_CBC_SHA",        SSLSocket.TLS_DHE_RSA_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DH_ANON_WITH_AES_256_CBC_SHA",        SSLSocket.TLS_DH_ANON_WITH_AES_256_CBC_SHA);
+public class JSSSocketFactory implements
+		org.apache.tomcat.util.net.ServerSocketFactory,
+		org.apache.tomcat.util.net.SSLUtil {
 
-        // ECC
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_NULL_SHA",            SSLSocket.TLS_ECDH_ECDSA_WITH_NULL_SHA);
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_RC4_128_SHA",         SSLSocket.TLS_ECDH_ECDSA_WITH_RC4_128_SHA);
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA",    SSLSocket.TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA",     SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA",     SSLSocket.TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA);
-                                                                               
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_NULL_SHA",           SSLSocket.TLS_ECDHE_ECDSA_WITH_NULL_SHA);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_RC4_128_SHA",        SSLSocket.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA",   SSLSocket.TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",    SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",    SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA);
+	private static HashMap<String, Integer> cipherMap = new HashMap<String, Integer>();
+	static {
+		// SSLv2
+		cipherMap.put("SSL2_RC4_128_WITH_MD5", SSLSocket.SSL2_RC4_128_WITH_MD5);
+		cipherMap.put("SSL2_RC4_128_EXPORT40_WITH_MD5",
+				SSLSocket.SSL2_RC4_128_EXPORT40_WITH_MD5);
+		cipherMap.put("SSL2_RC2_128_CBC_WITH_MD5",
+				SSLSocket.SSL2_RC2_128_CBC_WITH_MD5);
+		cipherMap.put("SSL2_RC2_128_CBC_EXPORT40_WITH_MD5",
+				SSLSocket.SSL2_RC2_128_CBC_EXPORT40_WITH_MD5);
+		cipherMap.put("SSL2_IDEA_128_CBC_WITH_MD5",
+				SSLSocket.SSL2_IDEA_128_CBC_WITH_MD5);
+		cipherMap.put("SSL2_DES_64_CBC_WITH_MD5",
+				SSLSocket.SSL2_DES_64_CBC_WITH_MD5);
+		cipherMap.put("SSL2_DES_192_EDE3_CBC_WITH_MD5",
+				SSLSocket.SSL2_DES_192_EDE3_CBC_WITH_MD5);
 
-        cipherMap.put("TLS_ECDHE_RSA_WITH_NULL_SHA",             SSLSocket.TLS_ECDHE_RSA_WITH_NULL_SHA);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_RC4_128_SHA",          SSLSocket.TLS_ECDHE_RSA_WITH_RC4_128_SHA);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA",     SSLSocket.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",      SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",      SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA);
-                                                                                
-        cipherMap.put("TLS_ECDH_anon_WITH_NULL_SHA",             SSLSocket.TLS_ECDH_anon_WITH_NULL_SHA);
-        cipherMap.put("TLS_ECDH_anon_WITH_RC4_128_SHA",          SSLSocket.TLS_ECDH_anon_WITH_RC4_128_SHA);
-        cipherMap.put("TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA",     SSLSocket.TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("TLS_ECDH_anon_WITH_AES_128_CBC_SHA",      SSLSocket.TLS_ECDH_anon_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_ECDH_anon_WITH_AES_256_CBC_SHA",      SSLSocket.TLS_ECDH_anon_WITH_AES_256_CBC_SHA);
+		// SSLv3
+		cipherMap.put("SSL3_RSA_WITH_NULL_MD5",
+				SSLSocket.SSL3_RSA_WITH_NULL_MD5);
+		cipherMap.put("SSL3_RSA_WITH_NULL_SHA",
+				SSLSocket.SSL3_RSA_WITH_NULL_SHA);
+		cipherMap.put("SSL3_RSA_EXPORT_WITH_RC4_40_MD5",
+				SSLSocket.SSL3_RSA_EXPORT_WITH_RC4_40_MD5);
+		cipherMap.put("SSL3_RSA_WITH_RC4_128_MD5",
+				SSLSocket.SSL3_RSA_WITH_RC4_128_MD5);
+		cipherMap.put("SSL3_RSA_WITH_RC4_128_SHA",
+				SSLSocket.SSL3_RSA_WITH_RC4_128_SHA);
+		cipherMap.put("SSL3_RSA_EXPORT_WITH_RC2_CBC_40_MD5",
+				SSLSocket.SSL3_RSA_EXPORT_WITH_RC2_CBC_40_MD5);
+		cipherMap.put("SSL3_RSA_WITH_IDEA_CBC_SHA",
+				SSLSocket.SSL3_RSA_WITH_IDEA_CBC_SHA);
+		cipherMap.put("SSL3_RSA_EXPORT_WITH_DES40_CBC_SHA",
+				SSLSocket.SSL3_RSA_EXPORT_WITH_DES40_CBC_SHA);
+		cipherMap.put("SSL3_RSA_WITH_DES_CBC_SHA",
+				SSLSocket.SSL3_RSA_WITH_DES_CBC_SHA);
+		cipherMap.put("SSL3_RSA_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.SSL3_RSA_WITH_3DES_EDE_CBC_SHA);
 
-        //TLSv1_2
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",     SSLSocket.TLS_DHE_RSA_WITH_AES_128_CBC_SHA256);
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",     SSLSocket.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256);
-        cipherMap.put("TLS_RSA_WITH_NULL_SHA256",                SSLSocket.TLS_RSA_WITH_NULL_SHA256);
-        cipherMap.put("TLS_RSA_WITH_AES_128_CBC_SHA256",         SSLSocket.TLS_RSA_WITH_AES_128_CBC_SHA256);
-        cipherMap.put("TLS_RSA_WITH_AES_256_CBC_SHA256",         SSLSocket.TLS_RSA_WITH_AES_256_CBC_SHA256);
-        cipherMap.put("TLS_RSA_WITH_SEED_CBC_SHA",               SSLSocket.TLS_RSA_WITH_SEED_CBC_SHA);
-        cipherMap.put("TLS_RSA_WITH_AES_128_GCM_SHA256",         SSLSocket.TLS_RSA_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",     SSLSocket.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_DHE_DSS_WITH_AES_128_GCM_SHA256",     SSLSocket.TLS_DHE_DSS_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",   SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256",  SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",   SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256",    SSLSocket.TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256);
+		cipherMap.put("SSL3_DH_DSS_EXPORT_WITH_DES40_CBC_SHA",
+				SSLSocket.SSL3_DH_DSS_EXPORT_WITH_DES40_CBC_SHA);
+		cipherMap.put("SSL3_DH_DSS_WITH_DES_CBC_SHA",
+				SSLSocket.SSL3_DH_DSS_WITH_DES_CBC_SHA);
+		cipherMap.put("SSL3_DH_DSS_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.SSL3_DH_DSS_WITH_3DES_EDE_CBC_SHA);
+		cipherMap.put("SSL3_DH_RSA_EXPORT_WITH_DES40_CBC_SHA",
+				SSLSocket.SSL3_DH_RSA_EXPORT_WITH_DES40_CBC_SHA);
+		cipherMap.put("SSL3_DH_RSA_WITH_DES_CBC_SHA",
+				SSLSocket.SSL3_DH_RSA_WITH_DES_CBC_SHA);
+		cipherMap.put("SSL3_DH_RSA_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.SSL3_DH_RSA_WITH_3DES_EDE_CBC_SHA);
 
-    }
+		cipherMap.put("SSL3_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA",
+				SSLSocket.SSL3_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA);
+		cipherMap.put("SSL3_DHE_DSS_WITH_DES_CBC_SHA",
+				SSLSocket.SSL3_DHE_DSS_WITH_DES_CBC_SHA);
+		cipherMap.put("SSL3_DHE_DSS_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.SSL3_DHE_DSS_WITH_3DES_EDE_CBC_SHA);
+		cipherMap.put("SSL3_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA",
+				SSLSocket.SSL3_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA);
+		cipherMap.put("SSL3_DHE_RSA_WITH_DES_CBC_SHA",
+				SSLSocket.SSL3_DHE_RSA_WITH_DES_CBC_SHA);
+		cipherMap.put("SSL3_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.SSL3_DHE_RSA_WITH_3DES_EDE_CBC_SHA);
 
-    private static HashMap eccCipherMap = new HashMap();
-    static {
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,  "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,    "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,     "TLS_ECDH_RSA_WITH_AES_256_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,   "TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,      "TLS_ECDHE_ECDSA_WITH_RC4_128_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,  "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_RC4_128_SHA,        "TLS_ECDHE_RSA_WITH_RC4_128_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,    "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_RC4_128_SHA,         "TLS_ECDH_RSA_WITH_RC4_128_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,     "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_RC4_128_SHA,       "TLS_ECDH_ECDSA_WITH_RC4_128_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,   "TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA, "TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,   "TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA,    "TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA,  "TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_NULL_SHA,         "TLS_ECDHE_ECDSA_WITH_NULL_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_NULL_SHA,           "TLS_ECDHE_RSA_WITH_NULL_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_NULL_SHA,            "TLS_ECDH_RSA_WITH_NULL_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_NULL_SHA,          "TLS_ECDH_ECDSA_WITH_NULL_SHA");
-    }
+		cipherMap.put("SSL3_DH_ANON_EXPORT_WITH_RC4_40_MD5",
+				SSLSocket.SSL3_DH_ANON_EXPORT_WITH_RC4_40_MD5);
+		cipherMap.put("SSL3_DH_ANON_WITH_RC4_128_MD5",
+				SSLSocket.SSL3_DH_ANON_WITH_RC4_128_MD5);
+		cipherMap.put("SSL3_DH_ANON_EXPORT_WITH_DES40_CBC_SHA",
+				SSLSocket.SSL3_DH_ANON_EXPORT_WITH_DES40_CBC_SHA);
+		cipherMap.put("SSL3_DH_ANON_WITH_DES_CBC_SHA",
+				SSLSocket.SSL3_DH_ANON_WITH_DES_CBC_SHA);
+		cipherMap.put("SSL3_DH_ANON_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.SSL3_DH_ANON_WITH_3DES_EDE_CBC_SHA);
 
-    private AbstractEndpoint endpoint;
+		cipherMap.put("SSL3_FORTEZZA_DMS_WITH_NULL_SHA",
+				SSLSocket.SSL3_FORTEZZA_DMS_WITH_NULL_SHA);
+		cipherMap.put("SSL3_FORTEZZA_DMS_WITH_FORTEZZA_CBC_SHA",
+				SSLSocket.SSL3_FORTEZZA_DMS_WITH_FORTEZZA_CBC_SHA);
+		cipherMap.put("SSL3_FORTEZZA_DMS_WITH_RC4_128_SHA",
+				SSLSocket.SSL3_FORTEZZA_DMS_WITH_RC4_128_SHA);
 
-    static org.apache.commons.logging.Log log = 
-      org.apache.commons.logging.LogFactory.getLog(JSSSocketFactory.class);
+		cipherMap.put("SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA);
+		cipherMap.put("SSL_RSA_FIPS_WITH_DES_CBC_SHA",
+				SSLSocket.SSL_RSA_FIPS_WITH_DES_CBC_SHA);
 
-    protected static boolean ocspConfigured = false;
-    protected boolean requireClientAuth = false;
-    protected boolean wantClientAuth = false;
-    private Vector enabledCiphers = new Vector(); 
-    private boolean initialized = false;
-    private String serverCertNick = "";
-    private String mServerCertNickPath ="";
-    private String mPwdPath ="";
-    private String mPwdClass ="";
-    private static final String DATE_PATTERN = "dd/MMM/yyyy:HH:mm:ss";
-    private static SimpleDateFormat timeStampFormat = new SimpleDateFormat(DATE_PATTERN);
-    FileWriter debugFile = null;
-    boolean debug = false;
-    private IPasswordStore mPasswordStore = null;
-    private boolean mStrictCiphers = false;
+		// TLS
+		cipherMap.put("TLS_RSA_EXPORT1024_WITH_DES_CBC_SHA",
+				SSLSocket.TLS_RSA_EXPORT1024_WITH_DES_CBC_SHA);
+		cipherMap.put("TLS_RSA_EXPORT1024_WITH_RC4_56_SHA",
+				SSLSocket.TLS_RSA_EXPORT1024_WITH_RC4_56_SHA);
 
-    public JSSSocketFactory (AbstractEndpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+		cipherMap.put("TLS_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA",
+				SSLSocket.TLS_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA);
+		cipherMap.put("TLS_DHE_DSS_EXPORT1024_WITH_RC4_56_SHA",
+				SSLSocket.TLS_DHE_DSS_EXPORT1024_WITH_RC4_56_SHA);
+		cipherMap.put("TLS_DHE_DSS_WITH_RC4_128_SHA",
+				SSLSocket.TLS_DHE_DSS_WITH_RC4_128_SHA);
 
-    private void debugWrite(String m) throws IOException {
-	if (debug) {
-            String timeStamp = timeStampFormat.format(new Date());
-            String threadName = Thread.currentThread().getName();
-	    debugFile.write("[" + timeStamp + "][" + threadName + "]: " + m);
-        }
-    }
+		cipherMap.put("TLS_RSA_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_RSA_WITH_AES_128_CBC_SHA);
+		cipherMap.put("TLS_DH_DSS_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_DH_DSS_WITH_AES_128_CBC_SHA);
+		cipherMap.put("TLS_DH_RSA_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_DH_RSA_WITH_AES_128_CBC_SHA);
+		cipherMap.put("TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_DHE_DSS_WITH_AES_128_CBC_SHA);
+		cipherMap.put("TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_DHE_RSA_WITH_AES_128_CBC_SHA);
+		cipherMap.put("TLS_DH_ANON_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_DH_ANON_WITH_AES_128_CBC_SHA);
 
-    public void setSSLCiphers(String attr) throws SocketException, IOException
-    {
-      String ciphers = (String)endpoint.getAttribute(attr);
-      if (ciphers == null || ciphers.equals("")) {
-          debugWrite("JSSSocketFactory setSSLCiphers: "+ attr +" not found");
-          return;
-      }
-      StringTokenizer st = new StringTokenizer(ciphers, ",");
-      while (st.hasMoreTokens()) {
-        String cipherstr = st.nextToken();
-        int cipherid = 0;
-        String text;
-        boolean state;
+		cipherMap.put("TLS_RSA_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_RSA_WITH_AES_256_CBC_SHA);
+		cipherMap.put("TLS_DH_DSS_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_DH_DSS_WITH_AES_256_CBC_SHA);
+		cipherMap.put("TLS_DH_RSA_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_DH_RSA_WITH_AES_256_CBC_SHA);
+		cipherMap.put("TLS_DHE_DSS_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_DHE_DSS_WITH_AES_256_CBC_SHA);
+		cipherMap.put("TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_DHE_RSA_WITH_AES_256_CBC_SHA);
+		cipherMap.put("TLS_DH_ANON_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_DH_ANON_WITH_AES_256_CBC_SHA);
 
-        if (cipherstr.startsWith("+")) {
-            state = true;
-            text = cipherstr.substring(1);
-        } else if (cipherstr.startsWith("-")) {
-            state = false;
-            text = cipherstr.substring(1);
-        } else {
-            state = true;       // no enable/disable flag, assume enable
-            text = cipherstr;
-        }
+		// ECC
+		cipherMap.put("TLS_ECDH_ECDSA_WITH_NULL_SHA",
+				SSLSocket.TLS_ECDH_ECDSA_WITH_NULL_SHA);
+		cipherMap.put("TLS_ECDH_ECDSA_WITH_RC4_128_SHA",
+				SSLSocket.TLS_ECDH_ECDSA_WITH_RC4_128_SHA);
+		cipherMap.put("TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA);
+		cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA);
+		cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA);
 
-        if (text.startsWith("0x") || text.startsWith("0X")) {
-            // this allows us to specify new ciphers
-            try {
-                cipherid = Integer.parseInt(text.substring(2), 16);
-            }
-            catch (Exception e) {
-                System.err.println("Error: SSL cipher \"\""+text+"\" cannot be read as an integer");
-                continue;
-            }
-        } else {
-            Object mapValue;
+		cipherMap.put("TLS_ECDHE_ECDSA_WITH_NULL_SHA",
+				SSLSocket.TLS_ECDHE_ECDSA_WITH_NULL_SHA);
+		cipherMap.put("TLS_ECDHE_ECDSA_WITH_RC4_128_SHA",
+				SSLSocket.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA);
+		cipherMap.put("TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA);
+		cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA);
+		cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA);
 
-            mapValue = cipherMap.get(text);
-            if (mapValue == null) {
-                cipherid = 0;
-            } else {
-                cipherid = (Integer)mapValue;
-            }
-        }
-        if (cipherid != 0) {
-            try {
-                debugWrite("JSSSocketFactory setSSLCiphers:  "+
-                    cipherstr+": 0x"+Integer.toHexString(cipherid) +"\n");
-                SSLSocket.setCipherPreferenceDefault(cipherid, state);
-            }
-            catch (Exception e) {
-                if (eccCipherMap.containsKey(cipherid)) {
-                    System.err.println("Warning: SSL ECC cipher \""+text+"\" unsupported by NSS. "+
-                                       "This is probably O.K. unless ECC support has been installed.");
-                } else {
-                    System.err.println("Error: SSL cipher \""+text+"\" unsupported by NSS");
-                }
-            }
-        } else {
-            System.err.println("Error: SSL cipher \""+text+"\" not recognized by tomcatjss");
-        }
-      }
-    }
+		cipherMap.put("TLS_ECDHE_RSA_WITH_NULL_SHA",
+				SSLSocket.TLS_ECDHE_RSA_WITH_NULL_SHA);
+		cipherMap.put("TLS_ECDHE_RSA_WITH_RC4_128_SHA",
+				SSLSocket.TLS_ECDHE_RSA_WITH_RC4_128_SHA);
+		cipherMap.put("TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA);
+		cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA);
+		cipherMap.put("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA);
 
-    /*
-     * note: the SSL_OptionSet-based API for controlling the enabled
-     * protocol versions are obsolete and replaced by the
-     * setSSLVersionRange calls.  If the "range" parameters are
-     * present in the attributes then the sslOptions parameter is
-     * ignored.
-     */
-    public void setSSLOptions() throws SocketException, IOException
-    {
-      String options = (String)endpoint.getAttribute("sslOptions");
-      StringTokenizer st = new StringTokenizer(options, ",");
-      while (st.hasMoreTokens()) {
-        String option = st.nextToken();
-        StringTokenizer st1 = new StringTokenizer(option, "=");
-        String name = st1.nextToken();
-        String value = st1.nextToken();
-        if (name.equals("ssl2")) {
-          if (value.equals("true")) {
-            SSLSocket.enableSSL2Default(true);
-            setSSLCiphers("ssl2Ciphers");
-          } else {
-            SSLSocket.enableSSL2Default(false);
-          }
-        }
-        if (name.equals("ssl3")) {
-          if (value.equals("true")) {
-            SSLSocket.enableSSL3Default(true);
-            setSSLCiphers("ssl3Ciphers");
-          } else {
-            SSLSocket.enableSSL3Default(false);
-          }
-        }
-        if (name.equals("tls")) {
-          if (value.equals("true")) {
-            SSLSocket.enableTLSDefault(true);
-            setSSLCiphers("tlsCiphers");
-          } else {
-            SSLSocket.enableTLSDefault(false);
-          }
-        }
-      }
-    }
+		cipherMap.put("TLS_ECDH_anon_WITH_NULL_SHA",
+				SSLSocket.TLS_ECDH_anon_WITH_NULL_SHA);
+		cipherMap.put("TLS_ECDH_anon_WITH_RC4_128_SHA",
+				SSLSocket.TLS_ECDH_anon_WITH_RC4_128_SHA);
+		cipherMap.put("TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA",
+				SSLSocket.TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA);
+		cipherMap.put("TLS_ECDH_anon_WITH_AES_128_CBC_SHA",
+				SSLSocket.TLS_ECDH_anon_WITH_AES_128_CBC_SHA);
+		cipherMap.put("TLS_ECDH_anon_WITH_AES_256_CBC_SHA",
+				SSLSocket.TLS_ECDH_anon_WITH_AES_256_CBC_SHA);
 
-    // remove all to start with a clean slate
-    public void unsetSSLCiphers() throws SocketException
-    {
-        int ciphers[] = SSLSocket.getImplementedCipherSuites();
-        try {
-          for (int i = 0; ciphers != null && i < ciphers.length; i++) {
+		// TLSv1_2
+		cipherMap.put("TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
+				SSLSocket.TLS_DHE_RSA_WITH_AES_128_CBC_SHA256);
+		cipherMap.put("TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
+				SSLSocket.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256);
+		cipherMap.put("TLS_RSA_WITH_NULL_SHA256",
+				SSLSocket.TLS_RSA_WITH_NULL_SHA256);
+		cipherMap.put("TLS_RSA_WITH_AES_128_CBC_SHA256",
+				SSLSocket.TLS_RSA_WITH_AES_128_CBC_SHA256);
+		cipherMap.put("TLS_RSA_WITH_AES_256_CBC_SHA256",
+				SSLSocket.TLS_RSA_WITH_AES_256_CBC_SHA256);
+		cipherMap.put("TLS_RSA_WITH_SEED_CBC_SHA",
+				SSLSocket.TLS_RSA_WITH_SEED_CBC_SHA);
+		cipherMap.put("TLS_RSA_WITH_AES_128_GCM_SHA256",
+				SSLSocket.TLS_RSA_WITH_AES_128_GCM_SHA256);
+		cipherMap.put("TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
+				SSLSocket.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256);
+		cipherMap.put("TLS_DHE_DSS_WITH_AES_128_GCM_SHA256",
+				SSLSocket.TLS_DHE_DSS_WITH_AES_128_GCM_SHA256);
+		cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+				SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256);
+		cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+				SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256);
+		cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+				SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256);
+		cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256",
+				SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256);
+		cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+				SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256);
+		cipherMap.put("TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256",
+				SSLSocket.TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256);
 
-            debugWrite("JSSSocketFactory unsetSSLCiphers - turning off '0x"+
-               Integer.toHexString(ciphers[i]) + "'\n");
-            SSLSocket.setCipherPreferenceDefault(ciphers[i], false);
-          }
-        } catch (Exception e) {
-        }
-    }
+	}
 
- 
-    /*
-     * setSSLVersionRangeDefault sets the range of allowed ssl versions.
-     * This replaces the obsolete SSL_Option* API
-     *
-     * @param protoVariant indicates whether this setting is for 
-       type "stream" or "datagram"
-     * @param sslVersionRange_s takes on the form of "min:max" where
-     * min/max values can be "ssl3, tls1_0, tls1_1, or tls1_2"
-     * ssl2 is not supported for tomcatjss via this interface
-     * The format is "sslVersionRange=min:max"
-     */
-    public void setSSLVersionRangeDefault(
-            org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant protoVariant,
-            String sslVersionRange_s)
-        throws SocketException, IllegalArgumentException, IOException {
+	private static HashMap<Integer, String> eccCipherMap = new HashMap<Integer, String>();
+	static {
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+				"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,
+				"TLS_ECDH_RSA_WITH_AES_256_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,
+				"TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
+				"TLS_ECDHE_ECDSA_WITH_RC4_128_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+				"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_RC4_128_SHA,
+				"TLS_ECDHE_RSA_WITH_RC4_128_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+				"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_RC4_128_SHA,
+				"TLS_ECDH_RSA_WITH_RC4_128_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,
+				"TLS_ECDH_RSA_WITH_AES_128_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_RC4_128_SHA,
+				"TLS_ECDH_ECDSA_WITH_RC4_128_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,
+				"TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,
+				"TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+				"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA,
+				"TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA,
+				"TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_NULL_SHA,
+				"TLS_ECDHE_ECDSA_WITH_NULL_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_NULL_SHA,
+				"TLS_ECDHE_RSA_WITH_NULL_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_NULL_SHA,
+				"TLS_ECDH_RSA_WITH_NULL_SHA");
+		eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_NULL_SHA,
+				"TLS_ECDH_ECDSA_WITH_NULL_SHA");
+	}
 
-        // process sslVersionRange_s
-        String[] sslVersionRange = sslVersionRange_s.split(":"); 
-        if (sslVersionRange.length != 2) {
-            debugWrite("JSSSocketFactory setSSLversionRangeDefault- SSL Version Range format error: " + sslVersionRange_s +"\n");
-            throw new SocketException("tomcatjss: setSSLversionRangeDefault format error");
-        }
-        String min_s = sslVersionRange[0];
-        String max_s = sslVersionRange[1];
-        int min = getSSLVersionRangeEnum(min_s);
-        int max = getSSLVersionRangeEnum(max_s);
-        if ((min == -1) || (max== -1)) {
-            debugWrite("JSSSocketFactory setSSLversionRangeDefault- SSL Version Range format error: " + sslVersionRange_s +"\n");
-            throw new SocketException("tomcatjss: setSSLversionRangeDefault format error");
-        }
+	private AbstractEndpoint endpoint;
 
-        debugWrite("JSSSocketFactory setSSLversionRangeDefault- SSL Version Range set to min=" + min + " max = " + max +"\n");
-        org.mozilla.jss.ssl.SSLSocket.SSLVersionRange range =
-            new org.mozilla.jss.ssl.SSLSocket.SSLVersionRange(min, max);
+	static org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
+			.getLog(JSSSocketFactory.class);
 
-        SSLSocket.setSSLVersionRangeDefault(protoVariant, range);
-        debugWrite("JSSSocketFactory setSSLversionRangeDefault- variant set\n");
-    }
+	protected static boolean ocspConfigured = false;
+	protected boolean requireClientAuth = false;
+	protected boolean wantClientAuth = false;
+	private boolean initialized = false;
+	private String serverCertNick = "";
+	private String mServerCertNickPath = "";
+	private String mPwdPath = "";
+	private String mPwdClass = "";
+	private static final String DATE_PATTERN = "dd/MMM/yyyy:HH:mm:ss";
+	private static SimpleDateFormat timeStampFormat = new SimpleDateFormat(
+			DATE_PATTERN);
+	FileWriter debugFile = null;
+	boolean debug = false;
+	private IPasswordStore mPasswordStore = null;
+	private boolean mStrictCiphers = false;
 
-    int getSSLVersionRangeEnum (String rangeString) {
-        if (rangeString == null)
-            return -1;
-        if (rangeString.equals("ssl3"))
-            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.ssl3;
-        else if (rangeString.equals("tls1_0"))
-            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_0;
-        else if (rangeString.equals("tls1_1"))
-            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_1;
-        else if (rangeString.equals("tls1_2"))
-            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_2;
+	public JSSSocketFactory(AbstractEndpoint endpoint) {
+		this.endpoint = endpoint;
+	}
 
-        return -1;
-    }
-
-    void init() throws IOException {
-        try {
-            String deb = (String)endpoint.getAttribute("debug");
-            if (deb.equals("true")) {
-            debug = true;
-            debugFile =  new FileWriter("/tmp/tomcatjss.log", true);
-            debugWrite("JSSSocketFactory init - debug is on\n");
-            }
-        } catch (Exception e) {
-	    //	    System.out.println("no tomcatjss debugging");
-        }
-
-        try {
-            try {
-                mPwdPath = (String)endpoint.getAttribute("passwordFile");
-		mPwdClass = (String)endpoint.getAttribute("passwordClass");
-		if (mPwdClass != null) {
-		    mPasswordStore = (IPasswordStore)Class.forName(mPwdClass).newInstance();
-                    mPasswordStore.init(mPwdPath);
-                    debugWrite("JSSSocketFactory init - password reader initialized\n");
+	private void debugWrite(String m) throws IOException {
+		if (debug) {
+			String timeStamp = timeStampFormat.format(new Date());
+			String threadName = Thread.currentThread().getName();
+			debugFile.write("[" + timeStamp + "][" + threadName + "]: " + m);
 		}
-             } catch (Exception e) {
-                debugWrite("JSSSocketFactory init - Exception caught: "
-                   +e.toString() + "\n");
-                if (debugFile != null)
-                    debugFile.close();
-                throw new IOException("JSSSocketFactory: no passwordFilePath defined");
-            }
+	}
 
-            String certDir = (String)endpoint.getAttribute("certdbDir");
-   
-            CryptoManager.InitializationValues vals = 
-              new CryptoManager.InitializationValues(certDir,
-              "", "", "secmod.db");
+	public void setSSLCiphers(String attr) throws SocketException, IOException {
+		String ciphers = (String) endpoint.getAttribute(attr);
+		if (ciphers == null || ciphers.equals("")) {
+			debugWrite("JSSSocketFactory setSSLCiphers: " + attr + " not found");
+			return;
+		}
+		StringTokenizer st = new StringTokenizer(ciphers, ",");
+		while (st.hasMoreTokens()) {
+			String cipherstr = st.nextToken();
+			int cipherid = 0;
+			String text;
+			boolean state;
 
-            vals.removeSunProvider = false;
-            vals.installJSSProvider = true;
-            try {
-                CryptoManager.initialize(vals);
-            } catch (AlreadyInitializedException ee) {
-                // do nothing
-            }
-            CryptoManager manager = CryptoManager.getInstance();
+			if (cipherstr.startsWith("+")) {
+				state = true;
+				text = cipherstr.substring(1);
+			} else if (cipherstr.startsWith("-")) {
+				state = false;
+				text = cipherstr.substring(1);
+			} else {
+				state = true; // no enable/disable flag, assume enable
+				text = cipherstr;
+			}
 
-            //JSSSocketFactory init - handle crypto tokens
-            debugWrite("JSSSocketFactory init - about to handle crypto unit logins\n");
+			if (text.startsWith("0x") || text.startsWith("0X")) {
+				// this allows us to specify new ciphers
+				try {
+					cipherid = Integer.parseInt(text.substring(2), 16);
+				} catch (Exception e) {
+					System.err.println("Error: SSL cipher \"\"" + text
+							+ "\" cannot be read as an integer");
+					continue;
+				}
+			} else {
+				Object mapValue;
 
-            if (mPasswordStore != null) {
-                Enumeration en = mPasswordStore.getTags();
-                while (en.hasMoreElements()){
-                    String pwd = "";
-                    Password pw = null;
-                    String tokenName = "";
-                    String st = (String) en.nextElement();
-                    debugWrite("JSSSocketFactory init - tag name="+st+"\n");
-                    pwd = mPasswordStore.getPassword(st);
+				mapValue = cipherMap.get(text);
+				if (mapValue == null) {
+					cipherid = 0;
+				} else {
+					cipherid = (Integer) mapValue;
+				}
+			}
+			if (cipherid != 0) {
+				try {
+					debugWrite("JSSSocketFactory setSSLCiphers:  " + cipherstr
+							+ ": 0x" + Integer.toHexString(cipherid) + "\n");
+					SSLSocket.setCipherPreferenceDefault(cipherid, state);
+				} catch (Exception e) {
+					if (eccCipherMap.containsKey(cipherid)) {
+						System.err
+								.println("Warning: SSL ECC cipher \""
+										+ text
+										+ "\" unsupported by NSS. "
+										+ "This is probably O.K. unless ECC support has been installed.");
+					} else {
+						System.err.println("Error: SSL cipher \"" + text
+								+ "\" unsupported by NSS");
+					}
+				}
+			} else {
+				System.err.println("Error: SSL cipher \"" + text
+						+ "\" not recognized by tomcatjss");
+			}
+		}
+	}
 
-                    if (pwd != null) {
-                        debugWrite("JSSSocketFactory init - got password\n");
-                        pw = new Password(pwd.toCharArray()); 
-                    } else {
-                        debugWrite("JSSSocketFactory init - no pwd found in password.conf\n");
-                        continue;
-                    }
+	/*
+	 * note: the SSL_OptionSet-based API for controlling the enabled protocol
+	 * versions are obsolete and replaced by the setSSLVersionRange calls. If
+	 * the "range" parameters are present in the attributes then the sslOptions
+	 * parameter is ignored.
+	 */
+	public void setSSLOptions() throws SocketException, IOException {
+		String options = (String) endpoint.getAttribute("sslOptions");
+		StringTokenizer st = new StringTokenizer(options, ",");
+		while (st.hasMoreTokens()) {
+			String option = st.nextToken();
+			StringTokenizer st1 = new StringTokenizer(option, "=");
+			String name = st1.nextToken();
+			String value = st1.nextToken();
+			if (name.equals("ssl2")) {
+				if (value.equals("true")) {
+					SSLSocket.enableSSL2Default(true);
+					setSSLCiphers("ssl2Ciphers");
+				} else {
+					SSLSocket.enableSSL2Default(false);
+				}
+			}
+			if (name.equals("ssl3")) {
+				if (value.equals("true")) {
+					SSLSocket.enableSSL3Default(true);
+					setSSLCiphers("ssl3Ciphers");
+				} else {
+					SSLSocket.enableSSL3Default(false);
+				}
+			}
+			if (name.equals("tls")) {
+				if (value.equals("true")) {
+					SSLSocket.enableTLSDefault(true);
+					setSSLCiphers("tlsCiphers");
+				} else {
+					SSLSocket.enableTLSDefault(false);
+				}
+			}
+		}
+	}
 
-                    CryptoToken token = null;
-                    if (st.equals("internal")) {
-                        debugWrite("JSSSocketFactory init - got internal software token\n");
-                        token = manager.getInternalKeyStorageToken();
-                    } else if (st.startsWith("hardware-")) {
-                        debugWrite("JSSSocketFactory init - got hardware\n");
+	// remove all to start with a clean slate
+	public void unsetSSLCiphers() throws SocketException {
+		int ciphers[] = SSLSocket.getImplementedCipherSuites();
+		try {
+			for (int i = 0; ciphers != null && i < ciphers.length; i++) {
 
-                        tokenName = st.substring(9);
-                        debugWrite("JSSSocketFactory init - tokenName="+tokenName+"\n");
+				debugWrite("JSSSocketFactory unsetSSLCiphers - turning off '0x"
+						+ Integer.toHexString(ciphers[i]) + "'\n");
+				SSLSocket.setCipherPreferenceDefault(ciphers[i], false);
+			}
+		} catch (Exception e) {
+		}
+	}
 
-                        // find the hsm and log in
-                        token = manager.getTokenByName(tokenName);
-                    } else {
-                        //non-token entries
-                    }
-                    if (token != null) {
-                        if (!token.isLoggedIn()) {
-                            debugWrite("JSSSocketFactory init -not logged in...about to log in\n");
-                            token.login(pw);
-                        } else {
-                            debugWrite("JSSSocketFactory init - already logged in\n");
-                        }
-                    }
-                } //while
-                debugWrite("JSSSocketFactory init - tokens initialized/logged in\n");
-            } else {
-                debugWrite("JSSSocketFactory init - no login done\n");
-            } //mPasswordStore not null
+	/*
+	 * setSSLVersionRangeDefault sets the range of allowed ssl versions. This
+	 * replaces the obsolete SSL_Option* API
+	 * 
+	 * @param protoVariant indicates whether this setting is for type "stream"
+	 * or "datagram"
+	 * 
+	 * @param sslVersionRange_s takes on the form of "min:max" where min/max
+	 * values can be "ssl3, tls1_0, tls1_1, or tls1_2" ssl2 is not supported for
+	 * tomcatjss via this interface The format is "sslVersionRange=min:max"
+	 */
+	public void setSSLVersionRangeDefault(
+			org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant protoVariant,
+			String sslVersionRange_s) throws SocketException,
+			IllegalArgumentException, IOException {
 
-            // MUST look for "clientauth" (ALL lowercase) since "clientAuth"
-            // (camel case) has already been processed by Tomcat 7
-            String clientAuthStr = (String)endpoint.getAttribute("clientauth");
-            if (clientAuthStr == null) {
-                debugWrite("JSSSocketFactory init - \"clientauth\" not found, default to want.");
-                clientAuthStr = "want";
-            }
-            File file = null;
-            try {
-                mServerCertNickPath = (String)endpoint.getAttribute("serverCertNickFile");
-                debugWrite("JSSSocketFactory init - got serverCertNickFile"+
-                            mServerCertNickPath+"\n");
-                file = new File(mServerCertNickPath);
-                Long l = new Long(file.length());
-                FileInputStream in = new FileInputStream(mServerCertNickPath);
-                BufferedReader d =
-                            new BufferedReader(new InputStreamReader(in));
-                do {
-                  serverCertNick = d.readLine();
-                  debugWrite("JSSSocketFactory init - got line "+
-                            serverCertNick +"\n");
-                  if (serverCertNick == null) {
-                      in.close();
-                      d.close();
-                      throw new IOException("JSSSocketFactory: error loading serverCertNickFile");
-                  }
-                  // handle comments or blank lines
-                  if (serverCertNick.trim().startsWith("#") ||
-                         serverCertNick.trim().equals("")) { 
-                    serverCertNick = null;
-                  }
-                } while (serverCertNick == null);
-                debugWrite("JSSSocketFactory init - found nickname=" + serverCertNick + "\n");
-                in.close();
-                d.close();
-            } catch (Exception e) {
-                debugWrite("JSSSocketFactory init - Exception caught: "
-                   +e.toString() + "\n");
-                if (debugFile != null)
-                    debugFile.close();
-                throw new IOException("JSSSocketFactory: no serverCertNickFile defined");
-            }
+		// process sslVersionRange_s
+		String[] sslVersionRange = sslVersionRange_s.split(":");
+		if (sslVersionRange.length != 2) {
+			debugWrite("JSSSocketFactory setSSLversionRangeDefault- SSL Version Range format error: "
+					+ sslVersionRange_s + "\n");
+			throw new SocketException(
+					"tomcatjss: setSSLversionRangeDefault format error");
+		}
+		String min_s = sslVersionRange[0];
+		String max_s = sslVersionRange[1];
+		int min = getSSLVersionRangeEnum(min_s);
+		int max = getSSLVersionRangeEnum(max_s);
+		if ((min == -1) || (max == -1)) {
+			debugWrite("JSSSocketFactory setSSLversionRangeDefault- SSL Version Range format error: "
+					+ sslVersionRange_s + "\n");
+			throw new SocketException(
+					"tomcatjss: setSSLversionRangeDefault format error");
+		}
 
-            //serverCertNick = (String)endpoint.getAttribute("serverCert");
-            if (clientAuthStr.equalsIgnoreCase("true") ||
-              clientAuthStr.equalsIgnoreCase("yes")) {
-                requireClientAuth = true;
-            } else if (clientAuthStr.equalsIgnoreCase("want")) {
-                wantClientAuth = true;
-            }
-            debugWrite("JSSSocketFActory init - requireClientAuth " + requireClientAuth +
-                          " wantClientAuth " + wantClientAuth + " ocspConfigured " 
-                          + ocspConfigured);
-            if (requireClientAuth == true || wantClientAuth == true 
-                   && ocspConfigured == false ) {
-                debugWrite("JSSSocketFactory init - checking for OCSP settings. \n" ); 
-                boolean enableOCSP = false; 
-                String doOCSP = (String) endpoint.getAttribute("enableOCSP");
+		debugWrite("JSSSocketFactory setSSLversionRangeDefault- SSL Version Range set to min="
+				+ min + " max = " + max + "\n");
+		org.mozilla.jss.ssl.SSLSocket.SSLVersionRange range = new org.mozilla.jss.ssl.SSLSocket.SSLVersionRange(
+				min, max);
 
-                debugWrite("JSSSocketFactory init - doOCSP flag:"+
-                          doOCSP+ " \n");
+		SSLSocket.setSSLVersionRangeDefault(protoVariant, range);
+		debugWrite("JSSSocketFactory setSSLversionRangeDefault- variant set\n");
+	}
 
-                if (doOCSP != null &&  doOCSP.equalsIgnoreCase("true"))  {
-                   enableOCSP = true;
-                } 
-               
-                debugWrite("JSSSocketFactory init - enableOCSP "+
-                             enableOCSP+ "\n"); 
-                
-                if( enableOCSP == true ) {
-                    String ocspResponderURL = (String) endpoint.getAttribute("ocspResponderURL");
-                    debugWrite("JSSSocketFactory init - ocspResponderURL "+
-                             ocspResponderURL+ "\n");
-                    String ocspResponderCertNickname = (String) endpoint.getAttribute("ocspResponderCertNickname");
-		    debugWrite("JSSSocketFactory init - ocspResponderCertNickname" + ocspResponderCertNickname + "\n");
-                    if( (ocspResponderURL != null && ocspResponderURL.length() > 0) && 
-                        (ocspResponderCertNickname != null && 
-                         ocspResponderCertNickname.length() > 0 ))   {
+	int getSSLVersionRangeEnum(String rangeString) {
+		if (rangeString == null)
+			return -1;
+		if (rangeString.equals("ssl3"))
+			return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.ssl3;
+		else if (rangeString.equals("tls1_0"))
+			return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_0;
+		else if (rangeString.equals("tls1_1"))
+			return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_1;
+		else if (rangeString.equals("tls1_2"))
+			return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_2;
 
-                       ocspConfigured = true;
-                       try {
-                           manager.configureOCSP(true,ocspResponderURL,ocspResponderCertNickname);
-                           int ocspCacheSize_i = 1000;
-                           int ocspMinCacheEntryDuration_i = 3600;
-                           int ocspMaxCacheEntryDuration_i = 86400;
+		return -1;
+	}
 
-                           String ocspCacheSize = (String) endpoint.getAttribute("ocspCacheSize");
-                           String ocspMinCacheEntryDuration = (String) endpoint.getAttribute("ocspMinCacheEntryDuration");
-                           String ocspMaxCacheEntryDuration = (String) endpoint.getAttribute("ocspMaxCacheEntryDuration");
+	void init() throws IOException {
+		try {
+			String deb = (String) endpoint.getAttribute("debug");
+			if (deb.equals("true")) {
+				debug = true;
+				debugFile = new FileWriter("/tmp/tomcatjss.log", true);
+				debugWrite("JSSSocketFactory init - debug is on\n");
+			}
+		} catch (Exception e) {
+			// System.out.println("no tomcatjss debugging");
+		}
 
-                           if (ocspCacheSize != null ||
-                             ocspMinCacheEntryDuration != null ||
-                             ocspMaxCacheEntryDuration != null) {
-                             // not specified then takes the default
-                             if (ocspCacheSize != null) {
-		    debugWrite("JSSSocketFactory init - ocspCacheSize= " + ocspCacheSize+"\n");
-                               ocspCacheSize_i = Integer.parseInt(ocspCacheSize);
-                             }
-                             if (ocspMinCacheEntryDuration != null) {
-		    debugWrite("JSSSocketFactory init - ocspMinCacheEntryDuration= " + ocspMinCacheEntryDuration+"\n");
-                               ocspMinCacheEntryDuration_i = Integer.parseInt(ocspMinCacheEntryDuration);
-                             }
-                             if (ocspMaxCacheEntryDuration != null) {
-		    debugWrite("JSSSocketFactory init - ocspMaxCacheEntryDuration= " + ocspMaxCacheEntryDuration+"\n");
-                               ocspMaxCacheEntryDuration_i = Integer.parseInt(ocspMaxCacheEntryDuration);
-                             }
-                             manager.OCSPCacheSettings(ocspCacheSize_i,
-                               ocspMinCacheEntryDuration_i, ocspMaxCacheEntryDuration_i);
-                           }
+		try {
+			try {
+				mPwdPath = (String) endpoint.getAttribute("passwordFile");
+				mPwdClass = (String) endpoint.getAttribute("passwordClass");
+				if (mPwdClass != null) {
+					mPasswordStore = (IPasswordStore) Class.forName(mPwdClass)
+							.newInstance();
+					mPasswordStore.init(mPwdPath);
+					debugWrite("JSSSocketFactory init - password reader initialized\n");
+				}
+			} catch (Exception e) {
+				debugWrite("JSSSocketFactory init - Exception caught: "
+						+ e.toString() + "\n");
+				if (debugFile != null)
+					debugFile.close();
+				throw new IOException(
+						"JSSSocketFactory: no passwordFilePath defined");
+			}
 
-                           // defualt to 60 seconds;
-                           String ocspTimeout = (String) endpoint.getAttribute("ocspTimeout");
-                           if (ocspTimeout != null) {
-		    debugWrite("JSSSocketFactory init - ocspTimeout= \n" + ocspTimeout);
-                               int ocspTimeout_i = Integer.parseInt(ocspTimeout);
-                               if (ocspTimeout_i < 0)
-                                  ocspTimeout_i = 60; 
-                               manager.setOCSPTimeout(ocspTimeout_i);
-                           }
+			String certDir = (String) endpoint.getAttribute("certdbDir");
 
-                       } catch(java.security.GeneralSecurityException e) {
-                          ocspConfigured = false;
-                          debugWrite("JSSSocketFactory init - error initializing OCSP e: " + e.toString()+"\n");
-                          throw new  java.security.GeneralSecurityException("Error setting up OCSP. Check configuraion!");
-                       } catch (java.lang.NumberFormatException e) {
-                          debugWrite("JSSSocketFactory init - error setting OCSP cache e: " + e.toString()+"\n");
-                          throw new  java.lang.NumberFormatException("Error setting OCSP cache. Check configuraion!");
-                       }
-                    }  else  {
-                        debugWrite("JSSSocketFactory init - error ocsp misconfigured! \n");
-                        throw new java.security.GeneralSecurityException("Error setting up OCSP. Check configuration!");
-                    } 
-                }
-            }
-            //serverCertNick = "Server-Cert cert-tks";
-            // 12 hours = 43200 seconds
-            SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
+			CryptoManager.InitializationValues vals = new CryptoManager.InitializationValues(
+					certDir, "", "", "secmod.db");
 
-            String strictCiphersStr = (String)endpoint.getAttribute("strictCiphers");
-            if (strictCiphersStr.equalsIgnoreCase("true") ||
-              strictCiphersStr.equalsIgnoreCase("yes")) {
-                mStrictCiphers = true;
-            }
-            if (mStrictCiphers == true) {
-                // what ciphers do we have to start with? turn them all off
-                 debugWrite("SSSocketFactory init - before setSSLCiphers, strictCiphers is true\n");
-                 unsetSSLCiphers();
-            } else {
-                 debugWrite("SSSocketFactory init - before setSSLCiphers, strictCiphers is false\n");
-            }
+			vals.removeSunProvider = false;
+			vals.installJSSProvider = true;
+			try {
+				CryptoManager.initialize(vals);
+			} catch (AlreadyInitializedException ee) {
+				// do nothing
+			}
+			CryptoManager manager = CryptoManager.getInstance();
 
-            String sslVersionRangeStream = (String)endpoint.getAttribute("sslVersionRangeStream");
-            if ((sslVersionRangeStream != null) && !sslVersionRangeStream.equals("")) {
-                debugWrite("SSSocketFactory init - calling setSSLVersionRangeDefault() for type STREAM\n");
-                setSSLVersionRangeDefault(org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant.STREAM, sslVersionRangeStream);
-                debugWrite("SSSocketFactory init - after setSSLVersionRangeDefault() for type STREAM\n");
-            }
+			// JSSSocketFactory init - handle crypto tokens
+			debugWrite("JSSSocketFactory init - about to handle crypto unit logins\n");
 
-            String sslVersionRangeDatagram = (String)endpoint.getAttribute("sslVersionRangeDatagram");
-            if ((sslVersionRangeDatagram != null) && !sslVersionRangeDatagram.equals("")) {
-                debugWrite("SSSocketFactory init - calling setSSLVersionRangeDefault() for type DATA_GRAM\n");
-                setSSLVersionRangeDefault(org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant.DATA_GRAM, sslVersionRangeDatagram);
-                debugWrite("SSSocketFactory init - after setSSLVersionRangeDefault() for type DATA_GRAM\n");
-            }
+			if (mPasswordStore != null) {
+				Enumeration<?> en = mPasswordStore.getTags();
+				while (en.hasMoreElements()) {
+					String pwd = "";
+					Password pw = null;
+					String tokenName = "";
+					String st = (String) en.nextElement();
+					debugWrite("JSSSocketFactory init - tag name=" + st + "\n");
+					pwd = mPasswordStore.getPassword(st);
 
-            /*
-             * According to NSS:
-             * the SSL_OptionSet-based API for controlling the enabled
-             * protocol versions are obsolete and replaced by the
-             * setSSLVersionRange calls.
-             * Therefore, if the "range" parameters are
-             * present in the attributes then the sslOptions parameter is
-             * ignored.
-             * Using the new version range API in conjunction with the older
-             * SSL_OptionSet-based API for controlling the enabled protocol
-             * versions may cause unexpected results
-             */
-            if (((sslVersionRangeStream != null)
-                    && !sslVersionRangeStream.equals(""))
-                    || ((sslVersionRangeDatagram != null)
-                    && !sslVersionRangeDatagram.equals(""))) {
-                /* deliberately lose the ssl2 here */
-                debugWrite("SSSocketFactory init - calling setSSLCiphers() honoring only sslRangeCiphers\n");
-                setSSLCiphers("sslRangeCiphers");
-                debugWrite("SSSocketFactory init - after setSSLCiphers() honoring only sslRangeCiphers\n");
-            } else {
-                debugWrite("SSSocketFactory init - calling setSSLOptions()\n");
-                setSSLOptions();
-                debugWrite("SSSocketFactory init - after setSSLOptions()\n");
-            }
+					if (pwd != null) {
+						debugWrite("JSSSocketFactory init - got password\n");
+						pw = new Password(pwd.toCharArray());
+					} else {
+						debugWrite("JSSSocketFactory init - no pwd found in password.conf\n");
+						continue;
+					}
 
-        } catch (Exception ex) {
-            debugWrite("JSSSocketFactory init - exception thrown:"+
-                   ex.toString()+"\n");
-	        System.err.println("JSSSocketFactory init - exception thrown:"+
-                   ex.toString()+"\n");
-            if (debugFile != null)
-                debugFile.close();
-            // The idea is, if admin take the trouble to configure the
-            // ocsp cache, and made a mistake, we want to make server
-            // unavailable until they get it right
-            if((ex instanceof java.security.GeneralSecurityException) ||
-               (ex instanceof java.lang.NumberFormatException))
-              throw  new IOException(ex.toString());
-        }
-        if (debugFile != null)
-            debugFile.close();
-    }
+					CryptoToken token = null;
+					if (st.equals("internal")) {
+						debugWrite("JSSSocketFactory init - got internal software token\n");
+						token = manager.getInternalKeyStorageToken();
+					} else if (st.startsWith("hardware-")) {
+						debugWrite("JSSSocketFactory init - got hardware\n");
 
-    public Socket acceptSocket(ServerSocket socket) throws IOException {
-        SSLSocket asock = null;
-        try {
-            asock = (SSLSocket)socket.accept();
-            if (wantClientAuth || requireClientAuth) {
-                asock.requestClientAuth(true);
-                if (requireClientAuth == true) {
-                    asock.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
-                } else {
-                    asock.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
-                }
-            }
-        } catch (Exception e) {
-            throw new SocketException("SSL handshake error "+e.toString());
-        } 
+						tokenName = st.substring(9);
+						debugWrite("JSSSocketFactory init - tokenName="
+								+ tokenName + "\n");
 
-        return asock;
-    }
+						// find the hsm and log in
+						token = manager.getTokenByName(tokenName);
+					} else {
+						// non-token entries
+					}
+					if (token != null) {
+						if (!token.isLoggedIn()) {
+							debugWrite("JSSSocketFactory init -not logged in...about to log in\n");
+							token.login(pw);
+						} else {
+							debugWrite("JSSSocketFactory init - already logged in\n");
+						}
+					}
+				} // while
+				debugWrite("JSSSocketFactory init - tokens initialized/logged in\n");
+			} else {
+				debugWrite("JSSSocketFactory init - no login done\n");
+			} // mPasswordStore not null
 
-    public void handshake(Socket sock) throws IOException {
-        //((SSLSocket)sock).forceHandshake();
-    }
+			// MUST look for "clientauth" (ALL lowercase) since "clientAuth"
+			// (camel case) has already been processed by Tomcat 7
+			String clientAuthStr = (String) endpoint.getAttribute("clientauth");
+			if (clientAuthStr == null) {
+				debugWrite("JSSSocketFactory init - \"clientauth\" not found, default to want.");
+				clientAuthStr = "want";
+			}
+			File file = null;
+			try {
+				mServerCertNickPath = (String) endpoint
+						.getAttribute("serverCertNickFile");
+				debugWrite("JSSSocketFactory init - got serverCertNickFile"
+						+ mServerCertNickPath + "\n");
+				file = new File(mServerCertNickPath);
+				FileInputStream in = new FileInputStream(mServerCertNickPath);
+				BufferedReader d = new BufferedReader(new InputStreamReader(in));
+				do {
+					serverCertNick = d.readLine();
+					debugWrite("JSSSocketFactory init - got line "
+							+ serverCertNick + "\n");
+					if (serverCertNick == null) {
+						in.close();
+						d.close();
+						throw new IOException(
+								"JSSSocketFactory: error loading serverCertNickFile");
+					}
+					// handle comments or blank lines
+					if (serverCertNick.trim().startsWith("#")
+							|| serverCertNick.trim().equals("")) {
+						serverCertNick = null;
+					}
+				} while (serverCertNick == null);
+				debugWrite("JSSSocketFactory init - found nickname="
+						+ serverCertNick + "\n");
+				in.close();
+				d.close();
+			} catch (Exception e) {
+				debugWrite("JSSSocketFactory init - Exception caught: "
+						+ e.toString() + "\n");
+				if (debugFile != null)
+					debugFile.close();
+				throw new IOException(
+						"JSSSocketFactory: no serverCertNickFile defined");
+			}
 
-    public ServerSocket createSocket(int port) throws IOException {
-        return createSocket(port, SSLServerSocket.DEFAULT_BACKLOG, null);
-    }
+			// serverCertNick = (String)endpoint.getAttribute("serverCert");
+			if (clientAuthStr.equalsIgnoreCase("true")
+					|| clientAuthStr.equalsIgnoreCase("yes")) {
+				requireClientAuth = true;
+			} else if (clientAuthStr.equalsIgnoreCase("want")) {
+				wantClientAuth = true;
+			}
+			debugWrite("JSSSocketFActory init - requireClientAuth "
+					+ requireClientAuth + " wantClientAuth " + wantClientAuth
+					+ " ocspConfigured " + ocspConfigured);
+			if (requireClientAuth == true || wantClientAuth == true
+					&& ocspConfigured == false) {
+				debugWrite("JSSSocketFactory init - checking for OCSP settings. \n");
+				boolean enableOCSP = false;
+				String doOCSP = (String) endpoint.getAttribute("enableOCSP");
 
-    public ServerSocket createSocket(int port, int backlog)
-      throws IOException {
-        return createSocket(port, backlog, null);
-    }
+				debugWrite("JSSSocketFactory init - doOCSP flag:" + doOCSP
+						+ " \n");
 
-    public ServerSocket createSocket(int port, int backlog,
-      InetAddress ifAddress) throws IOException {
-        return createSocket(port, backlog, ifAddress, true);
-    }
+				if (doOCSP != null && doOCSP.equalsIgnoreCase("true")) {
+					enableOCSP = true;
+				}
 
-    public ServerSocket createSocket(int port, int backlog,
-      InetAddress ifAddress, boolean reuseAddr) throws IOException {
-        if (!initialized)
-            init();
-        SSLServerSocket socket = null;
-        socket = (SSLServerSocket)(new SSLServerSocket(port, backlog,
-          ifAddress, null, reuseAddr));
-        initializeSocket(socket);
-        return (ServerSocket)socket;
-    }
+				debugWrite("JSSSocketFactory init - enableOCSP " + enableOCSP
+						+ "\n");
 
-    private void initializeSocket(SSLServerSocket s) {
-        try {
-            /*
-             * Timeout's should not be enabled by default.
-             * Upper layers will call setSoTimeout() as needed.
-             * Zero means disable.
-             */
-            s.setSoTimeout(0);
-            if (wantClientAuth || requireClientAuth) {
-                s.requestClientAuth(true);
-                if (requireClientAuth == true) {
-                    s.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
-                } else {
-                    s.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
-                }
-            } 
-            s.setServerCertNickname(serverCertNick);
-        } catch (Exception e) {
-        }
-    }
+				if (enableOCSP == true) {
+					String ocspResponderURL = (String) endpoint
+							.getAttribute("ocspResponderURL");
+					debugWrite("JSSSocketFactory init - ocspResponderURL "
+							+ ocspResponderURL + "\n");
+					String ocspResponderCertNickname = (String) endpoint
+							.getAttribute("ocspResponderCertNickname");
+					debugWrite("JSSSocketFactory init - ocspResponderCertNickname"
+							+ ocspResponderCertNickname + "\n");
+					if ((ocspResponderURL != null && ocspResponderURL.length() > 0)
+							&& (ocspResponderCertNickname != null && ocspResponderCertNickname
+									.length() > 0)) {
 
-    // Methods required to "implement" Tomcat 7 Interface
-    public SSLContext createSSLContext() throws Exception {
-        return null;
-    }
+						ocspConfigured = true;
+						try {
+							manager.configureOCSP(true, ocspResponderURL,
+									ocspResponderCertNickname);
+							int ocspCacheSize_i = 1000;
+							int ocspMinCacheEntryDuration_i = 3600;
+							int ocspMaxCacheEntryDuration_i = 86400;
 
-    public KeyManager[] getKeyManagers() throws Exception {
-        return null;
-    }
+							String ocspCacheSize = (String) endpoint
+									.getAttribute("ocspCacheSize");
+							String ocspMinCacheEntryDuration = (String) endpoint
+									.getAttribute("ocspMinCacheEntryDuration");
+							String ocspMaxCacheEntryDuration = (String) endpoint
+									.getAttribute("ocspMaxCacheEntryDuration");
 
-    public TrustManager[] getTrustManagers() throws Exception {
-        return null;
-    }
+							if (ocspCacheSize != null
+									|| ocspMinCacheEntryDuration != null
+									|| ocspMaxCacheEntryDuration != null) {
+								// not specified then takes the default
+								if (ocspCacheSize != null) {
+									debugWrite("JSSSocketFactory init - ocspCacheSize= "
+											+ ocspCacheSize + "\n");
+									ocspCacheSize_i = Integer
+											.parseInt(ocspCacheSize);
+								}
+								if (ocspMinCacheEntryDuration != null) {
+									debugWrite("JSSSocketFactory init - ocspMinCacheEntryDuration= "
+											+ ocspMinCacheEntryDuration + "\n");
+									ocspMinCacheEntryDuration_i = Integer
+											.parseInt(ocspMinCacheEntryDuration);
+								}
+								if (ocspMaxCacheEntryDuration != null) {
+									debugWrite("JSSSocketFactory init - ocspMaxCacheEntryDuration= "
+											+ ocspMaxCacheEntryDuration + "\n");
+									ocspMaxCacheEntryDuration_i = Integer
+											.parseInt(ocspMaxCacheEntryDuration);
+								}
+								manager.OCSPCacheSettings(ocspCacheSize_i,
+										ocspMinCacheEntryDuration_i,
+										ocspMaxCacheEntryDuration_i);
+							}
 
-    public void configureSessionContext(javax.net.ssl.SSLSessionContext sslSessionContext) {
-        return;
-    }
+							// defualt to 60 seconds;
+							String ocspTimeout = (String) endpoint
+									.getAttribute("ocspTimeout");
+							if (ocspTimeout != null) {
+								debugWrite("JSSSocketFactory init - ocspTimeout= \n"
+										+ ocspTimeout);
+								int ocspTimeout_i = Integer
+										.parseInt(ocspTimeout);
+								if (ocspTimeout_i < 0)
+									ocspTimeout_i = 60;
+								manager.setOCSPTimeout(ocspTimeout_i);
+							}
 
-    public String[] getEnableableCiphers(SSLContext context) {
-        return null;
-    }
+						} catch (java.security.GeneralSecurityException e) {
+							ocspConfigured = false;
+							debugWrite("JSSSocketFactory init - error initializing OCSP e: "
+									+ e.toString() + "\n");
+							throw new java.security.GeneralSecurityException(
+									"Error setting up OCSP. Check configuraion!");
+						} catch (java.lang.NumberFormatException e) {
+							debugWrite("JSSSocketFactory init - error setting OCSP cache e: "
+									+ e.toString() + "\n");
+							throw new java.lang.NumberFormatException(
+									"Error setting OCSP cache. Check configuraion!");
+						}
+					} else {
+						debugWrite("JSSSocketFactory init - error ocsp misconfigured! \n");
+						throw new java.security.GeneralSecurityException(
+								"Error setting up OCSP. Check configuration!");
+					}
+				}
+			}
+			// serverCertNick = "Server-Cert cert-tks";
+			// 12 hours = 43200 seconds
+			SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
 
-    public String[] getEnableableProtocols(SSLContext context) {
-        return null;
-    }
+			String strictCiphersStr = (String) endpoint
+					.getAttribute("strictCiphers");
+			if (strictCiphersStr.equalsIgnoreCase("true")
+					|| strictCiphersStr.equalsIgnoreCase("yes")) {
+				mStrictCiphers = true;
+			}
+			if (mStrictCiphers == true) {
+				// what ciphers do we have to start with? turn them all off
+				debugWrite("SSSocketFactory init - before setSSLCiphers, strictCiphers is true\n");
+				unsetSSLCiphers();
+			} else {
+				debugWrite("SSSocketFactory init - before setSSLCiphers, strictCiphers is false\n");
+			}
+
+			String sslVersionRangeStream = (String) endpoint
+					.getAttribute("sslVersionRangeStream");
+			if ((sslVersionRangeStream != null)
+					&& !sslVersionRangeStream.equals("")) {
+				debugWrite("SSSocketFactory init - calling setSSLVersionRangeDefault() for type STREAM\n");
+				setSSLVersionRangeDefault(
+						org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant.STREAM,
+						sslVersionRangeStream);
+				debugWrite("SSSocketFactory init - after setSSLVersionRangeDefault() for type STREAM\n");
+			}
+
+			String sslVersionRangeDatagram = (String) endpoint
+					.getAttribute("sslVersionRangeDatagram");
+			if ((sslVersionRangeDatagram != null)
+					&& !sslVersionRangeDatagram.equals("")) {
+				debugWrite("SSSocketFactory init - calling setSSLVersionRangeDefault() for type DATA_GRAM\n");
+				setSSLVersionRangeDefault(
+						org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant.DATA_GRAM,
+						sslVersionRangeDatagram);
+				debugWrite("SSSocketFactory init - after setSSLVersionRangeDefault() for type DATA_GRAM\n");
+			}
+
+			/*
+			 * According to NSS: the SSL_OptionSet-based API for controlling the
+			 * enabled protocol versions are obsolete and replaced by the
+			 * setSSLVersionRange calls. Therefore, if the "range" parameters
+			 * are present in the attributes then the sslOptions parameter is
+			 * ignored. Using the new version range API in conjunction with the
+			 * older SSL_OptionSet-based API for controlling the enabled
+			 * protocol versions may cause unexpected results
+			 */
+			if (((sslVersionRangeStream != null) && !sslVersionRangeStream
+					.equals(""))
+					|| ((sslVersionRangeDatagram != null) && !sslVersionRangeDatagram
+							.equals(""))) {
+				/* deliberately lose the ssl2 here */
+				debugWrite("SSSocketFactory init - calling setSSLCiphers() honoring only sslRangeCiphers\n");
+				setSSLCiphers("sslRangeCiphers");
+				debugWrite("SSSocketFactory init - after setSSLCiphers() honoring only sslRangeCiphers\n");
+			} else {
+				debugWrite("SSSocketFactory init - calling setSSLOptions()\n");
+				setSSLOptions();
+				debugWrite("SSSocketFactory init - after setSSLOptions()\n");
+			}
+
+		} catch (Exception ex) {
+			debugWrite("JSSSocketFactory init - exception thrown:"
+					+ ex.toString() + "\n");
+			System.err.println("JSSSocketFactory init - exception thrown:"
+					+ ex.toString() + "\n");
+			if (debugFile != null)
+				debugFile.close();
+			// The idea is, if admin take the trouble to configure the
+			// ocsp cache, and made a mistake, we want to make server
+			// unavailable until they get it right
+			if ((ex instanceof java.security.GeneralSecurityException)
+					|| (ex instanceof java.lang.NumberFormatException))
+				throw new IOException(ex.toString());
+		}
+		if (debugFile != null)
+			debugFile.close();
+	}
+
+	public Socket acceptSocket(ServerSocket socket) throws IOException {
+		SSLSocket asock = null;
+		try {
+			asock = (SSLSocket) socket.accept();
+			if (wantClientAuth || requireClientAuth) {
+				asock.requestClientAuth(true);
+				if (requireClientAuth == true) {
+					asock.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
+				} else {
+					asock.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
+				}
+			}
+		} catch (Exception e) {
+			throw new SocketException("SSL handshake error " + e.toString());
+		}
+
+		return asock;
+	}
+
+	public void handshake(Socket sock) throws IOException {
+		// ((SSLSocket)sock).forceHandshake();
+	}
+
+	public ServerSocket createSocket(int port) throws IOException {
+		return createSocket(port, SSLServerSocket.DEFAULT_BACKLOG, null);
+	}
+
+	public ServerSocket createSocket(int port, int backlog) throws IOException {
+		return createSocket(port, backlog, null);
+	}
+
+	public ServerSocket createSocket(int port, int backlog,
+			InetAddress ifAddress) throws IOException {
+		return createSocket(port, backlog, ifAddress, true);
+	}
+
+	public ServerSocket createSocket(int port, int backlog,
+			InetAddress ifAddress, boolean reuseAddr) throws IOException {
+		if (!initialized)
+			init();
+		SSLServerSocket socket = null;
+		socket = (SSLServerSocket) (new SSLServerSocket(port, backlog,
+				ifAddress, null, reuseAddr));
+		initializeSocket(socket);
+		return (ServerSocket) socket;
+	}
+
+	private void initializeSocket(SSLServerSocket s) {
+		try {
+			/*
+			 * Timeout's should not be enabled by default. Upper layers will
+			 * call setSoTimeout() as needed. Zero means disable.
+			 */
+			s.setSoTimeout(0);
+			if (wantClientAuth || requireClientAuth) {
+				s.requestClientAuth(true);
+				if (requireClientAuth == true) {
+					s.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
+				} else {
+					s.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
+				}
+			}
+			s.setServerCertNickname(serverCertNick);
+		} catch (Exception e) {
+		}
+	}
+
+	// Methods required to "implement" Tomcat 7 Interface
+	public SSLContext createSSLContext() throws Exception {
+		return null;
+	}
+
+	public KeyManager[] getKeyManagers() throws Exception {
+		return null;
+	}
+
+	public TrustManager[] getTrustManagers() throws Exception {
+		return null;
+	}
+
+	public void configureSessionContext(
+			javax.net.ssl.SSLSessionContext sslSessionContext) {
+		return;
+	}
+
+	public String[] getEnableableCiphers(SSLContext context) {
+		return null;
+	}
+
+	public String[] getEnableableProtocols(SSLContext context) {
+		return null;
+	}
 }
