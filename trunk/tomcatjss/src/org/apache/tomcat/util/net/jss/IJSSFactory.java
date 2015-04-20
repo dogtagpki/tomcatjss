@@ -19,11 +19,14 @@
 
 package org.apache.tomcat.util.net.jss;
 
-import org.mozilla.jss.ssl.*;
-import org.apache.tomcat.util.net.*;
-import java.net.*;
+import java.net.Socket;
+
+import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.apache.tomcat.util.net.SSLSupport;
+import org.apache.tomcat.util.net.ServerSocketFactory;
 
 interface IJSSFactory {
-    public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint);
-    public SSLSupport getSSLSupport(Socket socket);
+	public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint);
+
+	public SSLSupport getSSLSupport(Socket socket);
 }
