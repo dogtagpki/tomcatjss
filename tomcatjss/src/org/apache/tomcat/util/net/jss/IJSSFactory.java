@@ -26,7 +26,7 @@ import org.apache.tomcat.util.net.SSLSupport;
 import org.apache.tomcat.util.net.ServerSocketFactory;
 
 interface IJSSFactory {
-	public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint);
+    public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint);
 
-	public SSLSupport getSSLSupport(Socket socket);
+    public SSLSupport getSSLSupport(Socket socket);
 }
