@@ -42,6 +42,10 @@ public class PlainPasswordFile implements IPasswordStore {
         mPwdStore.load(file);
     }
 
+    public String getPassword(String tag) {
+        return getPassword(tag, 0);
+    }
+
     public String getPassword(String tag, int iteration) {
         return mPwdStore.getProperty(tag);
     }
