@@ -104,6 +104,7 @@
   <!-- This property is set to '/dirsec' when built on rhel4 -->
   <property name="dirsec" value="" />
   <property name="jss.jar" value="${jss.home}${dirsec}/jss4.jar" />
+  <property name="commons-lang.jar" value="${jar.home}/commons-lang.jar" />
 
   <!--
     Classpath
@@ -112,6 +113,7 @@
     <pathelement location="${jss.jar}"/>
     <pathelement location="${tomcat-coyote.jar}"/>
     <pathelement location="${commons-logging.jar}"/>
+    <pathelement location="${commons-lang.jar}"/>
   </path>
 
   <!--

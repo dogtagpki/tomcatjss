@@ -12,7 +12,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
+ *
  * Copyright (C) 2007 Red Hat, Inc.
  * All rights reserved.
  * END COPYRIGHT BLOCK */
@@ -42,8 +42,8 @@ public class PlainPasswordFile implements IPasswordStore {
         mPwdStore.load(file);
     }
 
-    public String getPassword(String tag) {
-        return (String) mPwdStore.getProperty(tag);
+    public String getPassword(String tag, int iteration) {
+        return mPwdStore.getProperty(tag);
     }
 
     // return an array of String-based tag
