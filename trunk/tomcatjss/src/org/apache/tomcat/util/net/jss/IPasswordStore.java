@@ -27,6 +27,8 @@ public interface IPasswordStore {
 
     public String getPassword(String tag, int iteration);
 
+    public String getPassword(String tag);
+
     public Enumeration<String> getTags();
 
     public Object putPassword(String tag, String password);
