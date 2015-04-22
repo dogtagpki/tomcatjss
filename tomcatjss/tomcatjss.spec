@@ -15,6 +15,7 @@ Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.ta
 # jss requires versioning to meet both build and runtime requirements
 # tomcat requires versioning to meet both build and runtime requirements
 BuildRequires:    ant
+BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
 BuildRequires:    jss >= 4.2.6-35
@@ -24,6 +25,7 @@ BuildRequires:    tomcat >= 8.0.18
 BuildRequires:    tomcat >= 7.0.40
 %endif
 
+Requires:         apache-commons-lang
 %if 0%{?fedora} >= 21
 Requires:         java-headless
 %else
