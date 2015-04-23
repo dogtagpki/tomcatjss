@@ -93,7 +93,7 @@ rm -rf %{buildroot}
 %changelog
 * Wed Mar  4 2015 Endi Sukma Dewata <edewata@redhat.com> 7.1.2-1
 - Bugzilla Bug #1198450 - Support for Tomcat 8
-- Add nuxwdog support (alee)
+- Bugzilla Bug #1214858 - Add nuxwdog support (alee)
 
 * Tue Sep 30 2014 Christina Fu <cfu@redhat.com> 7.1.1-1
 - Bugzilla Bug #1058366 NullPointerException in tomcatjss searching
