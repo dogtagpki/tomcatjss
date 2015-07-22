@@ -97,6 +97,10 @@ class JSSSupport implements SSLSupport {
         return null;
     }
 
+    public String getProtocol() throws IOException {
+        return null;
+    }
+
     public String getSessionId() throws IOException {
         return null;
     }
