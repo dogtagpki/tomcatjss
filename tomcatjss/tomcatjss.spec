@@ -1,5 +1,5 @@
 Name:     tomcatjss
-Version:  7.1.2
+Version:  7.1.3
 Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
@@ -91,6 +91,9 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Wed Mar 22 2015 Endi Sukma Dewata <edewata@redhat.com> 7.1.3-1
+- Bugzilla Bug #1245786 - Build failure on F23
+
 * Wed Mar  4 2015 Endi Sukma Dewata <edewata@redhat.com> 7.1.2-1
 - Bugzilla Bug #1198450 - Support for Tomcat 8
 - Bugzilla Bug #1214858 - Add nuxwdog support (alee)
