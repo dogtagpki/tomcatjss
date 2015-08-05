@@ -91,8 +91,11 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
-* Wed Mar 22 2015 Endi Sukma Dewata <edewata@redhat.com> 7.1.3-1
+* Wed Jul 22 2015 Endi Sukma Dewata <edewata@redhat.com> 7.1.3-1
 - Bugzilla Bug #1245786 - Build failure on F23
+
+* Fri Jun 19 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.1.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
 * Wed Mar  4 2015 Endi Sukma Dewata <edewata@redhat.com> 7.1.2-1
 - Bugzilla Bug #1198450 - Support for Tomcat 8
