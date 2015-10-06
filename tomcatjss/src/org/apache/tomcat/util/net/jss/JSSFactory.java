@@ -19,22 +19,19 @@
 
 package org.apache.tomcat.util.net.jss;
 
-import java.net.Socket;
-
-import org.apache.tomcat.util.net.AbstractEndpoint;
-import org.apache.tomcat.util.net.SSLSupport;
-import org.apache.tomcat.util.net.ServerSocketFactory;
-import org.mozilla.jss.ssl.SSLSocket;
+import org.mozilla.jss.ssl.*;
+import org.apache.tomcat.util.net.*;
+import java.net.*;
 
 class JSSFactory implements IJSSFactory {
     JSSFactory() {
     }
 
-    public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint) {
-        return new JSSSocketFactory(endpoint);
+    public ServerSocketFactory getSocketFactory() {
+        return new JSSSocketFactory();
     }
 
     public SSLSupport getSSLSupport(Socket socket) {
-        return new JSSSupport((SSLSocket) socket);
+        return new JSSSupport((SSLSocket)socket);
     }
 }
