@@ -57,11 +57,9 @@
     Set the properties related to the source tree
   -->
   <exec executable="pwd" failonerror="true" outputproperty="cwd"/>
-  <property name="src.dir" value="src"/>
-  <property name="script.dir" value="${src.dir}/script"/>
+  <property name="src.dir" value="tomcat-8.0"/>
   <property name="lib.dir" value="lib"/>
   <property name="docs.dir" value="docs"/>
-  <property name="etc.dir" value="src/etc"/>
 
   <!--
     Set the properties for the build area
@@ -90,7 +88,6 @@
   <property name="dist.etc" value="${dist.dir}/etc"/>
   <property name="src.dist.name" value="${name}-${version}"/>
   <property name="src.dist.dir" value="dist-src"/>
-  <property name="src.dist.src" value="${src.dist.dir}/src"/>
   <property name="src.dist.docs" value="${src.dist.dir}/docs"/>
   <property name="src.dist.lib" value="${src.dist.dir}/lib"/>
   <property name="rpm.dist.dir" value="${cwd}/${dist.base}/rpmpkg"/>
@@ -101,8 +98,11 @@
   -->
   <property name="jar.home" value="/usr/share/java" />
   <property name="commons-logging.jar" value="${jar.home}/commons-logging-api.jar" />
-  <property name="tomcat.lib" value="${jar.home}/tomcat" />
-  <property name="tomcat-coyote.jar" value="${tomcat.lib}/tomcat-coyote.jar" />
+
+  <property name="tomcat.home" value="/usr/share/tomcat" />
+  <property name="tomcat-coyote.jar" value="${tomcat.home}/lib/tomcat-coyote.jar" />
+  <property name="tomcat-juli.jar" value="${tomcat.home}/bin/tomcat-juli.jar" />
+
   <property name="jss.home" value="${jnidir}" />
   <!-- This property is set to '/dirsec' when built on rhel4 -->
   <property name="dirsec" value="" />
@@ -115,6 +115,7 @@
   <path id="classpath">
     <pathelement location="${jss.jar}"/>
     <pathelement location="${tomcat-coyote.jar}"/>
+    <pathelement location="${tomcat-juli.jar}"/>
     <pathelement location="${commons-logging.jar}"/>
     <pathelement location="${commons-lang.jar}"/>
   </path>
@@ -166,6 +167,7 @@
         <include name="LICENSE"/>
         <include name="build.xml"/>
         <include name="src/**"/>
+        <include name="${src.dir}/**"/>
       </zipfileset>
     </zip>
     <tar longfile="gnu" destfile="${dist.base.source}/${src.dist.name}.tar">
@@ -174,6 +176,7 @@
         <include name="LICENSE"/>
         <include name="build.xml"/>
         <include name="src/**"/>
+        <include name="${src.dir}/**"/>
       </tarfileset>
     </tar>
 
@@ -207,7 +210,9 @@
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
     <mkdir dir="${build.classes}"/>
-    <javac debug="on" srcdir="${src.dir}/org" destdir="${build.classes}">
+    <javac debug="on" destdir="${build.classes}">
+      <src path="src"/>
+      <src path="${src.dir}"/>
       <classpath refid="classpath"/>
     </javac>
   </target>
