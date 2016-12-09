@@ -48,7 +48,10 @@
   <property name="chmod.maxparallel" value="250"/>
   <property name="deprecation" value="false"/>
   <property name="optimize" value="true"/>
-  <property name="specfile" value="tomcatjss.el5.spec"/>
+  <property name="specfile" value="tomcatjss.spec"/>
+  <property name="rhel" value="0"/>
+  <property name="jnidir" value="/usr/lib/java" />
+  <property name="installdir" value="/usr/share/java" />
 
   <!--
     Set the properties related to the source tree
@@ -221,6 +224,13 @@
   </target>
 
   <target name="dist" depends="compile,package,main_distribution" description="--> creates the full Apache Ant distribution">
+  </target>
+
+  <target name="install" depends="compile,package">
+    <delete file="${installdir}/tomcatjss-${version}.jar"/>
+    <delete file="${installdir}/tomcatjss.jar"/>
+    <copy file="${build.jars}/tomcatjss.jar" tofile="${installdir}/tomcatjss-${version}.jar"/>
+    <symlink link="${installdir}/tomcatjss.jar" resource="tomcatjss-${version}.jar"/>
   </target>
 
   <target name="main" depends="compile,package">
