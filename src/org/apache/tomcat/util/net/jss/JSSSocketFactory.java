@@ -934,6 +934,10 @@ public class JSSSocketFactory implements
         SSLSocket asock = null;
         try {
             asock = (SSLSocket) socket.accept();
+
+            TomcatJSS tomcatjss = TomcatJSS.getInstance();
+            asock.addSocketListener(tomcatjss);
+
             if (wantClientAuth || requireClientAuth) {
                 asock.requestClientAuth(true);
                 if (requireClientAuth == true) {
