@@ -1,4 +1,3 @@
-# This comment is a test of the fedorahosted SVN ==> github GIT migration.
 tomcatjss, a JSSE module for Tomcat that uses JSS, a Java interface to
 Network Security Services(NSS). 
 
