@@ -12,7 +12,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
+ *
  * Copyright (C) 2007 Red Hat, Inc.
  * All rights reserved.
  * END COPYRIGHT BLOCK */
@@ -20,13 +20,14 @@
 package org.apache.tomcat.util.net.jss;
 
 import java.net.Socket;
+import java.util.Properties;
 
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.SSLSupport;
 import org.apache.tomcat.util.net.ServerSocketFactory;
 
 interface IJSSFactory {
-    public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint);
+    public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint, Properties config);
 
     public SSLSupport getSSLSupport(Socket socket);
 }

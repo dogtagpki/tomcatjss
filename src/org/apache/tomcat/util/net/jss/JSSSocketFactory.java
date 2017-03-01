@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import javax.net.ssl.KeyManager;
@@ -336,6 +337,7 @@ public class JSSSocketFactory implements
     }
 
     private AbstractEndpoint endpoint;
+    private Properties config;
 
     static org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
             .getLog(JSSSocketFactory.class);
@@ -359,6 +361,11 @@ public class JSSSocketFactory implements
 
     public JSSSocketFactory(AbstractEndpoint endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public JSSSocketFactory(AbstractEndpoint endpoint, Properties config) {
+        this.endpoint = endpoint;
+        this.config = config;
     }
 
     private void debugWrite(String m) throws IOException {
@@ -556,12 +563,16 @@ public class JSSSocketFactory implements
     }
 
     String getEndpointAttribute(String tag) {
-        try {
-            return (String) endpoint.getAttribute(tag);
-        } catch (Exception e) {
-            // old tomcat throws an exception if the parameter does not exist
+
+        // check <catalina.base>/conf/server.xml
+        String value = (String)endpoint.getAttribute(tag);
+
+        // if not available, check <catalina.base>/conf/tomcatjss.conf
+        if (value == null) {
+            value = config.getProperty(tag);
         }
-        return null;
+
+        return value;
     }
 
     String getEndpointAttribute(String tag, String defaultValue) {
