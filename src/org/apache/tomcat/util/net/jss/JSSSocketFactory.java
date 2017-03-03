@@ -377,7 +377,7 @@ public class JSSSocketFactory implements
     }
 
     public void setSSLCiphers(String attr) throws SocketException, IOException {
-        String ciphers = getEndpointAttribute(attr);
+        String ciphers = getProperty(attr);
         if (StringUtils.isEmpty(ciphers)) {
             debugWrite("JSSSocketFactory setSSLCiphers: " + attr + " not found");
             return;
@@ -451,7 +451,7 @@ public class JSSSocketFactory implements
      * parameter is ignored.
      */
     public void setSSLOptions() throws SocketException, IOException {
-        String options = getEndpointAttribute("sslOptions");
+        String options = getProperty("sslOptions");
         if (StringUtils.isEmpty(options)) {
             debugWrite("no sslOptions specified");
             return;
@@ -562,7 +562,7 @@ public class JSSSocketFactory implements
         return -1;
     }
 
-    String getEndpointAttribute(String tag) {
+    String getProperty(String tag) {
 
         // check <catalina.base>/conf/server.xml
         String value = (String)endpoint.getAttribute(tag);
@@ -575,8 +575,8 @@ public class JSSSocketFactory implements
         return value;
     }
 
-    String getEndpointAttribute(String tag, String defaultValue) {
-        String value = getEndpointAttribute(tag);
+    String getProperty(String tag, String defaultValue) {
+        String value = getProperty(tag);
         if (value == null) {
             return defaultValue;
         }
@@ -585,7 +585,7 @@ public class JSSSocketFactory implements
 
     void init() throws IOException {
         // debug enabled?
-        String deb = getEndpointAttribute("debug");
+        String deb = getProperty("debug");
         if (StringUtils.equals(deb, "true")) {
             debug = true;
             debugFile = new FileWriter("/tmp/tomcatjss.log", true);
@@ -613,14 +613,14 @@ public class JSSSocketFactory implements
 
             // MUST look for "clientauth" (ALL lowercase) since "clientAuth"
             // (camel case) has already been processed by Tomcat 7
-            String clientAuthStr = getEndpointAttribute("clientauth");
+            String clientAuthStr = getProperty("clientauth");
             if (clientAuthStr == null) {
                 debugWrite("JSSSocketFactory init - \"clientauth\" not found, default to want.");
                 clientAuthStr = "want";
             }
             File file = null;
             try {
-                mServerCertNickPath = getEndpointAttribute("serverCertNickFile");
+                mServerCertNickPath = getProperty("serverCertNickFile");
                 if (mServerCertNickPath == null) {
                     throw new IOException("serverCertNickFile not specified");
                 }
@@ -656,7 +656,7 @@ public class JSSSocketFactory implements
                         "JSSSocketFactory: no serverCertNickFile defined");
             }
 
-            // serverCertNick = (String)getEndpointAttribute("serverCert");
+            // serverCertNick = (String)getProperty("serverCert");
             if (clientAuthStr.equalsIgnoreCase("true")
                     || clientAuthStr.equalsIgnoreCase("yes")) {
                 requireClientAuth = true;
@@ -670,7 +670,7 @@ public class JSSSocketFactory implements
                     && ocspConfigured == false) {
                 debugWrite("JSSSocketFactory init - checking for OCSP settings. \n");
                 boolean enableOCSP = false;
-                String doOCSP = getEndpointAttribute("enableOCSP");
+                String doOCSP = getProperty("enableOCSP");
 
                 debugWrite("JSSSocketFactory init - doOCSP flag:" + doOCSP + " \n");
 
@@ -682,10 +682,10 @@ public class JSSSocketFactory implements
                         + "\n");
 
                 if (enableOCSP == true) {
-                    String ocspResponderURL = getEndpointAttribute("ocspResponderURL");
+                    String ocspResponderURL = getProperty("ocspResponderURL");
                     debugWrite("JSSSocketFactory init - ocspResponderURL "
                             + ocspResponderURL + "\n");
-                    String ocspResponderCertNickname = getEndpointAttribute(
+                    String ocspResponderCertNickname = getProperty(
                             "ocspResponderCertNickname");
                     debugWrite("JSSSocketFactory init - ocspResponderCertNickname"
                             + ocspResponderCertNickname + "\n");
@@ -700,9 +700,9 @@ public class JSSSocketFactory implements
                             int ocspMinCacheEntryDuration_i = 3600;
                             int ocspMaxCacheEntryDuration_i = 86400;
 
-                            String ocspCacheSize = getEndpointAttribute("ocspCacheSize");
-                            String ocspMinCacheEntryDuration = getEndpointAttribute("ocspMinCacheEntryDuration");
-                            String ocspMaxCacheEntryDuration = getEndpointAttribute("ocspMaxCacheEntryDuration");
+                            String ocspCacheSize = getProperty("ocspCacheSize");
+                            String ocspMinCacheEntryDuration = getProperty("ocspMinCacheEntryDuration");
+                            String ocspMaxCacheEntryDuration = getProperty("ocspMaxCacheEntryDuration");
 
                             if (ocspCacheSize != null
                                     || ocspMinCacheEntryDuration != null
@@ -729,7 +729,7 @@ public class JSSSocketFactory implements
                             }
 
                             // defualt to 60 seconds;
-                            String ocspTimeout = getEndpointAttribute("ocspTimeout");
+                            String ocspTimeout = getProperty("ocspTimeout");
                             if (ocspTimeout != null) {
                                 debugWrite("JSSSocketFactory init - ocspTimeout= \n" + ocspTimeout);
                                 int ocspTimeout_i = Integer.parseInt(ocspTimeout);
@@ -760,7 +760,7 @@ public class JSSSocketFactory implements
             // 12 hours = 43200 seconds
             SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
 
-            String strictCiphersStr = getEndpointAttribute("strictCiphers");
+            String strictCiphersStr = getProperty("strictCiphers");
             if (StringUtils.equalsIgnoreCase(strictCiphersStr, "true")
                     || StringUtils.equalsIgnoreCase(strictCiphersStr, "yes")) {
                 mStrictCiphers = true;
@@ -773,7 +773,7 @@ public class JSSSocketFactory implements
                 debugWrite("SSSocketFactory init - before setSSLCiphers, strictCiphers is false\n");
             }
 
-            String sslVersionRangeStream = getEndpointAttribute("sslVersionRangeStream");
+            String sslVersionRangeStream = getProperty("sslVersionRangeStream");
             if ((sslVersionRangeStream != null)
                     && !sslVersionRangeStream.equals("")) {
                 debugWrite("SSSocketFactory init - calling setSSLVersionRangeDefault() for type STREAM\n");
@@ -783,7 +783,7 @@ public class JSSSocketFactory implements
                 debugWrite("SSSocketFactory init - after setSSLVersionRangeDefault() for type STREAM\n");
             }
 
-            String sslVersionRangeDatagram = getEndpointAttribute("sslVersionRangeDatagram");
+            String sslVersionRangeDatagram = getProperty("sslVersionRangeDatagram");
             if ((sslVersionRangeDatagram != null)
                     && !sslVersionRangeDatagram.equals("")) {
                 debugWrite("SSSocketFactory init - calling setSSLVersionRangeDefault() for type DATA_GRAM\n");
@@ -854,11 +854,11 @@ public class JSSSocketFactory implements
 
     private void initializePasswordStore() throws InstantiationException, IllegalAccessException,
             ClassNotFoundException, IOException {
-        mPwdClass = getEndpointAttribute("passwordClass");
+        mPwdClass = getProperty("passwordClass");
         if (mPwdClass == null) {
             throw new IOException("Misconfiguration: passwordClass is not defined");
         }
-        mPwdPath = getEndpointAttribute("passwordFile");
+        mPwdPath = getProperty("passwordFile");
 
         mPasswordStore = (IPasswordStore) Class.forName(mPwdClass).newInstance();
         debugWrite("JSSSocketFactory init - password reader initialized\n");
@@ -869,7 +869,7 @@ public class JSSSocketFactory implements
 
     private CryptoManager getCryptoManager() throws KeyDatabaseException, CertDatabaseException,
             GeneralSecurityException, NotInitializedException, IOException {
-        String certDir = getEndpointAttribute("certdbDir");
+        String certDir = getProperty("certdbDir");
         if (certDir == null) {
             throw new IOException("Misconfiguration: certdir not defined");
         }
