@@ -22,7 +22,7 @@ BuildRequires:    jss >= 4.2.6-35
 %if 0%{?fedora} >= 23
 BuildRequires:    tomcat >= 8.0.18
 %else
-BuildRequires:    tomcat >= 7.0.40
+BuildRequires:    tomcat >= 7.0.68
 %endif
 
 Requires:         apache-commons-lang
@@ -36,7 +36,7 @@ Requires:         jss >= 4.2.6-35
 %if 0%{?fedora} >= 23
 Requires:         tomcat >= 8.0.18
 %else
-Requires:         tomcat >= 7.0.40
+Requires:         tomcat >= 7.0.68
 %endif
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
@@ -91,7 +91,7 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
-* Sun Mar 12 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.0.1
+* Sun Mar 12 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.0-1
 - tomcatjss Pagure Issue #6 - Rebase tomcatjss to 7.2.0 in Fedora 25+ (mharmsen)
 - Bugzilla Bug #1394416 - Rebase tomcatjss to 7.2.0 in RHEL 7.4 (mharmsen)
 
