@@ -164,7 +164,6 @@
      <zipfileset dir="." filemode="755" prefix="${src.dist.name}">
         <include name="README"/>
         <include name="LICENSE"/>
-        <include name="${specfile}"/>
         <include name="build.xml"/>
         <include name="src/**"/>
       </zipfileset>
@@ -173,7 +172,6 @@
       <tarfileset dir="." mode="755" prefix="${src.dist.name}">
         <include name="README"/>
         <include name="LICENSE"/>
-        <include name="${specfile}"/>
         <include name="build.xml"/>
         <include name="src/**"/>
       </tarfileset>
@@ -244,9 +242,11 @@
   <target name="rpms" depends="dist">
     <mkdir dir="${rpm.dist.dir}"/>
     <mkdir dir="${rpm.dist.dir}/SOURCES"/>
+    <copy file="${dist.base.source}/${src.dist.name}.tar.gz" tofile="${rpm.dist.dir}/SOURCES/${src.dist.name}.tar.gz"/>
     <mkdir dir="${rpm.dist.dir}/RPMS"/>
     <mkdir dir="${rpm.dist.dir}/SRPMS"/>
     <mkdir dir="${rpm.dist.dir}/SPECS"/>
+    <copy file="${specfile}" tofile="${rpm.dist.dir}/SPECS/${specfile}"/>
     <mkdir dir="${rpm.dist.dir}/BUILD"/>
 
 
@@ -255,8 +255,8 @@
       <arg value="_topdir ${rpm.dist.dir}"/>
       <arg value="--define"/>
       <arg value="rhel ${rhel}"/>
-      <arg value="-ta"/>
-      <arg value="${dist.base.source}/${src.dist.name}.tar.gz"/>
+      <arg value="-ba"/>
+      <arg value="${rpm.dist.dir}/SPECS/${specfile}"/>
     </exec>
   </target>
 

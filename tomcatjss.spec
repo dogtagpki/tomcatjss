@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  7.2.0
-Release:  1%{?dist}
+Release:  2%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -91,6 +91,10 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Mon Mar 13 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.0-2
+- Changed build so that it did not package and depend upon the specfile being
+  included inside the tarball
+
 * Sun Mar 12 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.0-1
 - tomcatjss Pagure Issue #6 - Rebase tomcatjss to 7.2.0 in Fedora 25+ (mharmsen)
 - Bugzilla Bug #1394416 - Rebase tomcatjss to 7.2.0 in RHEL 7.4 (mharmsen)
