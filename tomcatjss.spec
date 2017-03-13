@@ -1,6 +1,6 @@
 Name:     tomcatjss
-Version:  7.1.3
-Release:  3%{?dist}
+Version:  7.2.0
+Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -91,6 +91,16 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Sun Mar 12 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.0.1
+- tomcatjss Pagure Issue #6 - Rebase tomcatjss to 7.2.0 in Fedora 25+ (mharmsen)
+- Bugzilla Bug #1394416 - Rebase tomcatjss to 7.2.0 in RHEL 7.4 (mharmsen)
+
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 7.1.4-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Tue Jul 5 2016 Christina Fu <cfu@redhat.com> 7.1.4.1
+- Bugzilla Bug #1203407 missing ciphers (cfu)
+
 * Tue Jul 5 2016 Christina Fu <cfu@redhat.com> 7.1.3.3
 - Bugzilla Bug #1203407 missing ciphers (cfu)
 
