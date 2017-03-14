@@ -1,6 +1,6 @@
 Name:     tomcatjss
-Version:  7.2.0
-Release:  2%{?dist}
+Version:  7.2.1
+Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -18,7 +18,7 @@ BuildRequires:    ant
 BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
-BuildRequires:    jss >= 4.2.6-35
+BuildRequires:    jss >= 4.4.0-1
 %if 0%{?fedora} >= 23
 BuildRequires:    tomcat >= 8.0.18
 %else
@@ -32,7 +32,7 @@ Requires:         java-headless
 Requires:         java
 %endif
 Requires:         jpackage-utils >= 0:1.7.5-15
-Requires:         jss >= 4.2.6-35
+Requires:         jss >= 4.4.0-1
 %if 0%{?fedora} >= 23
 Requires:         tomcat >= 8.0.18
 %else
@@ -91,6 +91,10 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Tue Mar 14 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.1-1
+- Updated jss build and runtime dependencies
+- Bumped version due to corrupted tarball
+
 * Mon Mar 13 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.0-2
 - Changed build so that it did not package and depend upon the specfile being
   included inside the tarball
