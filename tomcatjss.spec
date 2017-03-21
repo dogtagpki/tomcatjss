@@ -19,7 +19,7 @@ BuildRequires:    ant
 BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
-BuildRequires:    jss >= 4.4.0-1
+BuildRequires:    jss >= 4.4.0
 %if 0%{?fedora} >= 23
 BuildRequires:    tomcat >= 8.0.18
 %else
@@ -33,7 +33,7 @@ Requires:         java-headless
 Requires:         java
 %endif
 Requires:         jpackage-utils >= 0:1.7.5-15
-Requires:         jss >= 4.4.0-1
+Requires:         jss >= 4.4.0
 %if 0%{?fedora} >= 23
 Requires:         tomcat >= 8.0.18
 %else
