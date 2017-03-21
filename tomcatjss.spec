@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  7.2.1
-Release:  1%{?dist}
+Release:  2%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -14,6 +14,7 @@ Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.ta
 # jpackage-utils requires versioning to meet both build and runtime requirements
 # jss requires versioning to meet both build and runtime requirements
 # tomcat requires versioning to meet both build and runtime requirements
+Conflicts:        pki-base < 10.4.0
 BuildRequires:    ant
 BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
@@ -91,6 +92,10 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Tue Mar 21 2017 Matthew Harmsen <mharmsen@redhat.com> - 7.2.1-2
+- Bugzilla Bug #1434541 -  tomcatjss 7.2.1 is incompatible with versions of
+  pki-base < 10.4.0
+
 * Tue Mar 14 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.1-1
 - Updated jss build and runtime dependencies
 - Bumped version due to corrupted tarball
