@@ -1,6 +1,6 @@
 Name:     tomcatjss
-Version:  7.2.1
-Release:  2%{?dist}
+Version:  7.2.2
+Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -19,7 +19,11 @@ BuildRequires:    ant
 BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
-BuildRequires:    jss >= 4.4.0
+%if 0%{?fedora}
+BuildRequires:    jss >= 4.4.1
+%else
+BuildRequires:    jss >= 4.4.0-4
+%endif
 %if 0%{?fedora} >= 23
 BuildRequires:    tomcat >= 8.0.18
 %else
@@ -33,7 +37,11 @@ Requires:         java-headless
 Requires:         java
 %endif
 Requires:         jpackage-utils >= 0:1.7.5-15
-Requires:         jss >= 4.4.0
+%if 0%{?fedora}
+Requires:         jss >= 4.4.1
+%else
+Requires:         jss >= 4.4.0-4
+%endif
 %if 0%{?fedora} >= 23
 Requires:         tomcat >= 8.0.18
 %else
@@ -92,6 +100,12 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Mon Mar 27 2017 Matthew Harmsen <mharmsen@redhat.com> - 7.2.2-1
+- tomcatjss Pagure Issue #6 - Rebase tomcatjss to 7.2.x in Fedora 25+ (mharmsen)
+- ## 'tomcatjss-support-for-event-API.patch' resolves the following issues
+  ## ported from upstream:
+- tomcatjss Pagure Issue #4 - Support for Event API (edewata)
+
 * Tue Mar 21 2017 Matthew Harmsen <mharmsen@redhat.com> - 7.2.1-2
 - Bugzilla Bug #1434541 -  tomcatjss 7.2.1 is incompatible with versions of
   pki-base < 10.4.0
@@ -105,8 +119,8 @@ rm -rf %{buildroot}
   included inside the tarball
 
 * Sun Mar 12 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.0-1
-- tomcatjss Pagure Issue #6 - Rebase tomcatjss to 7.2.0 in Fedora 25+ (mharmsen)
-- Bugzilla Bug #1394416 - Rebase tomcatjss to 7.2.0 in RHEL 7.4 (mharmsen)
+- tomcatjss Pagure Issue #6 - Rebase tomcatjss to 7.2.x in Fedora 25+ (mharmsen)
+- Bugzilla Bug #1394416 - Rebase tomcatjss to 7.2.x in RHEL 7.4 (mharmsen)
 
 * Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 7.1.4-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild

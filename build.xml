@@ -37,8 +37,8 @@
 
   <property name="Name" value="Tomcat JSS"/>
   <property name="name" value="tomcatjss"/>
-  <property name="version" value="7.2.1"/>
-  <property name="manifest-version" value="7.2.1"/>
+  <property name="version" value="7.2.2"/>
+  <property name="manifest-version" value="7.2.2"/>
 
   <!--
     Set the properties that control various build options
@@ -250,6 +250,12 @@
     <mkdir dir="${rpm.dist.dir}/BUILD"/>
 
 
+    <!--
+     NOTE: To only build an SRPM (e. g. - to use with "--scratch"), change:
+               <arg value="-ba"/>
+           to:
+               <arg value="-bs"/>
+     -->
     <exec executable="rpmbuild">
       <arg value="--define"/>
       <arg value="_topdir ${rpm.dist.dir}"/>
