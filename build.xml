@@ -251,7 +251,7 @@
 
 
     <!--
-     NOTE: To only build an SRPM (e. g. - to use with "--scratch"), change:
+     NOTE: To only build an SRPM (e. g. - to use with "\-\-scratch"), change:
                <arg value="-ba"/>
            to:
                <arg value="-bs"/>
