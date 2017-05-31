@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.SSLSupport;
@@ -35,8 +37,7 @@ public class JSSImplementation extends SSLImplementation {
     static final String JSSFactory = "org.apache.tomcat.util.net.jss.JSSFactory";
     static final String SSLSocketClass = "org.mozilla.jss.ssl.SSLSocket";
 
-    static org.apache.commons.logging.Log logger = org.apache.commons.logging.LogFactory
-            .getLog(JSSImplementation.class);
+    static Log logger = LogFactory.getLog(JSSImplementation.class);
 
     private JSSFactory factory = null;
 

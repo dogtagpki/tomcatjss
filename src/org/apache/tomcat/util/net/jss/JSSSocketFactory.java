@@ -42,6 +42,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 // Imports required to "implement" Tomcat 7 Interface
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.mozilla.jss.CertDatabaseException;
@@ -60,6 +62,8 @@ import org.mozilla.jss.util.Password;
 public class JSSSocketFactory implements
         org.apache.tomcat.util.net.ServerSocketFactory,
         org.apache.tomcat.util.net.SSLUtil {
+
+    static Log logger = LogFactory.getLog(JSSSocketFactory.class);
 
     private static HashMap<String, Integer> cipherMap = new HashMap<String, Integer>();
     static {
@@ -382,9 +386,13 @@ public class JSSSocketFactory implements
             debugWrite("JSSSocketFactory setSSLCiphers: " + attr + " not found");
             return;
         }
-        StringTokenizer st = new StringTokenizer(ciphers, ",");
+
+        logger.debug("Processing " + attr + ":");
+        StringTokenizer st = new StringTokenizer(ciphers, ", ");
         while (st.hasMoreTokens()) {
             String cipherstr = st.nextToken();
+            logger.debug(" - " + cipherstr);
+
             int cipherid = 0;
             String text;
             boolean state;
@@ -456,9 +464,13 @@ public class JSSSocketFactory implements
             debugWrite("no sslOptions specified");
             return;
         }
-        StringTokenizer st = new StringTokenizer(options, ",");
+
+        logger.debug("Processing sslOptions:");
+        StringTokenizer st = new StringTokenizer(options, ", ");
         while (st.hasMoreTokens()) {
             String option = st.nextToken();
+            logger.debug(" - " + option);
+
             StringTokenizer st1 = new StringTokenizer(option, "=");
             String name = st1.nextToken();
             String value = st1.nextToken();
