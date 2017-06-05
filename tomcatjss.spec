@@ -1,5 +1,5 @@
 Name:     tomcatjss
-Version:  7.2.2
+Version:  7.2.3
 Release:  1%{?dist}
 Summary:  JSSE implementation using JSS for Tomcat
 URL:      http://pki.fedoraproject.org/
@@ -20,9 +20,9 @@ BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
 %if 0%{?fedora}
-BuildRequires:    jss >= 4.4.1
+BuildRequires:    jss >= 4.4.2-2
 %else
-BuildRequires:    jss >= 4.4.0-4
+BuildRequires:    jss >= 4.4.0-7
 %endif
 %if 0%{?fedora} >= 23
 BuildRequires:    tomcat >= 8.0.18
@@ -38,9 +38,9 @@ Requires:         java
 %endif
 Requires:         jpackage-utils >= 0:1.7.5-15
 %if 0%{?fedora}
-Requires:         jss >= 4.4.1
+Requires:         jss >= 4.4.2-2
 %else
-Requires:         jss >= 4.4.0-4
+Requires:         jss >= 4.4.0-7
 %endif
 %if 0%{?fedora} >= 23
 Requires:         tomcat >= 8.0.18
@@ -100,6 +100,9 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Mon Jun  5 2017 Endi Sukma Dewata <edewata@redhat.com> 7.2.3-1
+- tomcatjss Pagure Issue #9 - Problem parsing formatted cipher list (edewata)
+
 * Mon Mar 27 2017 Matthew Harmsen <mharmsen@redhat.com> - 7.2.2-1
 - tomcatjss Pagure Issue #6 - Rebase tomcatjss to 7.2.x in Fedora 25+ (mharmsen)
 - ## 'tomcatjss-support-for-event-API.patch' resolves the following issues
