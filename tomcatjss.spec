@@ -1,7 +1,7 @@
 Name:     tomcatjss
-Version:  7.2.3
+Version:  7.2.4
 Release:  1%{?dist}
-Summary:  JSSE implementation using JSS for Tomcat
+Summary:  JSS Connector for Apache Tomcat, a JSSE module for Apache Tomcat that uses JSS
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
 Group:    System Environment/Libraries
@@ -60,8 +60,10 @@ Conflicts:        tomcat-native
 %endif
 
 %description
-A Java Secure Socket Extension (JSSE) implementation
-using Java Security Services (JSS) for Tomcat 7.
+JSS Connector for Apache Tomcat, installed via the tomcatjss package,
+is a Java Secure Socket Extension (JSSE) module for Apache Tomcat that
+uses Java Security Services (JSS), a Java interface to Network Security
+Services (NSS).
 
 NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
        because it uses an underlying NSS security model rather than the
@@ -100,13 +102,14 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Mon Jun 12 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.4-1
+- tomcatjss Pagure Issue #10 - Comply with ASF trademark rules (mharmsen)
+
 * Mon Jun  5 2017 Endi Sukma Dewata <edewata@redhat.com> 7.2.3-1
 - tomcatjss Pagure Issue #9 - Problem parsing formatted cipher list (edewata)
 
 * Mon Mar 27 2017 Matthew Harmsen <mharmsen@redhat.com> - 7.2.2-1
 - tomcatjss Pagure Issue #6 - Rebase tomcatjss to 7.2.x in Fedora 25+ (mharmsen)
-- ## 'tomcatjss-support-for-event-API.patch' resolves the following issues
-  ## ported from upstream:
 - tomcatjss Pagure Issue #4 - Support for Event API (edewata)
 
 * Tue Mar 21 2017 Matthew Harmsen <mharmsen@redhat.com> - 7.2.1-2
@@ -144,13 +147,13 @@ rm -rf %{buildroot}
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
 * Wed Mar  4 2015 Endi Sukma Dewata <edewata@redhat.com> 7.1.2-1
-- Bugzilla Bug #1198450 - Support for Tomcat 8
+- Bugzilla Bug #1198450 - Support for Apache Tomcat 8
 - Bugzilla Bug #1214858 - Add nuxwdog support (alee)
 
 * Tue Sep 30 2014 Christina Fu <cfu@redhat.com> 7.1.1-1
 - Bugzilla Bug #1058366 NullPointerException in tomcatjss searching
   for attribute "clientauth" (cfu)
-- Bugzilla Bug #871171 - Provide Tomcat support for TLS v1.1 and
+- Bugzilla Bug #871171 - Provide Apache Tomcat support for TLS v1.1 and
   TLS v1.2 (cfu)
 - Bumped revision to 7.1.1
 
@@ -178,8 +181,8 @@ rm -rf %{buildroot}
 - Bugzila Bug #819554 tomcatjss: Please migrate from tomcat6 to tomcat7
 
 * Thu Aug  2 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-3
-- PKI TRAC Ticket #283 - Dogtag 10: Integrate Tomcat 6 'tomcatjss.jar' and
-  Tomcat 7 'tomcat7jss.jar' in Fedora 18 tomcatjss package
+- PKI TRAC Ticket #283 - Dogtag 10: Integrate Apache Tomcat 6 'tomcatjss.jar'
+  and Apache Tomcat 7 'tomcat7jss.jar' in Fedora 18 tomcatjss package
 
 * Thu Jul 26 2012 Matthew Harmsen <mharmsen@redhat.com> 7.0.0-2
 - Fixed runtime 'Requires' cut/paste typos

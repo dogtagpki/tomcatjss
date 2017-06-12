@@ -1,23 +1,29 @@
-tomcatjss, a JSSE module for Tomcat that uses JSS, a Java interface to
-Network Security Services(NSS). 
+JSS Connector for Apache Tomcat, installed via the tomcatjss package,
+is a Java Secure Socket Extension (JSSE) module for Apache Tomcat that
+uses Java Security Services (JSS), a Java interface to Network Security
+Services (NSS).
 
-tomcatjss defines a number of attributes for a Connector including:
+JSS Connector for Apache Tomcat defines a number of attributes for a Connector
+including:
 
 clientauth: specify if client authentication is required in the connector (or
 port), it can be true or false. If true then client authentication is required.
 
 sslOptions: specify a comma-delimited list of ssl options to pass into the ssl
 implementation. Each option takes the form of: option=[true|false].
-tomcatjss supports the options: ssl2, ssl3, tls.
+JSS Connector for Apache Tomcat supports the options: ssl2, ssl3, tls.
 
-ssl2Ciphers: specify a list of SSL2 ciphers that tomcatjss should  accept 
-or reject from the client. You can use + to denote "accept", - means "reject".
+ssl2Ciphers: specify a list of SSL2 ciphers that JSS Connector for
+Apache Tomcat should accept or reject from the client. You can use + to
+denote "accept", - means "reject"
 
-ssl3Ciphers: specifies a list of SSL3 ciphers that tomcatjss should accept
-or reject from the client. You can use + to denote "accept", - means "reject".
+ssl3Ciphers: specifies a list of SSL3 ciphers that JSS Connector for
+Apache Tomcat should accept or reject from the client. You can use + to
+denote "accept", - means "reject".
 
-tlsCiphers: specifies a list of TLS ciphers that tomcatjss should accept
-or reject from the client. You can use + to denote "accept", - means "reject".
+tlsCiphers: specifies a list of TLS ciphers that JSS Connector for
+Apache Tomcat should accept or reject from the client. You can use + to
+denote "accept", - means "reject".
 
 serverCertNickFile: a file in which specify the nickname of the
 server certificate. The file should contain a single line that contains
