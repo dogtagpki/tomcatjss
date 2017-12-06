@@ -32,7 +32,44 @@ public class TomcatJSS implements SSLSocketListener {
 
     public static TomcatJSS getInstance() { return INSTANCE; }
 
+    String certdbDir;
+    String passwordClass;
+    String passwordFile;
+    String serverCertNickFile;
+
     Collection<SSLSocketListener> socketListeners = new ArrayList<SSLSocketListener>();
+
+    public String getCertdbDir() {
+        return certdbDir;
+    }
+
+    public void setCertdbDir(String certdbDir) {
+        this.certdbDir = certdbDir;
+    }
+
+    public String getPasswordClass() {
+        return passwordClass;
+    }
+
+    public void setPasswordClass(String passwordClass) {
+        this.passwordClass = passwordClass;
+    }
+
+    public String getPasswordFile() {
+        return passwordFile;
+    }
+
+    public void setPasswordFile(String passwordFile) {
+        this.passwordFile = passwordFile;
+    }
+
+    public String getServerCertNickFile() {
+        return serverCertNickFile;
+    }
+
+    public void setServerCertNickFile(String serverCertNickFile) {
+        this.serverCertNickFile = serverCertNickFile;
+    }
 
     public void addSocketListener(SSLSocketListener listener) {
         socketListeners.add(listener);

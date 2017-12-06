@@ -336,6 +336,8 @@ public class JSSSocketFactory implements
 */
     }
 
+    TomcatJSS tomcatjss = TomcatJSS.getInstance();
+
     private AbstractEndpoint<?> endpoint;
     private Properties config;
 
@@ -344,9 +346,6 @@ public class JSSSocketFactory implements
     protected boolean wantClientAuth = false;
     private boolean initialized = false;
     private String serverCertNick = "";
-    private String mServerCertNickPath = "";
-    private String mPwdPath = "";
-    private String mPwdClass = "";
 
     private IPasswordStore mPasswordStore = null;
     private boolean mStrictCiphers = false;
@@ -604,13 +603,15 @@ public class JSSSocketFactory implements
             }
             File file = null;
             try {
-                mServerCertNickPath = getProperty("serverCertNickFile");
-                if (mServerCertNickPath == null) {
+                String serverCertNickFile = getProperty("serverCertNickFile");
+                if (serverCertNickFile == null) {
                     throw new IOException("serverCertNickFile not specified");
                 }
+                tomcatjss.setServerCertNickFile(serverCertNickFile);
+
                 logger.fine("JSSSocketFactory: init: got serverCertNickFile"
-                        + mServerCertNickPath);
-                file = new File(mServerCertNickPath);
+                        + serverCertNickFile);
+                file = new File(serverCertNickFile);
                 FileInputStream in = new FileInputStream(file);
                 BufferedReader d = new BufferedReader(new InputStreamReader(in));
                 do {
@@ -824,27 +825,34 @@ public class JSSSocketFactory implements
 
     private void initializePasswordStore() throws InstantiationException, IllegalAccessException,
             ClassNotFoundException, IOException {
-        mPwdClass = getProperty("passwordClass");
-        if (mPwdClass == null) {
+
+        String passwordClass = getProperty("passwordClass");
+        if (passwordClass == null) {
             throw new IOException("Misconfiguration: passwordClass is not defined");
         }
-        mPwdPath = getProperty("passwordFile");
+        tomcatjss.setPasswordClass(passwordClass);
 
-        mPasswordStore = (IPasswordStore) Class.forName(mPwdClass).newInstance();
+        String passwordFile = getProperty("passwordFile");
+        tomcatjss.setPasswordFile(passwordFile);
+
+        mPasswordStore = (IPasswordStore) Class.forName(passwordClass).newInstance();
         logger.fine("JSSSocketFactory: init: password reader initialized");
 
         // initialize the password store
-        mPasswordStore.init(mPwdPath);
+        mPasswordStore.init(passwordFile);
     }
 
     private CryptoManager getCryptoManager() throws KeyDatabaseException, CertDatabaseException,
             GeneralSecurityException, NotInitializedException, IOException {
-        String certDir = getProperty("certdbDir");
-        if (certDir == null) {
+
+        String certdbDir = getProperty("certdbDir");
+        if (certdbDir == null) {
             throw new IOException("Misconfiguration: certdir not defined");
         }
+        tomcatjss.setCertdbDir(certdbDir);
+
         CryptoManager.InitializationValues vals = new CryptoManager.InitializationValues(
-                certDir, "", "", "secmod.db");
+                certdbDir, "", "", "secmod.db");
 
         vals.removeSunProvider = false;
         vals.installJSSProvider = true;
