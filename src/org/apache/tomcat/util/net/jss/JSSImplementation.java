@@ -45,7 +45,7 @@ public class JSSImplementation extends SSLImplementation {
         Class.forName(SSLSocketClass);
 
         try {
-            Class factcl = Class.forName(JSSFactory);
+            Class<?> factcl = Class.forName(JSSFactory);
             factory = (JSSFactory) factcl.newInstance();
         } catch (Exception e) {
             if (logger.isDebugEnabled())
@@ -107,7 +107,7 @@ public class JSSImplementation extends SSLImplementation {
         return null;
     }
 
-    public SSLUtil getSSLUtil(AbstractEndpoint endpoint) {
+    public SSLUtil getSSLUtil(AbstractEndpoint<?> endpoint) {
         return null;
     }
 }

@@ -31,7 +31,7 @@ class JSSFactory implements IJSSFactory {
     JSSFactory() {
     }
 
-    public ServerSocketFactory getSocketFactory(AbstractEndpoint endpoint, Properties config) {
+    public ServerSocketFactory getSocketFactory(AbstractEndpoint<?> endpoint, Properties config) {
         return new JSSSocketFactory(endpoint, config);
     }
 

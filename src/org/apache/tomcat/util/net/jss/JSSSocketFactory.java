@@ -340,7 +340,7 @@ public class JSSSocketFactory implements
 */
     }
 
-    private AbstractEndpoint endpoint;
+    private AbstractEndpoint<?> endpoint;
     private Properties config;
 
     static org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
@@ -363,11 +363,11 @@ public class JSSSocketFactory implements
     private boolean mStrictCiphers = false;
     private static final int MAX_PW_ATTEMPTS = 3;
 
-    public JSSSocketFactory(AbstractEndpoint endpoint) {
+    public JSSSocketFactory(AbstractEndpoint<?> endpoint) {
         this.endpoint = endpoint;
     }
 
-    public JSSSocketFactory(AbstractEndpoint endpoint, Properties config) {
+    public JSSSocketFactory(AbstractEndpoint<?> endpoint, Properties config) {
         this.endpoint = endpoint;
         this.config = config;
     }
@@ -639,7 +639,7 @@ public class JSSSocketFactory implements
                 debugWrite("JSSSocketFactory init - got serverCertNickFile"
                         + mServerCertNickPath + "\n");
                 file = new File(mServerCertNickPath);
-                FileInputStream in = new FileInputStream(mServerCertNickPath);
+                FileInputStream in = new FileInputStream(file);
                 BufferedReader d = new BufferedReader(new InputStreamReader(in));
                 do {
                     serverCertNick = d.readLine();
