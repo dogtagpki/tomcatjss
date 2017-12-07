@@ -329,17 +329,22 @@ public class JSSSocketFactory implements
     protected static boolean ocspConfigured = false;
     protected boolean requireClientAuth = false;
     protected boolean wantClientAuth = false;
-    private boolean initialized = false;
 
     private boolean mStrictCiphers = false;
 
     public JSSSocketFactory(AbstractEndpoint<?> endpoint) {
-        this.endpoint = endpoint;
+        this(endpoint, null);
     }
 
     public JSSSocketFactory(AbstractEndpoint<?> endpoint, Properties config) {
         this.endpoint = endpoint;
         this.config = config;
+
+        try {
+            init();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setSSLCiphers(String attr) throws SocketException, IOException {
@@ -789,8 +794,7 @@ public class JSSSocketFactory implements
 
     public ServerSocket createSocket(int port, int backlog,
             InetAddress ifAddress, boolean reuseAddr) throws IOException {
-        if (!initialized)
-            init();
+
         SSLServerSocket socket = null;
         socket = new SSLServerSocket(port, backlog, ifAddress, null, reuseAddr);
         initializeSocket(socket);

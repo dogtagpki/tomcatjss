@@ -51,6 +51,7 @@ public class TomcatJSS implements SSLSocketListener {
     String serverCertNickFile;
     String serverCertNick;
 
+    boolean initialized;
     IPasswordStore passwordStore;
 
     Collection<SSLSocketListener> socketListeners = new ArrayList<SSLSocketListener>();
@@ -105,6 +106,10 @@ public class TomcatJSS implements SSLSocketListener {
 
     public void init() throws Exception {
 
+        if (initialized) {
+            return;
+        }
+
         logger.info("TomcatJSS: initialization");
 
         logger.fine("certdbDir: " + certdbDir);
@@ -146,6 +151,8 @@ public class TomcatJSS implements SSLSocketListener {
         logger.fine("serverCertNick: " + serverCertNick);
 
         logger.info("TomcatJSS: initialization complete");
+
+        initialized = true;
     }
 
     public void login() throws Exception {
