@@ -38,7 +38,7 @@
   <property name="Name" value="Tomcat JSS"/>
   <property name="name" value="tomcatjss"/>
   <property name="version" value="7.2.4"/>
-  <property name="manifest-version" value="7.2.4"/>
+  <property name="manifest-version" value="${version}"/>
 
   <!--
     Set the properties that control various build options
