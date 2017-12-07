@@ -342,7 +342,7 @@ public class JSSSocketFactory implements
     private String serverCertNick = "";
 
     private boolean mStrictCiphers = false;
-    private static final int MAX_PW_ATTEMPTS = 3;
+    private static final int MAX_LOGIN_ATTEMPTS = 3;
 
     public JSSSocketFactory(AbstractEndpoint<?> endpoint) {
         this.endpoint = endpoint;
@@ -582,18 +582,7 @@ public class JSSSocketFactory implements
 
             CryptoManager manager = CryptoManager.getInstance();
 
-            // JSSSocketFactory init: handle crypto tokens
-            logger.fine("JSSSocketFactory: init: about to handle crypto unit logins");
-
-            //log into tokens
-            Enumeration<String> tags = tomcatjss.getPasswordStore().getTags();
-            while (tags.hasMoreElements()) {
-                String tag = tags.nextElement();
-                if (tag.equals("internal") || (tag.startsWith("hardware-"))) {
-                    logger.fine("JSSSocketFactory: init: tag name=" + tag);
-                    logIntoToken(manager, tag);
-                }
-            }
+            logIntoToken();
             logger.fine("JSSSocketFactory: init: tokens initialized/logged in");
 
             // MUST look for "clientauth" (ALL lowercase) since "clientAuth"
@@ -806,46 +795,64 @@ public class JSSSocketFactory implements
         }
     }
 
-    private void logIntoToken(CryptoManager manager, String tag) throws Exception {
-        String pwd;
-        Password pw = null;
-        int iteration = 0;
+    public void logIntoToken() throws Exception {
 
-        CryptoToken token = null;
+        logger.fine("JSSSocketFactory: logging into tokens");
+
+        IPasswordStore passwordStore = tomcatjss.getPasswordStore();
+        Enumeration<String> tags = passwordStore.getTags();
+
+        while (tags.hasMoreElements()) {
+
+            String tag = tags.nextElement();
+            if (!tag.equals("internal") && !tag.startsWith("hardware-")) {
+                continue;
+            }
+
+            logIntoToken(tag);
+        }
+    }
+
+    public void logIntoToken(String tag) throws Exception {
+
+        CryptoToken token;
         try {
             token = tomcatjss.getToken(tag);
         } catch (NoSuchTokenException e) {
-            logger.warning("JSSSocketFactory: token for " + tag + " not found by CryptoManager. Not logging in.");
+            logger.warning("JSSSocketFactory: token for " + tag + " not found");
             return;
         }
 
+        int iteration = 0;
         do {
-            logger.fine("JSSSocketFactory: init: iteration=" + iteration);
-            pwd = tomcatjss.getPasswordStore().getPassword(tag, iteration);
-            if (pwd == null) {
-                logger.fine("JSSSocketFactory: init: no pwd gotten");
+            IPasswordStore passwordStore = tomcatjss.getPasswordStore();
+            String strPassword = passwordStore.getPassword(tag, iteration);
+
+            if (strPassword == null) {
+                logger.fine("JSSSocketFactory: no password for " + tag);
                 return;
             }
 
-            pw = new Password(pwd.toCharArray());
+            Password password = new Password(strPassword.toCharArray());
 
-            if (!token.isLoggedIn()) {
-                logger.fine("JSSSocketFactory: init: not logged in...about to log in");
-                try {
-                    token.login(pw);
-                    break;
-                } catch (IncorrectPasswordException e) {
-                    logger.warning("JSSSocketFactory: Incorrect password received");
-                    iteration ++;
-                    if (iteration == MAX_PW_ATTEMPTS) {
-                        logger.severe("JSSSocketFactory: Failed to log into token:" + tag);
-                    }
-                }
-            } else {
-                logger.fine("JSSSocketFactory: init: already logged in");
-                break;
+            if (token.isLoggedIn()) {
+                logger.fine("JSSSocketFactory: already logged into " + tag);
+                return;
             }
-        } while (iteration < MAX_PW_ATTEMPTS);
+
+            logger.fine("JSSSocketFactory: logging into " + tag);
+            try {
+                token.login(password);
+                return;
+
+            } catch (IncorrectPasswordException e) {
+                logger.warning("JSSSocketFactory: incorrect password");
+                iteration ++;
+            }
+
+        } while (iteration < MAX_LOGIN_ATTEMPTS);
+
+        logger.severe("JSSSocketFactory: failed to log into " + tag);
     }
 
     public Socket acceptSocket(ServerSocket socket) throws IOException {
