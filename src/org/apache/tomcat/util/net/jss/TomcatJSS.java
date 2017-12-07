@@ -21,20 +21,25 @@ package org.apache.tomcat.util.net.jss;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.logging.Logger;
 
 import org.mozilla.jss.CryptoManager;
+import org.mozilla.jss.NoSuchTokenException;
 import org.mozilla.jss.crypto.AlreadyInitializedException;
 import org.mozilla.jss.crypto.CryptoToken;
 import org.mozilla.jss.ssl.SSLAlertEvent;
 import org.mozilla.jss.ssl.SSLHandshakeCompletedEvent;
 import org.mozilla.jss.ssl.SSLSocketListener;
+import org.mozilla.jss.util.IncorrectPasswordException;
+import org.mozilla.jss.util.Password;
 
 public class TomcatJSS implements SSLSocketListener {
 
     final static Logger logger = Logger.getLogger(TomcatJSS.class.getName());
 
     public final static TomcatJSS INSTANCE = new TomcatJSS();
+    public static final int MAX_LOGIN_ATTEMPTS = 3;
 
     public static TomcatJSS getInstance() { return INSTANCE; }
 
@@ -118,6 +123,68 @@ public class TomcatJSS implements SSLSocketListener {
 
         passwordStore = (IPasswordStore) Class.forName(passwordClass).newInstance();
         passwordStore.init(passwordFile);
+
+        login();
+
+        logger.info("TomcatJSS: initialization complete");
+    }
+
+    public void login() throws Exception {
+
+        logger.fine("TomcatJSS: logging into tokens");
+
+        Enumeration<String> tags = passwordStore.getTags();
+
+        while (tags.hasMoreElements()) {
+
+            String tag = tags.nextElement();
+            if (!tag.equals("internal") && !tag.startsWith("hardware-")) {
+                continue;
+            }
+
+            login(tag);
+        }
+    }
+
+    public void login(String tag) throws Exception {
+
+        CryptoToken token;
+        try {
+            token = getToken(tag);
+        } catch (NoSuchTokenException e) {
+            logger.warning("TomcatJSS: token for " + tag + " not found");
+            return;
+        }
+
+        int iteration = 0;
+        do {
+            String strPassword = passwordStore.getPassword(tag, iteration);
+
+            if (strPassword == null) {
+                logger.fine("TomcatJSS: no password for " + tag);
+                return;
+            }
+
+            Password password = new Password(strPassword.toCharArray());
+
+            if (token.isLoggedIn()) {
+                logger.fine("TomcatJSS: already logged into " + tag);
+                return;
+            }
+
+            logger.fine("TomcatJSS: logging into " + tag);
+            try {
+                token.login(password);
+                return;
+
+            } catch (IncorrectPasswordException e) {
+                logger.warning("TomcatJSS: incorrect password");
+                iteration ++;
+            }
+
+        } while (iteration < MAX_LOGIN_ATTEMPTS);
+
+        logger.severe("TomcatJSS: failed to log into " + tag);
     }
 
     public CryptoToken getToken(String tag) throws Exception {
