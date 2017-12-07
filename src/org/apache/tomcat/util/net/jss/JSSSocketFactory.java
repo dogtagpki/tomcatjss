@@ -347,7 +347,6 @@ public class JSSSocketFactory implements
     private boolean initialized = false;
     private String serverCertNick = "";
 
-    private IPasswordStore mPasswordStore = null;
     private boolean mStrictCiphers = false;
     private static final int MAX_PW_ATTEMPTS = 3;
 
@@ -576,7 +575,13 @@ public class JSSSocketFactory implements
 
     void init() throws IOException {
         try {
-            initializePasswordStore();
+            String passwordClass = getProperty("passwordClass");
+            tomcatjss.setPasswordClass(passwordClass);
+
+            String passwordFile = getProperty("passwordFile");
+            tomcatjss.setPasswordFile(passwordFile);
+
+            tomcatjss.init();
 
             CryptoManager manager = getCryptoManager();
 
@@ -584,7 +589,7 @@ public class JSSSocketFactory implements
             logger.fine("JSSSocketFactory: init: about to handle crypto unit logins");
 
             //log into tokens
-            Enumeration<String> tags = mPasswordStore.getTags();
+            Enumeration<String> tags = tomcatjss.getPasswordStore().getTags();
             while (tags.hasMoreElements()) {
                 String tag = tags.nextElement();
                 if (tag.equals("internal") || (tag.startsWith("hardware-"))) {
@@ -823,25 +828,6 @@ public class JSSSocketFactory implements
         return token;
     }
 
-    private void initializePasswordStore() throws InstantiationException, IllegalAccessException,
-            ClassNotFoundException, IOException {
-
-        String passwordClass = getProperty("passwordClass");
-        if (passwordClass == null) {
-            throw new IOException("Misconfiguration: passwordClass is not defined");
-        }
-        tomcatjss.setPasswordClass(passwordClass);
-
-        String passwordFile = getProperty("passwordFile");
-        tomcatjss.setPasswordFile(passwordFile);
-
-        mPasswordStore = (IPasswordStore) Class.forName(passwordClass).newInstance();
-        logger.fine("JSSSocketFactory: init: password reader initialized");
-
-        // initialize the password store
-        mPasswordStore.init(passwordFile);
-    }
-
     private CryptoManager getCryptoManager() throws KeyDatabaseException, CertDatabaseException,
             GeneralSecurityException, NotInitializedException, IOException {
 
@@ -881,7 +867,7 @@ public class JSSSocketFactory implements
 
         do {
             logger.fine("JSSSocketFactory: init: iteration=" + iteration);
-            pwd = mPasswordStore.getPassword(tag, iteration);
+            pwd = tomcatjss.getPasswordStore().getPassword(tag, iteration);
             if (pwd == null) {
                 logger.fine("JSSSocketFactory: init: no pwd gotten");
                 return;

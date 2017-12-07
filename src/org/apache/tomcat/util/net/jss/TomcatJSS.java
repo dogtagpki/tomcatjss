@@ -21,12 +21,15 @@ package org.apache.tomcat.util.net.jss;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Logger;
 
 import org.mozilla.jss.ssl.SSLAlertEvent;
 import org.mozilla.jss.ssl.SSLHandshakeCompletedEvent;
 import org.mozilla.jss.ssl.SSLSocketListener;
 
 public class TomcatJSS implements SSLSocketListener {
+
+    final static Logger logger = Logger.getLogger(TomcatJSS.class.getName());
 
     public final static TomcatJSS INSTANCE = new TomcatJSS();
 
@@ -36,6 +39,8 @@ public class TomcatJSS implements SSLSocketListener {
     String passwordClass;
     String passwordFile;
     String serverCertNickFile;
+
+    IPasswordStore passwordStore;
 
     Collection<SSLSocketListener> socketListeners = new ArrayList<SSLSocketListener>();
 
@@ -69,6 +74,29 @@ public class TomcatJSS implements SSLSocketListener {
 
     public void setServerCertNickFile(String serverCertNickFile) {
         this.serverCertNickFile = serverCertNickFile;
+    }
+
+    public IPasswordStore getPasswordStore() {
+        return passwordStore;
+    }
+
+    public void setPasswordStore(IPasswordStore passwordStore) {
+        this.passwordStore = passwordStore;
+    }
+
+    public void init() throws Exception {
+
+        logger.info("TomcatJSS: initialization");
+
+        logger.fine("passwordClass: " + passwordClass);
+        logger.fine("passwordFile: " + passwordFile);
+
+        if (passwordClass == null) {
+            throw new Exception("Missing passwordClass");
+        }
+
+        passwordStore = (IPasswordStore) Class.forName(passwordClass).newInstance();
+        passwordStore.init(passwordFile);
     }
 
     public void addSocketListener(SSLSocketListener listener) {
