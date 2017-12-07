@@ -28,7 +28,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -42,12 +41,8 @@ import org.apache.commons.lang.StringUtils;
 // Imports required to "implement" Tomcat 7 Interface
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.mozilla.jss.CryptoManager;
-import org.mozilla.jss.NoSuchTokenException;
-import org.mozilla.jss.crypto.CryptoToken;
 import org.mozilla.jss.ssl.SSLServerSocket;
 import org.mozilla.jss.ssl.SSLSocket;
-import org.mozilla.jss.util.IncorrectPasswordException;
-import org.mozilla.jss.util.Password;
 
 public class JSSSocketFactory implements
         org.apache.tomcat.util.net.ServerSocketFactory,
@@ -342,7 +337,6 @@ public class JSSSocketFactory implements
     private String serverCertNick = "";
 
     private boolean mStrictCiphers = false;
-    private static final int MAX_LOGIN_ATTEMPTS = 3;
 
     public JSSSocketFactory(AbstractEndpoint<?> endpoint) {
         this.endpoint = endpoint;
@@ -579,11 +573,9 @@ public class JSSSocketFactory implements
             tomcatjss.setPasswordFile(passwordFile);
 
             tomcatjss.init();
+            logger.fine("JSSSocketFactory: init: tokens initialized/logged in");
 
             CryptoManager manager = CryptoManager.getInstance();
-
-            logIntoToken();
-            logger.fine("JSSSocketFactory: init: tokens initialized/logged in");
 
             // MUST look for "clientauth" (ALL lowercase) since "clientAuth"
             // (camel case) has already been processed by Tomcat 7
@@ -793,66 +785,6 @@ public class JSSSocketFactory implements
                     || (ex instanceof java.lang.NumberFormatException))
                 throw new IOException(ex);
         }
-    }
-
-    public void logIntoToken() throws Exception {
-
-        logger.fine("JSSSocketFactory: logging into tokens");
-
-        IPasswordStore passwordStore = tomcatjss.getPasswordStore();
-        Enumeration<String> tags = passwordStore.getTags();
-
-        while (tags.hasMoreElements()) {
-
-            String tag = tags.nextElement();
-            if (!tag.equals("internal") && !tag.startsWith("hardware-")) {
-                continue;
-            }
-
-            logIntoToken(tag);
-        }
-    }
-
-    public void logIntoToken(String tag) throws Exception {
-
-        CryptoToken token;
-        try {
-            token = tomcatjss.getToken(tag);
-        } catch (NoSuchTokenException e) {
-            logger.warning("JSSSocketFactory: token for " + tag + " not found");
-            return;
-        }
-
-        int iteration = 0;
-        do {
-            IPasswordStore passwordStore = tomcatjss.getPasswordStore();
-            String strPassword = passwordStore.getPassword(tag, iteration);
-
-            if (strPassword == null) {
-                logger.fine("JSSSocketFactory: no password for " + tag);
-                return;
-            }
-
-            Password password = new Password(strPassword.toCharArray());
-
-            if (token.isLoggedIn()) {
-                logger.fine("JSSSocketFactory: already logged into " + tag);
-                return;
-            }
-
-            logger.fine("JSSSocketFactory: logging into " + tag);
-            try {
-                token.login(password);
-                return;
-
-            } catch (IncorrectPasswordException e) {
-                logger.warning("JSSSocketFactory: incorrect password");
-                iteration ++;
-            }
-
-        } while (iteration < MAX_LOGIN_ATTEMPTS);
-
-        logger.severe("JSSSocketFactory: failed to log into " + tag);
     }
 
     public Socket acceptSocket(ServerSocket socket) throws IOException {
