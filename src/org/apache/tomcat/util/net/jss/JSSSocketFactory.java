@@ -44,7 +44,6 @@ import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.mozilla.jss.CryptoManager;
 import org.mozilla.jss.NoSuchTokenException;
 import org.mozilla.jss.crypto.CryptoToken;
-import org.mozilla.jss.crypto.TokenException;
 import org.mozilla.jss.ssl.SSLServerSocket;
 import org.mozilla.jss.ssl.SSLSocket;
 import org.mozilla.jss.util.IncorrectPasswordException;
@@ -807,34 +806,14 @@ public class JSSSocketFactory implements
         }
     }
 
-    private CryptoToken getToken(String tag, CryptoManager manager) throws IOException, NoSuchTokenException {
-        CryptoToken token = null;
-        if (tag.equals("internal")) {
-            logger.fine("JSSSocketFactory: init: got internal software token");
-            token = manager.getInternalKeyStorageToken();
-        } else if (tag.startsWith("hardware-")) {
-            logger.fine("JSSSocketFactory: init: got hardware");
-
-            String tokenName = tag.substring(9);
-            logger.fine("JSSSocketFactory: init: tokenName=" + tokenName);
-
-            // find the hsm and log in
-            token = manager.getTokenByName(tokenName);
-        } else {
-            // non-token password entry
-        }
-        return token;
-    }
-
-    private void logIntoToken(CryptoManager manager, String tag) throws IOException,
-            TokenException {
+    private void logIntoToken(CryptoManager manager, String tag) throws Exception {
         String pwd;
         Password pw = null;
         int iteration = 0;
 
         CryptoToken token = null;
         try {
-            token = getToken(tag, manager);
+            token = tomcatjss.getToken(tag);
         } catch (NoSuchTokenException e) {
             logger.warning("JSSSocketFactory: token for " + tag + " not found by CryptoManager. Not logging in.");
             return;

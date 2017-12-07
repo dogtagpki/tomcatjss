@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 
 import org.mozilla.jss.CryptoManager;
 import org.mozilla.jss.crypto.AlreadyInitializedException;
+import org.mozilla.jss.crypto.CryptoToken;
 import org.mozilla.jss.ssl.SSLAlertEvent;
 import org.mozilla.jss.ssl.SSLHandshakeCompletedEvent;
 import org.mozilla.jss.ssl.SSLSocketListener;
@@ -117,6 +118,23 @@ public class TomcatJSS implements SSLSocketListener {
 
         passwordStore = (IPasswordStore) Class.forName(passwordClass).newInstance();
         passwordStore.init(passwordFile);
+    }
+
+    public CryptoToken getToken(String tag) throws Exception {
+
+        CryptoManager manager = CryptoManager.getInstance();
+
+        if (tag.equals("internal")) {
+            return manager.getInternalKeyStorageToken();
+        }
+
+        if (tag.startsWith("hardware-")) {
+            String tokenName = tag.substring(9);
+            return manager.getTokenByName(tokenName);
+        }
+
+        // non-token password entry
+        return null;
     }
 
     public void addSocketListener(SSLSocketListener listener) {
