@@ -76,8 +76,8 @@ chmod -c -x LICENSE README
 
 %build
 
-ant -f build.xml -Djnidir=%{_jnidir}
-ant -f build.xml -Djnidir=%{_jnidir} dist
+ant -f build.xml -Dversion=%{version} -Djnidir=%{_jnidir}
+ant -f build.xml -Dversion=%{version} -Djnidir=%{_jnidir} dist
 
 %install
 rm -rf %{buildroot}
