@@ -28,7 +28,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.security.GeneralSecurityException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
@@ -42,12 +41,8 @@ import javax.net.ssl.TrustManager;
 import org.apache.commons.lang.StringUtils;
 // Imports required to "implement" Tomcat 7 Interface
 import org.apache.tomcat.util.net.AbstractEndpoint;
-import org.mozilla.jss.CertDatabaseException;
 import org.mozilla.jss.CryptoManager;
-import org.mozilla.jss.CryptoManager.NotInitializedException;
-import org.mozilla.jss.KeyDatabaseException;
 import org.mozilla.jss.NoSuchTokenException;
-import org.mozilla.jss.crypto.AlreadyInitializedException;
 import org.mozilla.jss.crypto.CryptoToken;
 import org.mozilla.jss.crypto.TokenException;
 import org.mozilla.jss.ssl.SSLServerSocket;
@@ -575,6 +570,9 @@ public class JSSSocketFactory implements
 
     void init() throws IOException {
         try {
+            String certdbDir = getProperty("certdbDir");
+            tomcatjss.setCertdbDir(certdbDir);
+
             String passwordClass = getProperty("passwordClass");
             tomcatjss.setPasswordClass(passwordClass);
 
@@ -583,7 +581,7 @@ public class JSSSocketFactory implements
 
             tomcatjss.init();
 
-            CryptoManager manager = getCryptoManager();
+            CryptoManager manager = CryptoManager.getInstance();
 
             // JSSSocketFactory init: handle crypto tokens
             logger.fine("JSSSocketFactory: init: about to handle crypto unit logins");
@@ -826,29 +824,6 @@ public class JSSSocketFactory implements
             // non-token password entry
         }
         return token;
-    }
-
-    private CryptoManager getCryptoManager() throws KeyDatabaseException, CertDatabaseException,
-            GeneralSecurityException, NotInitializedException, IOException {
-
-        String certdbDir = getProperty("certdbDir");
-        if (certdbDir == null) {
-            throw new IOException("Misconfiguration: certdir not defined");
-        }
-        tomcatjss.setCertdbDir(certdbDir);
-
-        CryptoManager.InitializationValues vals = new CryptoManager.InitializationValues(
-                certdbDir, "", "", "secmod.db");
-
-        vals.removeSunProvider = false;
-        vals.installJSSProvider = true;
-        try {
-            CryptoManager.initialize(vals);
-        } catch (AlreadyInitializedException ee) {
-            // do nothing
-        }
-        CryptoManager manager = CryptoManager.getInstance();
-        return manager;
     }
 
     private void logIntoToken(CryptoManager manager, String tag) throws IOException,

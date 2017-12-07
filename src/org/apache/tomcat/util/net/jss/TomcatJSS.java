@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
 
+import org.mozilla.jss.CryptoManager;
+import org.mozilla.jss.crypto.AlreadyInitializedException;
 import org.mozilla.jss.ssl.SSLAlertEvent;
 import org.mozilla.jss.ssl.SSLHandshakeCompletedEvent;
 import org.mozilla.jss.ssl.SSLSocketListener;
@@ -88,11 +90,29 @@ public class TomcatJSS implements SSLSocketListener {
 
         logger.info("TomcatJSS: initialization");
 
+        logger.fine("certdbDir: " + certdbDir);
         logger.fine("passwordClass: " + passwordClass);
         logger.fine("passwordFile: " + passwordFile);
 
+        if (certdbDir == null) {
+            throw new Exception("Missing certdbDir");
+        }
+
         if (passwordClass == null) {
             throw new Exception("Missing passwordClass");
+        }
+
+        CryptoManager.InitializationValues vals = new CryptoManager.InitializationValues(
+                certdbDir, "", "", "secmod.db");
+
+        vals.removeSunProvider = false;
+        vals.installJSSProvider = true;
+
+        try {
+            CryptoManager.initialize(vals);
+
+        } catch (AlreadyInitializedException e) {
+            logger.warning("TomcatJSS: " + e);
         }
 
         passwordStore = (IPasswordStore) Class.forName(passwordClass).newInstance();
