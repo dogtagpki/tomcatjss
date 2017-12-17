@@ -631,34 +631,32 @@ public class JSSSocketFactory implements
                 if (enableOCSP == true) {
 
                     logger.fine("JSSSocketFactory: init: ocspResponderURL " + ocspResponderURL);
-                    logger.fine("JSSSocketFactory: init: ocspResponderCertNickname " + ocspResponderCertNickname);
-
-                    if (StringUtils.isNotEmpty(ocspResponderURL) &&
-                            StringUtils.isNotEmpty(ocspResponderCertNickname)) {
-
-                        manager.configureOCSP(true, ocspResponderURL,
-                                ocspResponderCertNickname);
-
-                        logger.fine("JSSSocketFactory: init: ocspCacheSize= "
-                                + ocspCacheSize);
-                        logger.fine("JSSSocketFactory: init: ocspMinCacheEntryDuration= "
-                                + ocspMinCacheEntryDuration);
-                        logger.fine("JSSSocketFactory: init: ocspMaxCacheEntryDuration= "
-                                + ocspMaxCacheEntryDuration);
-
-                        manager.OCSPCacheSettings(ocspCacheSize_i,
-                                ocspMinCacheEntryDuration_i,
-                                ocspMaxCacheEntryDuration_i);
-
-                        logger.fine("JSSSocketFactory: init: ocspTimeout=" + ocspTimeout);
-
-                        manager.setOCSPTimeout(ocspTimeout_i);
-
-                    } else {
-                        logger.severe("JSSSocketFactory: init: error ocsp misconfigured!");
-                        throw new java.security.GeneralSecurityException(
-                                "Error setting up OCSP. Check configuration!");
+                    if (StringUtils.isEmpty(ocspResponderURL)) {
+                        throw new Exception("Missing ocspResponderURL");
                     }
+
+                    logger.fine("JSSSocketFactory: init: ocspResponderCertNickname " + ocspResponderCertNickname);
+                    if (StringUtils.isEmpty(ocspResponderCertNickname)) {
+                        throw new Exception("Missing ocspResponderCertNickname");
+                    }
+
+                    manager.configureOCSP(true, ocspResponderURL,
+                            ocspResponderCertNickname);
+
+                    logger.fine("JSSSocketFactory: init: ocspCacheSize= "
+                            + ocspCacheSize);
+                    logger.fine("JSSSocketFactory: init: ocspMinCacheEntryDuration= "
+                            + ocspMinCacheEntryDuration);
+                    logger.fine("JSSSocketFactory: init: ocspMaxCacheEntryDuration= "
+                            + ocspMaxCacheEntryDuration);
+
+                    manager.OCSPCacheSettings(ocspCacheSize_i,
+                            ocspMinCacheEntryDuration_i,
+                            ocspMaxCacheEntryDuration_i);
+
+                    logger.fine("JSSSocketFactory: init: ocspTimeout=" + ocspTimeout);
+
+                    manager.setOCSPTimeout(ocspTimeout_i);
                 }
             }
             // serverCertNick = "Server-Cert cert-tks";
