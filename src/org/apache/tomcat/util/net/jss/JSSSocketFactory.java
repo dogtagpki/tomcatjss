@@ -636,34 +636,24 @@ public class JSSSocketFactory implements
                     if (StringUtils.isNotEmpty(ocspResponderURL) &&
                             StringUtils.isNotEmpty(ocspResponderCertNickname)) {
 
-                        try {
-                            manager.configureOCSP(true, ocspResponderURL,
-                                    ocspResponderCertNickname);
+                        manager.configureOCSP(true, ocspResponderURL,
+                                ocspResponderCertNickname);
 
-                            logger.fine("JSSSocketFactory: init: ocspCacheSize= "
-                                    + ocspCacheSize);
-                            logger.fine("JSSSocketFactory: init: ocspMinCacheEntryDuration= "
-                                    + ocspMinCacheEntryDuration);
-                            logger.fine("JSSSocketFactory: init: ocspMaxCacheEntryDuration= "
-                                    + ocspMaxCacheEntryDuration);
+                        logger.fine("JSSSocketFactory: init: ocspCacheSize= "
+                                + ocspCacheSize);
+                        logger.fine("JSSSocketFactory: init: ocspMinCacheEntryDuration= "
+                                + ocspMinCacheEntryDuration);
+                        logger.fine("JSSSocketFactory: init: ocspMaxCacheEntryDuration= "
+                                + ocspMaxCacheEntryDuration);
 
-                            manager.OCSPCacheSettings(ocspCacheSize_i,
-                                    ocspMinCacheEntryDuration_i,
-                                    ocspMaxCacheEntryDuration_i);
+                        manager.OCSPCacheSettings(ocspCacheSize_i,
+                                ocspMinCacheEntryDuration_i,
+                                ocspMaxCacheEntryDuration_i);
 
-                            logger.fine("JSSSocketFactory: init: ocspTimeout=" + ocspTimeout);
+                        logger.fine("JSSSocketFactory: init: ocspTimeout=" + ocspTimeout);
 
-                            manager.setOCSPTimeout(ocspTimeout_i);
+                        manager.setOCSPTimeout(ocspTimeout_i);
 
-                        } catch (java.security.GeneralSecurityException e) {
-                            logger.severe("JSSSocketFactory: init: error initializing OCSP e: " + e);
-                            throw new java.security.GeneralSecurityException(
-                                    "Error setting up OCSP. Check configuraion!");
-                        } catch (java.lang.NumberFormatException e) {
-                            logger.severe("JSSSocketFactory: init: error setting OCSP cache e: " + e);
-                            throw new java.lang.NumberFormatException(
-                                    "Error setting OCSP cache. Check configuraion!");
-                        }
                     } else {
                         logger.severe("JSSSocketFactory: init: error ocsp misconfigured!");
                         throw new java.security.GeneralSecurityException(
