@@ -19,11 +19,7 @@
 
 package org.apache.tomcat.util.net.jss;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -334,7 +330,6 @@ public class JSSSocketFactory implements
     protected boolean requireClientAuth = false;
     protected boolean wantClientAuth = false;
     private boolean initialized = false;
-    private String serverCertNick = "";
 
     private boolean mStrictCiphers = false;
 
@@ -572,6 +567,9 @@ public class JSSSocketFactory implements
             String passwordFile = getProperty("passwordFile");
             tomcatjss.setPasswordFile(passwordFile);
 
+            String serverCertNickFile = getProperty("serverCertNickFile");
+            tomcatjss.setServerCertNickFile(serverCertNickFile);
+
             tomcatjss.init();
 
             CryptoManager manager = CryptoManager.getInstance();
@@ -583,44 +581,7 @@ public class JSSSocketFactory implements
                 logger.fine("JSSSocketFactory: init: \"clientauth\" not found, default to want.");
                 clientAuthStr = "want";
             }
-            File file = null;
-            try {
-                String serverCertNickFile = getProperty("serverCertNickFile");
-                if (serverCertNickFile == null) {
-                    throw new IOException("serverCertNickFile not specified");
-                }
-                tomcatjss.setServerCertNickFile(serverCertNickFile);
 
-                logger.fine("JSSSocketFactory: init: got serverCertNickFile"
-                        + serverCertNickFile);
-                file = new File(serverCertNickFile);
-                FileInputStream in = new FileInputStream(file);
-                BufferedReader d = new BufferedReader(new InputStreamReader(in));
-                do {
-                    serverCertNick = d.readLine();
-                    logger.fine("JSSSocketFactory: init: got line " + serverCertNick);
-                    if (serverCertNick == null) {
-                        in.close();
-                        d.close();
-                        throw new IOException(
-                                "JSSSocketFactory: error loading serverCertNickFile");
-                    }
-                    // handle comments or blank lines
-                    if (serverCertNick.trim().startsWith("#")
-                            || serverCertNick.trim().equals("")) {
-                        serverCertNick = null;
-                    }
-                } while (serverCertNick == null);
-                logger.fine("JSSSocketFactory: init: found nickname=" + serverCertNick);
-                in.close();
-                d.close();
-            } catch (Exception e) {
-                logger.severe("JSSSocketFactory: init: Exception caught: " + e);
-                throw new IOException(
-                        "JSSSocketFactory: no serverCertNickFile defined");
-            }
-
-            // serverCertNick = (String)getProperty("serverCert");
             if (clientAuthStr.equalsIgnoreCase("true")
                     || clientAuthStr.equalsIgnoreCase("yes")) {
                 requireClientAuth = true;
@@ -851,6 +812,7 @@ public class JSSSocketFactory implements
                     s.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
                 }
             }
+            String serverCertNick = tomcatjss.getServerCertNick();
             s.setServerCertNickname(serverCertNick);
         } catch (Exception e) {
         }

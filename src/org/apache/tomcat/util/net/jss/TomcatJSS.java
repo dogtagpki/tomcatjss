@@ -19,6 +19,8 @@
 
 package org.apache.tomcat.util.net.jss;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -47,6 +49,7 @@ public class TomcatJSS implements SSLSocketListener {
     String passwordClass;
     String passwordFile;
     String serverCertNickFile;
+    String serverCertNick;
 
     IPasswordStore passwordStore;
 
@@ -84,6 +87,14 @@ public class TomcatJSS implements SSLSocketListener {
         this.serverCertNickFile = serverCertNickFile;
     }
 
+    public void setServerCertNick(String serverCertNick) {
+        this.serverCertNick = serverCertNick;
+    }
+
+    public String getServerCertNick() {
+        return serverCertNick;
+    }
+
     public IPasswordStore getPasswordStore() {
         return passwordStore;
     }
@@ -99,6 +110,7 @@ public class TomcatJSS implements SSLSocketListener {
         logger.fine("certdbDir: " + certdbDir);
         logger.fine("passwordClass: " + passwordClass);
         logger.fine("passwordFile: " + passwordFile);
+        logger.fine("serverCertNickFile: " + serverCertNickFile);
 
         if (certdbDir == null) {
             throw new Exception("Missing certdbDir");
@@ -106,6 +118,10 @@ public class TomcatJSS implements SSLSocketListener {
 
         if (passwordClass == null) {
             throw new Exception("Missing passwordClass");
+        }
+
+        if (serverCertNickFile == null) {
+            throw new Exception("Missing serverCertNickFile");
         }
 
         CryptoManager.InitializationValues vals = new CryptoManager.InitializationValues(
@@ -125,6 +141,9 @@ public class TomcatJSS implements SSLSocketListener {
         passwordStore.init(passwordFile);
 
         login();
+
+        serverCertNick = new String(Files.readAllBytes(Paths.get(serverCertNickFile))).trim();
+        logger.fine("serverCertNick: " + serverCertNick);
 
         logger.info("TomcatJSS: initialization complete");
     }
