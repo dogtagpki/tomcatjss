@@ -326,7 +326,6 @@ public class JSSSocketFactory implements
     private AbstractEndpoint<?> endpoint;
     private Properties config;
 
-    protected static boolean ocspConfigured = false;
     protected boolean requireClientAuth = false;
     protected boolean wantClientAuth = false;
 
@@ -594,10 +593,8 @@ public class JSSSocketFactory implements
                 wantClientAuth = true;
             }
             logger.fine("JSSSocketFActory: init: requireClientAuth "
-                    + requireClientAuth + " wantClientAuth " + wantClientAuth
-                    + " ocspConfigured " + ocspConfigured);
-            if (requireClientAuth == true || wantClientAuth == true
-                    && ocspConfigured == false) {
+                    + requireClientAuth + " wantClientAuth " + wantClientAuth);
+            if (requireClientAuth || wantClientAuth) {
                 logger.fine("JSSSocketFactory: init: checking for OCSP settings.");
                 boolean enableOCSP = false;
                 String doOCSP = getProperty("enableOCSP");
@@ -619,7 +616,6 @@ public class JSSSocketFactory implements
                     if (StringUtils.isNotEmpty(ocspResponderURL) &&
                             StringUtils.isNotEmpty(ocspResponderCertNickname)) {
 
-                        ocspConfigured = true;
                         try {
                             manager.configureOCSP(true, ocspResponderURL,
                                     ocspResponderCertNickname);
@@ -665,7 +661,6 @@ public class JSSSocketFactory implements
                                 manager.setOCSPTimeout(ocspTimeout_i);
                             }
                         } catch (java.security.GeneralSecurityException e) {
-                            ocspConfigured = false;
                             logger.severe("JSSSocketFactory: init: error initializing OCSP e: " + e);
                             throw new java.security.GeneralSecurityException(
                                     "Error setting up OCSP. Check configuraion!");
