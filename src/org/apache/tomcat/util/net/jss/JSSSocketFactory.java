@@ -574,6 +574,36 @@ public class JSSSocketFactory implements
             String serverCertNickFile = getProperty("serverCertNickFile");
             tomcatjss.setServerCertNickFile(serverCertNickFile);
 
+            String doOCSP = getProperty("enableOCSP");
+            boolean enableOCSP = Boolean.parseBoolean(doOCSP);
+
+            String ocspResponderURL = getProperty("ocspResponderURL");
+            String ocspResponderCertNickname = getProperty("ocspResponderCertNickname");
+
+            String ocspCacheSize = getProperty("ocspCacheSize");
+            int ocspCacheSize_i = 1000;
+            if (ocspCacheSize != null) {
+                ocspCacheSize_i = Integer.parseInt(ocspCacheSize);
+            }
+
+            String ocspMinCacheEntryDuration = getProperty("ocspMinCacheEntryDuration");
+            int ocspMinCacheEntryDuration_i = 3600;
+            if (ocspMinCacheEntryDuration != null) {
+                ocspMinCacheEntryDuration_i = Integer.parseInt(ocspMinCacheEntryDuration);
+            }
+
+            String ocspMaxCacheEntryDuration = getProperty("ocspMaxCacheEntryDuration");
+            int ocspMaxCacheEntryDuration_i = 86400;
+            if (ocspMaxCacheEntryDuration != null) {
+                ocspMaxCacheEntryDuration_i = Integer.parseInt(ocspMaxCacheEntryDuration);
+            }
+
+            String ocspTimeout = getProperty("ocspTimeout");
+            int ocspTimeout_i = 60;
+            if (ocspTimeout != null) {
+                ocspTimeout_i = Integer.parseInt(ocspTimeout);
+            }
+
             tomcatjss.init();
 
             CryptoManager manager = CryptoManager.getInstance();
@@ -596,70 +626,35 @@ public class JSSSocketFactory implements
                     + requireClientAuth + " wantClientAuth " + wantClientAuth);
             if (requireClientAuth || wantClientAuth) {
                 logger.fine("JSSSocketFactory: init: checking for OCSP settings.");
-                boolean enableOCSP = false;
-                String doOCSP = getProperty("enableOCSP");
-
-                logger.fine("JSSSocketFactory: init: doOCSP flag:" + doOCSP);
-
-                if (doOCSP != null && doOCSP.equalsIgnoreCase("true")) {
-                    enableOCSP = true;
-                }
 
                 logger.fine("JSSSocketFactory: init: enableOCSP " + enableOCSP);
-
                 if (enableOCSP == true) {
-                    String ocspResponderURL = getProperty("ocspResponderURL");
+
                     logger.fine("JSSSocketFactory: init: ocspResponderURL " + ocspResponderURL);
-                    String ocspResponderCertNickname = getProperty(
-                            "ocspResponderCertNickname");
                     logger.fine("JSSSocketFactory: init: ocspResponderCertNickname " + ocspResponderCertNickname);
+
                     if (StringUtils.isNotEmpty(ocspResponderURL) &&
                             StringUtils.isNotEmpty(ocspResponderCertNickname)) {
 
                         try {
                             manager.configureOCSP(true, ocspResponderURL,
                                     ocspResponderCertNickname);
-                            int ocspCacheSize_i = 1000;
-                            int ocspMinCacheEntryDuration_i = 3600;
-                            int ocspMaxCacheEntryDuration_i = 86400;
 
-                            String ocspCacheSize = getProperty("ocspCacheSize");
-                            String ocspMinCacheEntryDuration = getProperty("ocspMinCacheEntryDuration");
-                            String ocspMaxCacheEntryDuration = getProperty("ocspMaxCacheEntryDuration");
+                            logger.fine("JSSSocketFactory: init: ocspCacheSize= "
+                                    + ocspCacheSize);
+                            logger.fine("JSSSocketFactory: init: ocspMinCacheEntryDuration= "
+                                    + ocspMinCacheEntryDuration);
+                            logger.fine("JSSSocketFactory: init: ocspMaxCacheEntryDuration= "
+                                    + ocspMaxCacheEntryDuration);
 
-                            if (ocspCacheSize != null
-                                    || ocspMinCacheEntryDuration != null
-                                    || ocspMaxCacheEntryDuration != null) {
-                                // not specified then takes the default
-                                if (ocspCacheSize != null) {
-                                    logger.fine("JSSSocketFactory: init: ocspCacheSize= "
-                                            + ocspCacheSize);
-                                    ocspCacheSize_i = Integer.parseInt(ocspCacheSize);
-                                }
-                                if (ocspMinCacheEntryDuration != null) {
-                                    logger.fine("JSSSocketFactory: init: ocspMinCacheEntryDuration= "
-                                            + ocspMinCacheEntryDuration);
-                                    ocspMinCacheEntryDuration_i = Integer.parseInt(ocspMinCacheEntryDuration);
-                                }
-                                if (ocspMaxCacheEntryDuration != null) {
-                                    logger.fine("JSSSocketFactory: init: ocspMaxCacheEntryDuration= "
-                                            + ocspMaxCacheEntryDuration);
-                                    ocspMaxCacheEntryDuration_i = Integer.parseInt(ocspMaxCacheEntryDuration);
-                                }
-                                manager.OCSPCacheSettings(ocspCacheSize_i,
-                                        ocspMinCacheEntryDuration_i,
-                                        ocspMaxCacheEntryDuration_i);
-                            }
+                            manager.OCSPCacheSettings(ocspCacheSize_i,
+                                    ocspMinCacheEntryDuration_i,
+                                    ocspMaxCacheEntryDuration_i);
 
-                            // defualt to 60 seconds;
-                            String ocspTimeout = getProperty("ocspTimeout");
-                            if (ocspTimeout != null) {
-                                logger.fine("JSSSocketFactory: init: ocspTimeout=" + ocspTimeout);
-                                int ocspTimeout_i = Integer.parseInt(ocspTimeout);
-                                if (ocspTimeout_i < 0)
-                                    ocspTimeout_i = 60;
-                                manager.setOCSPTimeout(ocspTimeout_i);
-                            }
+                            logger.fine("JSSSocketFactory: init: ocspTimeout=" + ocspTimeout);
+
+                            manager.setOCSPTimeout(ocspTimeout_i);
+
                         } catch (java.security.GeneralSecurityException e) {
                             logger.severe("JSSSocketFactory: init: error initializing OCSP e: " + e);
                             throw new java.security.GeneralSecurityException(
