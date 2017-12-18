@@ -45,16 +45,38 @@ public class TomcatJSS implements SSLSocketListener {
 
     public static TomcatJSS getInstance() { return INSTANCE; }
 
+    Collection<SSLSocketListener> socketListeners = new ArrayList<SSLSocketListener>();
+
     String certdbDir;
+
     String passwordClass;
     String passwordFile;
+    IPasswordStore passwordStore;
+
     String serverCertNickFile;
     String serverCertNick;
 
-    boolean initialized;
-    IPasswordStore passwordStore;
+    boolean enableOCSP;
+    String ocspResponderURL;
+    String ocspResponderCertNickname;
+    int ocspCacheSize = 1000; // entries
+    int ocspMinCacheEntryDuration = 3600; // seconds (default: 1 hour)
+    int ocspMaxCacheEntryDuration = 86400; // seconds (default: 24 hours)
+    int ocspTimeout = 60; // seconds (default: 1 minute)
 
-    Collection<SSLSocketListener> socketListeners = new ArrayList<SSLSocketListener>();
+    boolean initialized;
+
+    public void addSocketListener(SSLSocketListener listener) {
+        socketListeners.add(listener);
+    }
+
+    public void removeSocketListener(SSLSocketListener listener) {
+        socketListeners.remove(listener);
+    }
+
+    public Collection<SSLSocketListener> getSocketListeners() {
+        return socketListeners;
+    }
 
     public String getCertdbDir() {
         return certdbDir;
@@ -84,6 +106,14 @@ public class TomcatJSS implements SSLSocketListener {
         return serverCertNickFile;
     }
 
+    public IPasswordStore getPasswordStore() {
+        return passwordStore;
+    }
+
+    public void setPasswordStore(IPasswordStore passwordStore) {
+        this.passwordStore = passwordStore;
+    }
+
     public void setServerCertNickFile(String serverCertNickFile) {
         this.serverCertNickFile = serverCertNickFile;
     }
@@ -96,12 +126,60 @@ public class TomcatJSS implements SSLSocketListener {
         this.serverCertNick = serverCertNick;
     }
 
-    public IPasswordStore getPasswordStore() {
-        return passwordStore;
+    public boolean isEnableOCSP() {
+        return enableOCSP;
     }
 
-    public void setPasswordStore(IPasswordStore passwordStore) {
-        this.passwordStore = passwordStore;
+    public void setEnableOCSP(boolean enableOCSP) {
+        this.enableOCSP = enableOCSP;
+    }
+
+    public String getOcspResponderURL() {
+        return ocspResponderURL;
+    }
+
+    public void setOcspResponderURL(String ocspResponderURL) {
+        this.ocspResponderURL = ocspResponderURL;
+    }
+
+    public String getOcspResponderCertNickname() {
+        return ocspResponderCertNickname;
+    }
+
+    public void setOcspResponderCertNickname(String ocspResponderCertNickname) {
+        this.ocspResponderCertNickname = ocspResponderCertNickname;
+    }
+
+    public int getOcspCacheSize() {
+        return ocspCacheSize;
+    }
+
+    public void setOcspCacheSize(int ocspCacheSize) {
+        this.ocspCacheSize = ocspCacheSize;
+    }
+
+    public int getOcspMinCacheEntryDuration() {
+        return ocspMinCacheEntryDuration;
+    }
+
+    public void setOcspMinCacheEntryDuration(int ocspMinCacheEntryDuration) {
+        this.ocspMinCacheEntryDuration = ocspMinCacheEntryDuration;
+    }
+
+    public int getOcspMaxCacheEntryDuration() {
+        return ocspMaxCacheEntryDuration;
+    }
+
+    public void setOcspMaxCacheEntryDuration(int ocspMaxCacheEntryDuration) {
+        this.ocspMaxCacheEntryDuration = ocspMaxCacheEntryDuration;
+    }
+
+    public int getOcspTimeout() {
+        return ocspTimeout;
+    }
+
+    public void setOcspTimeout(int ocspTimeout) {
+        this.ocspTimeout = ocspTimeout;
     }
 
     public void init() throws Exception {
@@ -228,18 +306,6 @@ public class TomcatJSS implements SSLSocketListener {
 
         // non-token password entry
         return null;
-    }
-
-    public void addSocketListener(SSLSocketListener listener) {
-        socketListeners.add(listener);
-    }
-
-    public void removeSocketListener(SSLSocketListener listener) {
-        socketListeners.remove(listener);
-    }
-
-    public Collection<SSLSocketListener> getSocketListeners() {
-        return socketListeners;
     }
 
     @Override
