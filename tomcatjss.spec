@@ -1,6 +1,6 @@
 Name:     tomcatjss
-Version:  7.2.4
-Release:  1%{?dist}
+Version:  7.3.0
+Release:  0.1%{?dist}
 Summary:  JSS Connector for Apache Tomcat, a JSSE module for Apache Tomcat that uses JSS
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+

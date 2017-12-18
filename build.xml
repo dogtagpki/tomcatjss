@@ -37,7 +37,7 @@
 
   <property name="Name" value="Tomcat JSS"/>
   <property name="name" value="tomcatjss"/>
-  <property name="version" value="7.2.4"/>
+  <property name="version" value="7.3.0"/>
   <property name="manifest-version" value="${version}"/>
 
   <!--
