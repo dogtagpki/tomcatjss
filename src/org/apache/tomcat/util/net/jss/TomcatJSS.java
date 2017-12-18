@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.StringUtils;
 import org.mozilla.jss.CryptoManager;
 import org.mozilla.jss.NoSuchTokenException;
 import org.mozilla.jss.crypto.AlreadyInitializedException;
@@ -48,6 +49,7 @@ public class TomcatJSS implements SSLSocketListener {
     Collection<SSLSocketListener> socketListeners = new ArrayList<SSLSocketListener>();
 
     String certdbDir;
+    CryptoManager manager;
 
     String passwordClass;
     String passwordFile;
@@ -220,6 +222,8 @@ public class TomcatJSS implements SSLSocketListener {
             logger.warning("TomcatJSS: " + e);
         }
 
+        manager = CryptoManager.getInstance();
+
         passwordStore = (IPasswordStore) Class.forName(passwordClass).newInstance();
         passwordStore.init(passwordFile);
 
@@ -293,8 +297,6 @@ public class TomcatJSS implements SSLSocketListener {
 
     public CryptoToken getToken(String tag) throws Exception {
 
-        CryptoManager manager = CryptoManager.getInstance();
-
         if (tag.equals("internal")) {
             return manager.getInternalKeyStorageToken();
         }
@@ -306,6 +308,43 @@ public class TomcatJSS implements SSLSocketListener {
 
         // non-token password entry
         return null;
+    }
+
+    public void configureOCSP() throws Exception {
+
+        logger.info("configuring OCSP");
+
+        logger.fine("enableOCSP: " + enableOCSP);
+        if (!enableOCSP) {
+            return;
+        }
+
+        logger.fine("ocspResponderURL: " + ocspResponderURL);
+        if (StringUtils.isEmpty(ocspResponderURL)) {
+            throw new Exception("Missing ocspResponderURL");
+        }
+
+        logger.fine("ocspResponderCertNickname: " + ocspResponderCertNickname);
+        if (StringUtils.isEmpty(ocspResponderCertNickname)) {
+            throw new Exception("Missing ocspResponderCertNickname");
+        }
+
+        manager.configureOCSP(
+                true,
+                ocspResponderURL,
+                ocspResponderCertNickname);
+
+        logger.fine("ocspCacheSize: " + ocspCacheSize);
+        logger.fine("ocspMinCacheEntryDuration: " + ocspMinCacheEntryDuration);
+        logger.fine("ocspMaxCacheEntryDuration: " + ocspMaxCacheEntryDuration);
+
+        manager.OCSPCacheSettings(ocspCacheSize,
+                ocspMinCacheEntryDuration,
+                ocspMaxCacheEntryDuration);
+
+        logger.fine("ocspTimeout: " + ocspTimeout);
+
+        manager.setOCSPTimeout(ocspTimeout);
     }
 
     @Override

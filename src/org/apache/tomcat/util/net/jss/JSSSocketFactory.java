@@ -36,7 +36,6 @@ import javax.net.ssl.TrustManager;
 import org.apache.commons.lang.StringUtils;
 // Imports required to "implement" Tomcat 7 Interface
 import org.apache.tomcat.util.net.AbstractEndpoint;
-import org.mozilla.jss.CryptoManager;
 import org.mozilla.jss.ssl.SSLServerSocket;
 import org.mozilla.jss.ssl.SSLSocket;
 
@@ -574,39 +573,41 @@ public class JSSSocketFactory implements
             String serverCertNickFile = getProperty("serverCertNickFile");
             tomcatjss.setServerCertNickFile(serverCertNickFile);
 
-            String doOCSP = getProperty("enableOCSP");
-            boolean enableOCSP = Boolean.parseBoolean(doOCSP);
+            String strEnableOCSP = getProperty("enableOCSP");
+            boolean enableOCSP = Boolean.parseBoolean(strEnableOCSP);
+            tomcatjss.setEnableOCSP(enableOCSP);
 
             String ocspResponderURL = getProperty("ocspResponderURL");
+            tomcatjss.setOcspResponderURL(ocspResponderURL);
+
             String ocspResponderCertNickname = getProperty("ocspResponderCertNickname");
+            tomcatjss.setOcspResponderCertNickname(ocspResponderCertNickname);
 
-            String ocspCacheSize = getProperty("ocspCacheSize");
-            int ocspCacheSize_i = 1000;
-            if (ocspCacheSize != null) {
-                ocspCacheSize_i = Integer.parseInt(ocspCacheSize);
+            String strOcspCacheSize = getProperty("ocspCacheSize");
+            if (strOcspCacheSize != null) {
+                int ocspCacheSize = Integer.parseInt(strOcspCacheSize);
+                tomcatjss.setOcspCacheSize(ocspCacheSize);
             }
 
-            String ocspMinCacheEntryDuration = getProperty("ocspMinCacheEntryDuration");
-            int ocspMinCacheEntryDuration_i = 3600;
-            if (ocspMinCacheEntryDuration != null) {
-                ocspMinCacheEntryDuration_i = Integer.parseInt(ocspMinCacheEntryDuration);
+            String strOcspMinCacheEntryDuration = getProperty("ocspMinCacheEntryDuration");
+            if (strOcspMinCacheEntryDuration != null) {
+                int ocspMinCacheEntryDuration = Integer.parseInt(strOcspMinCacheEntryDuration);
+                tomcatjss.setOcspMinCacheEntryDuration(ocspMinCacheEntryDuration);
             }
 
-            String ocspMaxCacheEntryDuration = getProperty("ocspMaxCacheEntryDuration");
-            int ocspMaxCacheEntryDuration_i = 86400;
-            if (ocspMaxCacheEntryDuration != null) {
-                ocspMaxCacheEntryDuration_i = Integer.parseInt(ocspMaxCacheEntryDuration);
+            String strOcspMaxCacheEntryDuration = getProperty("ocspMaxCacheEntryDuration");
+            if (strOcspMaxCacheEntryDuration != null) {
+                int ocspMaxCacheEntryDuration = Integer.parseInt(strOcspMaxCacheEntryDuration);
+                tomcatjss.setOcspMaxCacheEntryDuration(ocspMaxCacheEntryDuration);
             }
 
-            String ocspTimeout = getProperty("ocspTimeout");
-            int ocspTimeout_i = 60;
-            if (ocspTimeout != null) {
-                ocspTimeout_i = Integer.parseInt(ocspTimeout);
+            String strOcspTimeout = getProperty("ocspTimeout");
+            if (strOcspTimeout != null) {
+                int ocspTimeout = Integer.parseInt(strOcspTimeout);
+                tomcatjss.setOcspTimeout(ocspTimeout);
             }
 
             tomcatjss.init();
-
-            CryptoManager manager = CryptoManager.getInstance();
 
             // MUST look for "clientauth" (ALL lowercase) since "clientAuth"
             // (camel case) has already been processed by Tomcat 7
@@ -622,44 +623,14 @@ public class JSSSocketFactory implements
             } else if (clientAuthStr.equalsIgnoreCase("want")) {
                 wantClientAuth = true;
             }
+
             logger.fine("JSSSocketFActory: init: requireClientAuth "
                     + requireClientAuth + " wantClientAuth " + wantClientAuth);
+
             if (requireClientAuth || wantClientAuth) {
-                logger.fine("JSSSocketFactory: init: checking for OCSP settings.");
-
-                logger.fine("JSSSocketFactory: init: enableOCSP " + enableOCSP);
-                if (enableOCSP == true) {
-
-                    logger.fine("JSSSocketFactory: init: ocspResponderURL " + ocspResponderURL);
-                    if (StringUtils.isEmpty(ocspResponderURL)) {
-                        throw new Exception("Missing ocspResponderURL");
-                    }
-
-                    logger.fine("JSSSocketFactory: init: ocspResponderCertNickname " + ocspResponderCertNickname);
-                    if (StringUtils.isEmpty(ocspResponderCertNickname)) {
-                        throw new Exception("Missing ocspResponderCertNickname");
-                    }
-
-                    manager.configureOCSP(true, ocspResponderURL,
-                            ocspResponderCertNickname);
-
-                    logger.fine("JSSSocketFactory: init: ocspCacheSize= "
-                            + ocspCacheSize);
-                    logger.fine("JSSSocketFactory: init: ocspMinCacheEntryDuration= "
-                            + ocspMinCacheEntryDuration);
-                    logger.fine("JSSSocketFactory: init: ocspMaxCacheEntryDuration= "
-                            + ocspMaxCacheEntryDuration);
-
-                    manager.OCSPCacheSettings(ocspCacheSize_i,
-                            ocspMinCacheEntryDuration_i,
-                            ocspMaxCacheEntryDuration_i);
-
-                    logger.fine("JSSSocketFactory: init: ocspTimeout=" + ocspTimeout);
-
-                    manager.setOCSPTimeout(ocspTimeout_i);
-                }
+                tomcatjss.configureOCSP();
             }
-            // serverCertNick = "Server-Cert cert-tks";
+
             // 12 hours = 43200 seconds
             SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
 
