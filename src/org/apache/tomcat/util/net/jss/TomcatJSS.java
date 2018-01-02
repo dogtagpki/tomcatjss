@@ -19,6 +19,7 @@
 
 package org.apache.tomcat.util.net.jss;
 
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -32,7 +33,10 @@ import org.mozilla.jss.NoSuchTokenException;
 import org.mozilla.jss.crypto.AlreadyInitializedException;
 import org.mozilla.jss.crypto.CryptoToken;
 import org.mozilla.jss.ssl.SSLAlertEvent;
+import org.mozilla.jss.ssl.SSLCipher;
 import org.mozilla.jss.ssl.SSLHandshakeCompletedEvent;
+import org.mozilla.jss.ssl.SSLServerSocket;
+import org.mozilla.jss.ssl.SSLSocket;
 import org.mozilla.jss.ssl.SSLSocketListener;
 import org.mozilla.jss.util.IncorrectPasswordException;
 import org.mozilla.jss.util.Password;
@@ -69,6 +73,9 @@ public class TomcatJSS implements SSLSocketListener {
     int ocspMinCacheEntryDuration = 3600; // seconds (default: 1 hour)
     int ocspMaxCacheEntryDuration = 86400; // seconds (default: 24 hours)
     int ocspTimeout = 60; // seconds (default: 1 minute)
+
+    String strictCiphers;
+    boolean boolStrictCiphers;
 
     boolean initialized;
 
@@ -204,6 +211,14 @@ public class TomcatJSS implements SSLSocketListener {
         this.ocspTimeout = ocspTimeout;
     }
 
+    public String getStrictCiphers() {
+        return strictCiphers;
+    }
+
+    public void setStrictCiphers(String strictCiphers) {
+        this.strictCiphers = strictCiphers;
+    }
+
     public void init() throws Exception {
 
         if (initialized) {
@@ -269,6 +284,23 @@ public class TomcatJSS implements SSLSocketListener {
 
         if (requireClientAuth || wantClientAuth) {
             configureOCSP();
+        }
+
+        // 12 hours = 43200 seconds
+        SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
+
+        logger.fine("strictCiphers: " + strictCiphers);
+        if (strictCiphers.equalsIgnoreCase("true")) {
+            boolStrictCiphers = true;
+
+        } else if (strictCiphers.equalsIgnoreCase("yes")) {
+            boolStrictCiphers = true;
+            logger.warning("The \"yes\" value for strictCiphers has been deprecated. Use \"true\" instead.");
+        }
+
+        if (boolStrictCiphers) {
+            // what ciphers do we have to start with? turn them all off
+            unsetSSLCiphers();
         }
 
         logger.info("TomcatJSS: initialization complete");
@@ -384,6 +416,33 @@ public class TomcatJSS implements SSLSocketListener {
         logger.fine("ocspTimeout: " + ocspTimeout);
 
         manager.setOCSPTimeout(ocspTimeout);
+    }
+
+    /**
+     * Disables all SSL ciphers to start with a clean slate.
+     */
+    public void unsetSSLCiphers() throws SocketException {
+
+        int[] cipherIDs = SSLSocket.getImplementedCipherSuites();
+        if (cipherIDs == null) return;
+
+        logger.fine("Disabling SSL ciphers:");
+
+        for (int cipherID : cipherIDs) {
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("* 0x");
+            sb.append(Integer.toHexString(cipherID));
+
+            SSLCipher cipher = SSLCipher.valueOf(cipherID);
+            if (cipher != null) {
+                sb.append(": ");
+                sb.append(cipher.name());
+            }
+            logger.fine(sb.toString());
+
+            SSLSocket.setCipherPreferenceDefault(cipherID, false);
+        }
     }
 
     @Override

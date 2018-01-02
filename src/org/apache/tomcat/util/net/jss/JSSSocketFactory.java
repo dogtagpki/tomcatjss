@@ -50,8 +50,6 @@ public class JSSSocketFactory implements
     private AbstractEndpoint<?> endpoint;
     private Properties config;
 
-    private boolean mStrictCiphers = false;
-
     public JSSSocketFactory(AbstractEndpoint<?> endpoint) {
         this(endpoint, null);
     }
@@ -190,20 +188,6 @@ public class JSSSocketFactory implements
         }
     }
 
-    // remove all to start with a clean slate
-    public void unsetSSLCiphers() throws SocketException {
-        int ciphers[] = SSLSocket.getImplementedCipherSuites();
-        try {
-            for (int i = 0; ciphers != null && i < ciphers.length; i++) {
-
-                logger.fine("JSSSocketFactory: unsetSSLCiphers: turning off '0x"
-                        + Integer.toHexString(ciphers[i]) + "'");
-                SSLSocket.setCipherPreferenceDefault(ciphers[i], false);
-            }
-        } catch (Exception e) {
-        }
-    }
-
     /*
      * setSSLVersionRangeDefault sets the range of allowed ssl versions. This
      * replaces the obsolete SSL_Option* API
@@ -339,23 +323,10 @@ public class JSSSocketFactory implements
                 tomcatjss.setOcspTimeout(ocspTimeout);
             }
 
+            String strictCiphers = getProperty("strictCiphers");
+            tomcatjss.setStrictCiphers(strictCiphers);
+
             tomcatjss.init();
-
-            // 12 hours = 43200 seconds
-            SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
-
-            String strictCiphersStr = getProperty("strictCiphers");
-            if (StringUtils.equalsIgnoreCase(strictCiphersStr, "true")
-                    || StringUtils.equalsIgnoreCase(strictCiphersStr, "yes")) {
-                mStrictCiphers = true;
-            }
-            if (mStrictCiphers == true) {
-                // what ciphers do we have to start with? turn them all off
-                logger.fine("JSSSocketFactory: init: before setSSLCiphers, strictCiphers is true");
-                unsetSSLCiphers();
-            } else {
-                logger.fine("JSSSocketFactory: init: before setSSLCiphers, strictCiphers is false");
-            }
 
             String sslVersionRangeStream = getProperty("sslVersionRangeStream");
             if ((sslVersionRangeStream != null)
