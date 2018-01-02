@@ -36,6 +36,7 @@ import javax.net.ssl.TrustManager;
 import org.apache.commons.lang.StringUtils;
 // Imports required to "implement" Tomcat 7 Interface
 import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.mozilla.jss.ssl.SSLCipher;
 import org.mozilla.jss.ssl.SSLServerSocket;
 import org.mozilla.jss.ssl.SSLSocket;
 
@@ -44,233 +45,6 @@ public class JSSSocketFactory implements
         org.apache.tomcat.util.net.SSLUtil {
 
     final static Logger logger = Logger.getLogger(JSSSocketFactory.class.getName());
-
-    private static HashMap<String, Integer> cipherMap = new HashMap<String, Integer>();
-    static {
-        // SSLv2
-        cipherMap.put("SSL2_RC4_128_WITH_MD5", SSLSocket.SSL2_RC4_128_WITH_MD5);
-        cipherMap.put("SSL2_RC4_128_EXPORT40_WITH_MD5",
-                SSLSocket.SSL2_RC4_128_EXPORT40_WITH_MD5);
-        cipherMap.put("SSL2_RC2_128_CBC_WITH_MD5",
-                SSLSocket.SSL2_RC2_128_CBC_WITH_MD5);
-        cipherMap.put("SSL2_RC2_128_CBC_EXPORT40_WITH_MD5",
-                SSLSocket.SSL2_RC2_128_CBC_EXPORT40_WITH_MD5);
-        cipherMap.put("SSL2_IDEA_128_CBC_WITH_MD5",
-                SSLSocket.SSL2_IDEA_128_CBC_WITH_MD5);
-        cipherMap.put("SSL2_DES_64_CBC_WITH_MD5",
-                SSLSocket.SSL2_DES_64_CBC_WITH_MD5);
-        cipherMap.put("SSL2_DES_192_EDE3_CBC_WITH_MD5",
-                SSLSocket.SSL2_DES_192_EDE3_CBC_WITH_MD5);
-
-        // SSLv3
-        cipherMap.put("SSL3_RSA_WITH_NULL_MD5",
-                SSLSocket.SSL3_RSA_WITH_NULL_MD5);
-        cipherMap.put("SSL3_RSA_WITH_NULL_SHA",
-                SSLSocket.SSL3_RSA_WITH_NULL_SHA);
-        cipherMap.put("SSL3_RSA_EXPORT_WITH_RC4_40_MD5",
-                SSLSocket.SSL3_RSA_EXPORT_WITH_RC4_40_MD5);
-        cipherMap.put("SSL3_RSA_WITH_RC4_128_MD5",
-                SSLSocket.SSL3_RSA_WITH_RC4_128_MD5);
-        cipherMap.put("SSL3_RSA_WITH_RC4_128_SHA",
-                SSLSocket.SSL3_RSA_WITH_RC4_128_SHA);
-        cipherMap.put("SSL3_RSA_EXPORT_WITH_RC2_CBC_40_MD5",
-                SSLSocket.SSL3_RSA_EXPORT_WITH_RC2_CBC_40_MD5);
-        cipherMap.put("SSL3_RSA_WITH_IDEA_CBC_SHA",
-                SSLSocket.SSL3_RSA_WITH_IDEA_CBC_SHA);
-        cipherMap.put("SSL3_RSA_EXPORT_WITH_DES40_CBC_SHA",
-                SSLSocket.SSL3_RSA_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_RSA_WITH_DES_CBC_SHA",
-                SSLSocket.SSL3_RSA_WITH_DES_CBC_SHA);
-
-        cipherMap.put("SSL3_RSA_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL3_RSA_WITH_3DES_EDE_CBC_SHA);
-        // deprecated SSL3.0 names replaced by IANA-registered TLS names
-        cipherMap.put("TLS_RSA_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL3_RSA_WITH_3DES_EDE_CBC_SHA);
-
-        cipherMap.put("SSL3_DH_DSS_EXPORT_WITH_DES40_CBC_SHA",
-                SSLSocket.SSL3_DH_DSS_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DH_DSS_WITH_DES_CBC_SHA",
-                SSLSocket.SSL3_DH_DSS_WITH_DES_CBC_SHA);
-        cipherMap.put("SSL3_DH_DSS_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL3_DH_DSS_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("SSL3_DH_RSA_EXPORT_WITH_DES40_CBC_SHA",
-                SSLSocket.SSL3_DH_RSA_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DH_RSA_WITH_DES_CBC_SHA",
-                SSLSocket.SSL3_DH_RSA_WITH_DES_CBC_SHA);
-        cipherMap.put("SSL3_DH_RSA_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL3_DH_RSA_WITH_3DES_EDE_CBC_SHA);
-
-        cipherMap.put("SSL3_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA",
-                SSLSocket.SSL3_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DHE_DSS_WITH_DES_CBC_SHA",
-                SSLSocket.SSL3_DHE_DSS_WITH_DES_CBC_SHA);
-
-        cipherMap.put("SSL3_DHE_DSS_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL3_DHE_DSS_WITH_3DES_EDE_CBC_SHA);
-        // deprecated SSL3.0 names replaced by IANA-registered TLS names
-        cipherMap.put("TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL3_DHE_DSS_WITH_3DES_EDE_CBC_SHA);
-
-        cipherMap.put("SSL3_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA",
-                SSLSocket.SSL3_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DHE_RSA_WITH_DES_CBC_SHA",
-                SSLSocket.SSL3_DHE_RSA_WITH_DES_CBC_SHA);
-
-        cipherMap.put("SSL3_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL3_DHE_RSA_WITH_3DES_EDE_CBC_SHA);
-        // deprecated SSL3.0 names replaced by IANA-registered TLS names
-        cipherMap.put("TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL3_DHE_RSA_WITH_3DES_EDE_CBC_SHA);
-
-        cipherMap.put("SSL3_DH_ANON_EXPORT_WITH_RC4_40_MD5",
-                SSLSocket.SSL3_DH_ANON_EXPORT_WITH_RC4_40_MD5);
-        cipherMap.put("SSL3_DH_ANON_WITH_RC4_128_MD5",
-                SSLSocket.SSL3_DH_ANON_WITH_RC4_128_MD5);
-        cipherMap.put("SSL3_DH_ANON_EXPORT_WITH_DES40_CBC_SHA",
-                SSLSocket.SSL3_DH_ANON_EXPORT_WITH_DES40_CBC_SHA);
-        cipherMap.put("SSL3_DH_ANON_WITH_DES_CBC_SHA",
-                SSLSocket.SSL3_DH_ANON_WITH_DES_CBC_SHA);
-        cipherMap.put("SSL3_DH_ANON_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL3_DH_ANON_WITH_3DES_EDE_CBC_SHA);
-
-        cipherMap.put("SSL3_FORTEZZA_DMS_WITH_NULL_SHA",
-                SSLSocket.SSL3_FORTEZZA_DMS_WITH_NULL_SHA);
-        cipherMap.put("SSL3_FORTEZZA_DMS_WITH_FORTEZZA_CBC_SHA",
-                SSLSocket.SSL3_FORTEZZA_DMS_WITH_FORTEZZA_CBC_SHA);
-        cipherMap.put("SSL3_FORTEZZA_DMS_WITH_RC4_128_SHA",
-                SSLSocket.SSL3_FORTEZZA_DMS_WITH_RC4_128_SHA);
-
-        cipherMap.put("SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("SSL_RSA_FIPS_WITH_DES_CBC_SHA",
-                SSLSocket.SSL_RSA_FIPS_WITH_DES_CBC_SHA);
-
-        // TLS
-        cipherMap.put("TLS_RSA_EXPORT1024_WITH_DES_CBC_SHA",
-                SSLSocket.TLS_RSA_EXPORT1024_WITH_DES_CBC_SHA);
-        cipherMap.put("TLS_RSA_EXPORT1024_WITH_RC4_56_SHA",
-                SSLSocket.TLS_RSA_EXPORT1024_WITH_RC4_56_SHA);
-
-        cipherMap.put("TLS_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA",
-                SSLSocket.TLS_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA);
-        cipherMap.put("TLS_DHE_DSS_EXPORT1024_WITH_RC4_56_SHA",
-                SSLSocket.TLS_DHE_DSS_EXPORT1024_WITH_RC4_56_SHA);
-        cipherMap.put("TLS_DHE_DSS_WITH_RC4_128_SHA",
-                SSLSocket.TLS_DHE_DSS_WITH_RC4_128_SHA);
-
-        cipherMap.put("TLS_RSA_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_RSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DH_DSS_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_DH_DSS_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DH_RSA_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_DH_RSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_DHE_DSS_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_DHE_RSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_DH_ANON_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_DH_ANON_WITH_AES_128_CBC_SHA);
-
-        cipherMap.put("TLS_RSA_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_RSA_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DH_DSS_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_DH_DSS_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DH_RSA_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_DH_RSA_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DHE_DSS_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_DHE_DSS_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_DHE_RSA_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_DH_ANON_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_DH_ANON_WITH_AES_256_CBC_SHA);
-
-        // ECC
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_NULL_SHA",
-                SSLSocket.TLS_ECDH_ECDSA_WITH_NULL_SHA);
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_RC4_128_SHA",
-                SSLSocket.TLS_ECDH_ECDSA_WITH_RC4_128_SHA);
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA);
-
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_NULL_SHA",
-                SSLSocket.TLS_ECDHE_ECDSA_WITH_NULL_SHA);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_RC4_128_SHA",
-                SSLSocket.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA);
-
-        cipherMap.put("TLS_ECDHE_RSA_WITH_NULL_SHA",
-                SSLSocket.TLS_ECDHE_RSA_WITH_NULL_SHA);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_RC4_128_SHA",
-                SSLSocket.TLS_ECDHE_RSA_WITH_RC4_128_SHA);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA);
-
-        cipherMap.put("TLS_ECDH_anon_WITH_NULL_SHA",
-                SSLSocket.TLS_ECDH_anon_WITH_NULL_SHA);
-        cipherMap.put("TLS_ECDH_anon_WITH_RC4_128_SHA",
-                SSLSocket.TLS_ECDH_anon_WITH_RC4_128_SHA);
-        cipherMap.put("TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA);
-        cipherMap.put("TLS_ECDH_anon_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_ECDH_anon_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_ECDH_anon_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_ECDH_anon_WITH_AES_256_CBC_SHA);
-
-        // TLSv1_2
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
-                SSLSocket.TLS_DHE_RSA_WITH_AES_128_CBC_SHA256);
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
-                SSLSocket.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256);
-        cipherMap.put("TLS_RSA_WITH_NULL_SHA256",
-                SSLSocket.TLS_RSA_WITH_NULL_SHA256);
-        cipherMap.put("TLS_RSA_WITH_AES_128_CBC_SHA256",
-                SSLSocket.TLS_RSA_WITH_AES_128_CBC_SHA256);
-        cipherMap.put("TLS_RSA_WITH_AES_256_CBC_SHA256",
-                SSLSocket.TLS_RSA_WITH_AES_256_CBC_SHA256);
-        cipherMap.put("TLS_RSA_WITH_SEED_CBC_SHA",
-                SSLSocket.TLS_RSA_WITH_SEED_CBC_SHA);
-        cipherMap.put("TLS_RSA_WITH_AES_128_GCM_SHA256",
-                SSLSocket.TLS_RSA_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-                SSLSocket.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_DHE_DSS_WITH_AES_128_GCM_SHA256",
-                SSLSocket.TLS_DHE_DSS_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-                SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-                SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256);
-        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-                SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-                SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256);
-/* unsupported by nss
-        cipherMap.put("TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256",
-                SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256);
-        cipherMap.put("TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256",
-                SSLSocket.TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256);
-*/
-
-        cipherMap.put("TLS_ECDH_RSA_WITH_AES_256_CBC_SHA",
-                SSLSocket.TLS_ECDH_RSA_WITH_AES_256_CBC_SHA);
-        cipherMap.put("TLS_ECDH_RSA_WITH_AES_128_CBC_SHA",
-                SSLSocket.TLS_ECDH_RSA_WITH_AES_128_CBC_SHA);
-        cipherMap.put("TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA",
-                SSLSocket.TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA);
-    }
 
     private static HashMap<Integer, String> eccCipherMap = new HashMap<Integer, String>();
     static {
@@ -355,7 +129,6 @@ public class JSSSocketFactory implements
             String cipherstr = st.nextToken();
             logger.fine("JSSSocketFactory:  - " + cipherstr);
 
-            int cipherid = 0;
             String text;
             boolean state;
 
@@ -370,33 +143,36 @@ public class JSSSocketFactory implements
                 text = cipherstr;
             }
 
+            SSLCipher cipher;
+
             if (text.startsWith("0x") || text.startsWith("0X")) {
                 // this allows us to specify new ciphers
                 try {
-                    cipherid = Integer.parseInt(text.substring(2), 16);
+                    int cipherID = Integer.parseInt(text.substring(2), 16);
+                    cipher = SSLCipher.valueOf(cipherID);
                 } catch (Exception e) {
-                    logger.severe("Error: SSL cipher \"" + text
-                            + "\" cannot be read as an integer");
+                    logger.severe("Invalid SSL cipher: " + text);
                     continue;
                 }
-            } else {
-                Object mapValue;
 
-                mapValue = cipherMap.get(text);
-                if (mapValue == null) {
-                    cipherid = 0;
-                } else {
-                    cipherid = (Integer) mapValue;
+            } else {
+                try {
+                    cipher = SSLCipher.valueOf(text);
+                } catch (IllegalArgumentException e) {
+                    logger.severe("Unknown SSL cipher: " + text);
+                    continue;
                 }
             }
-            if (cipherid != 0) {
+
+            if (cipher != null) {
+                int cipherID = cipher.getID();
                 try {
                     logger.fine("JSSSocketFactory: setCipherPreferenceDefault:  " + cipherstr
-                            + ": 0x" + Integer.toHexString(cipherid));
-                    SSLSocket.setCipherPreferenceDefault(cipherid, state);
+                            + ": 0x" + Integer.toHexString(cipherID));
+                    SSLSocket.setCipherPreferenceDefault(cipherID, state);
                 } catch (Exception e) {
                     logger.warning("JSSSocketFactory: SSLSocket.setCipherPreferenceDefault exception:" +e);
-                    if (eccCipherMap.containsKey(cipherid)) {
+                    if (eccCipherMap.containsKey(cipherID)) {
                         logger.warning("Warning: SSL ECC cipher \""
                                         + text
                                         + "\" unsupported by NSS. "
