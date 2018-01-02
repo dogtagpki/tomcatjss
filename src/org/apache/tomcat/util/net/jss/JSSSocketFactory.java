@@ -65,8 +65,8 @@ public class JSSSocketFactory implements
         }
     }
 
-    public void setSSLCiphers(String attr) throws SocketException, IOException {
-        String ciphers = getProperty(attr);
+    public void setSSLCiphers(String attr, String ciphers) throws SocketException, IOException {
+
         if (StringUtils.isEmpty(ciphers)) {
             logger.fine("Missing " + attr);
             return;
@@ -145,15 +145,19 @@ public class JSSSocketFactory implements
      * the "range" parameters are present in the attributes then the sslOptions
      * parameter is ignored.
      */
-    public void setSSLOptions() throws SocketException, IOException {
-        String options = getProperty("sslOptions");
-        if (StringUtils.isEmpty(options)) {
+    public void setSSLOptions(
+            String sslOptions,
+            String ssl2Ciphers,
+            String ssl3Ciphers,
+            String tlsCiphers) throws SocketException, IOException {
+
+        if (StringUtils.isEmpty(sslOptions)) {
             logger.fine("JSSSocketFactory: no sslOptions specified");
             return;
         }
 
         logger.fine("JSSSocketFactory: Processing sslOptions:");
-        StringTokenizer st = new StringTokenizer(options, ", ");
+        StringTokenizer st = new StringTokenizer(sslOptions, ", ");
         while (st.hasMoreTokens()) {
             String option = st.nextToken();
             logger.fine("JSSSocketFactory:  - " + option);
@@ -164,7 +168,7 @@ public class JSSSocketFactory implements
             if (name.equals("ssl2")) {
                 if (value.equals("true")) {
                     SSLSocket.enableSSL2Default(true);
-                    setSSLCiphers("ssl2Ciphers");
+                    setSSLCiphers("ssl2Ciphers", ssl2Ciphers);
                 } else {
                     SSLSocket.enableSSL2Default(false);
                 }
@@ -172,7 +176,7 @@ public class JSSSocketFactory implements
             if (name.equals("ssl3")) {
                 if (value.equals("true")) {
                     SSLSocket.enableSSL3Default(true);
-                    setSSLCiphers("ssl3Ciphers");
+                    setSSLCiphers("ssl3Ciphers", ssl3Ciphers);
                 } else {
                     SSLSocket.enableSSL3Default(false);
                 }
@@ -180,7 +184,7 @@ public class JSSSocketFactory implements
             if (name.equals("tls")) {
                 if (value.equals("true")) {
                     SSLSocket.enableTLSDefault(true);
-                    setSSLCiphers("tlsCiphers");
+                    setSSLCiphers("tlsCiphers", tlsCiphers);
                 } else {
                     SSLSocket.enableTLSDefault(false);
                 }
@@ -273,6 +277,21 @@ public class JSSSocketFactory implements
             String sslVersionRangeDatagram = getProperty("sslVersionRangeDatagram");
             tomcatjss.setSslVersionRangeDatagram(sslVersionRangeDatagram);
 
+            String sslRangeCiphers = getProperty("sslRangeCiphers");
+            tomcatjss.setSslRangeCiphers(sslRangeCiphers);
+
+            String sslOptions = getProperty("sslOptions");
+            tomcatjss.setSslOptions(sslOptions);
+
+            String ssl2Ciphers = getProperty("ssl2Ciphers");
+            tomcatjss.setSsl2Ciphers(ssl2Ciphers);
+
+            String ssl3Ciphers = getProperty("ssl3Ciphers");
+            tomcatjss.setSsl3Ciphers(ssl3Ciphers);
+
+            String tlsCiphers = getProperty("tlsCiphers");
+            tomcatjss.setTlsCiphers(tlsCiphers);
+
             tomcatjss.init();
 
             /*
@@ -290,11 +309,11 @@ public class JSSSocketFactory implements
                             .equals(""))) {
                 /* deliberately lose the ssl2 here */
                 logger.fine("JSSSocketFactory: init: calling setSSLCiphers() honoring only sslRangeCiphers");
-                setSSLCiphers("sslRangeCiphers");
+                setSSLCiphers("sslRangeCiphers", sslRangeCiphers);
                 logger.fine("JSSSocketFactory: init: after setSSLCiphers() honoring only sslRangeCiphers");
             } else {
                 logger.fine("JSSSocketFactory: init: calling setSSLOptions()");
-                setSSLOptions();
+                setSSLOptions(sslOptions, ssl2Ciphers, ssl3Ciphers, tlsCiphers);
                 logger.fine("JSSSocketFactory: init: after setSSLOptions()");
             }
 

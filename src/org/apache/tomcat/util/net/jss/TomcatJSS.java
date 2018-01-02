@@ -82,6 +82,12 @@ public class TomcatJSS implements SSLSocketListener {
     String sslVersionRangeStream;
     String sslVersionRangeDatagram;
 
+    String sslRangeCiphers;
+    String sslOptions;
+    String ssl2Ciphers;
+    String ssl3Ciphers;
+    String tlsCiphers;
+
     boolean initialized;
 
     public void addSocketListener(SSLSocketListener listener) {
@@ -238,6 +244,46 @@ public class TomcatJSS implements SSLSocketListener {
 
     public void setSslVersionRangeDatagram(String sslVersionRangeDatagram) {
         this.sslVersionRangeDatagram = sslVersionRangeDatagram;
+    }
+
+    public String getSslRangeCiphers() {
+        return sslRangeCiphers;
+    }
+
+    public void setSslRangeCiphers(String sslRangeCiphers) {
+        this.sslRangeCiphers = sslRangeCiphers;
+    }
+
+    public String getSslOptions() {
+        return sslOptions;
+    }
+
+    public void setSslOptions(String sslOptions) {
+        this.sslOptions = sslOptions;
+    }
+
+    public String getSsl2Ciphers() {
+        return ssl2Ciphers;
+    }
+
+    public void setSsl2Ciphers(String ssl2Ciphers) {
+        this.ssl2Ciphers = ssl2Ciphers;
+    }
+
+    public String getSsl3Ciphers() {
+        return ssl3Ciphers;
+    }
+
+    public void setSsl3Ciphers(String ssl3Ciphers) {
+        this.ssl3Ciphers = ssl3Ciphers;
+    }
+
+    public String getTlsCiphers() {
+        return tlsCiphers;
+    }
+
+    public void setTlsCiphers(String tlsCiphers) {
+        this.tlsCiphers = tlsCiphers;
     }
 
     public void init() throws Exception {
