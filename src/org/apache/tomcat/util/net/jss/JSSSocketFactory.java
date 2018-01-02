@@ -188,65 +188,6 @@ public class JSSSocketFactory implements
         }
     }
 
-    /*
-     * setSSLVersionRangeDefault sets the range of allowed ssl versions. This
-     * replaces the obsolete SSL_Option* API
-     *
-     * @param protoVariant indicates whether this setting is for type "stream"
-     * or "datagram"
-     *
-     * @param sslVersionRange_s takes on the form of "min:max" where min/max
-     * values can be "ssl3, tls1_0, tls1_1, or tls1_2" ssl2 is not supported for
-     * tomcatjss via this interface The format is "sslVersionRange=min:max"
-     */
-    public void setSSLVersionRangeDefault(
-            org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant protoVariant,
-            String sslVersionRange_s) throws SocketException,
-            IllegalArgumentException, IOException {
-
-        // process sslVersionRange_s
-        String[] sslVersionRange = sslVersionRange_s.split(":");
-        if (sslVersionRange.length != 2) {
-            logger.severe("JSSSocketFactory: setSSLversionRangeDefault: SSL Version Range format error: "
-                    + sslVersionRange_s);
-            throw new SocketException(
-                    "tomcatjss: setSSLversionRangeDefault format error");
-        }
-        String min_s = sslVersionRange[0];
-        String max_s = sslVersionRange[1];
-        int min = getSSLVersionRangeEnum(min_s);
-        int max = getSSLVersionRangeEnum(max_s);
-        if ((min == -1) || (max == -1)) {
-            logger.severe("JSSSocketFactory: setSSLversionRangeDefault: SSL Version Range format error: "
-                    + sslVersionRange_s);
-            throw new SocketException(
-                    "tomcatjss: setSSLversionRangeDefault format error");
-        }
-
-        logger.fine("JSSSocketFactory: setSSLversionRangeDefault: SSL Version Range set to min="
-                + min + " max = " + max);
-        org.mozilla.jss.ssl.SSLSocket.SSLVersionRange range = new org.mozilla.jss.ssl.SSLSocket.SSLVersionRange(
-                min, max);
-
-        SSLSocket.setSSLVersionRangeDefault(protoVariant, range);
-        logger.fine("JSSSocketFactory: setSSLversionRangeDefault: variant set");
-    }
-
-    int getSSLVersionRangeEnum(String rangeString) {
-        if (rangeString == null)
-            return -1;
-        if (rangeString.equals("ssl3"))
-            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.ssl3;
-        else if (rangeString.equals("tls1_0"))
-            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_0;
-        else if (rangeString.equals("tls1_1"))
-            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_1;
-        else if (rangeString.equals("tls1_2"))
-            return org.mozilla.jss.ssl.SSLSocket.SSLVersionRange.tls1_2;
-
-        return -1;
-    }
-
     String getProperty(String tag) {
 
         // check <catalina.base>/conf/server.xml
@@ -326,27 +267,13 @@ public class JSSSocketFactory implements
             String strictCiphers = getProperty("strictCiphers");
             tomcatjss.setStrictCiphers(strictCiphers);
 
-            tomcatjss.init();
-
             String sslVersionRangeStream = getProperty("sslVersionRangeStream");
-            if ((sslVersionRangeStream != null)
-                    && !sslVersionRangeStream.equals("")) {
-                logger.fine("JSSSocketFactory: init: calling setSSLVersionRangeDefault() for type STREAM");
-                setSSLVersionRangeDefault(
-                        org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant.STREAM,
-                        sslVersionRangeStream);
-                logger.fine("JSSSocketFactory: init: after setSSLVersionRangeDefault() for type STREAM");
-            }
+            tomcatjss.setSslVersionRangeStream(sslVersionRangeStream);
 
             String sslVersionRangeDatagram = getProperty("sslVersionRangeDatagram");
-            if ((sslVersionRangeDatagram != null)
-                    && !sslVersionRangeDatagram.equals("")) {
-                logger.fine("JSSSocketFactory: init: calling setSSLVersionRangeDefault() for type DATA_GRAM");
-                setSSLVersionRangeDefault(
-                        org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant.DATA_GRAM,
-                        sslVersionRangeDatagram);
-                logger.fine("JSSSocketFactory: init: after setSSLVersionRangeDefault() for type DATA_GRAM");
-            }
+            tomcatjss.setSslVersionRangeDatagram(sslVersionRangeDatagram);
+
+            tomcatjss.init();
 
             /*
              * According to NSS: the SSL_OptionSet-based API for controlling the

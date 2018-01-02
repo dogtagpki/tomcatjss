@@ -19,6 +19,7 @@
 
 package org.apache.tomcat.util.net.jss;
 
+import java.io.IOException;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,6 +38,8 @@ import org.mozilla.jss.ssl.SSLCipher;
 import org.mozilla.jss.ssl.SSLHandshakeCompletedEvent;
 import org.mozilla.jss.ssl.SSLServerSocket;
 import org.mozilla.jss.ssl.SSLSocket;
+import org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant;
+import org.mozilla.jss.ssl.SSLSocket.SSLVersionRange;
 import org.mozilla.jss.ssl.SSLSocketListener;
 import org.mozilla.jss.util.IncorrectPasswordException;
 import org.mozilla.jss.util.Password;
@@ -76,6 +79,8 @@ public class TomcatJSS implements SSLSocketListener {
 
     String strictCiphers;
     boolean boolStrictCiphers;
+    String sslVersionRangeStream;
+    String sslVersionRangeDatagram;
 
     boolean initialized;
 
@@ -219,6 +224,22 @@ public class TomcatJSS implements SSLSocketListener {
         this.strictCiphers = strictCiphers;
     }
 
+    public String getSslVersionRangeStream() {
+        return sslVersionRangeStream;
+    }
+
+    public void setSslVersionRangeStream(String sslVersionRangeStream) {
+        this.sslVersionRangeStream = sslVersionRangeStream;
+    }
+
+    public String getSslVersionRangeDatagram() {
+        return sslVersionRangeDatagram;
+    }
+
+    public void setSslVersionRangeDatagram(String sslVersionRangeDatagram) {
+        this.sslVersionRangeDatagram = sslVersionRangeDatagram;
+    }
+
     public void init() throws Exception {
 
         if (initialized) {
@@ -301,6 +322,22 @@ public class TomcatJSS implements SSLSocketListener {
         if (boolStrictCiphers) {
             // what ciphers do we have to start with? turn them all off
             unsetSSLCiphers();
+        }
+
+        logger.fine("sslVersionRangeStream: " + sslVersionRangeStream);
+        if (StringUtils.isNotEmpty(sslVersionRangeStream)) {
+            setSSLVersionRangeDefault(
+                    "STREAM",
+                    SSLProtocolVariant.STREAM,
+                    sslVersionRangeStream);
+        }
+
+        logger.fine("sslVersionRangeDatagram: " + sslVersionRangeDatagram);
+        if (StringUtils.isNotEmpty(sslVersionRangeDatagram)) {
+            setSSLVersionRangeDefault(
+                    "DATA_GRAM",
+                    SSLProtocolVariant.DATA_GRAM,
+                    sslVersionRangeDatagram);
         }
 
         logger.info("TomcatJSS: initialization complete");
@@ -444,6 +481,71 @@ public class TomcatJSS implements SSLSocketListener {
 
             SSLSocket.setCipherPreferenceDefault(cipherID, false);
         }
+    }
+
+    /**
+     * setSSLVersionRangeDefault sets the range of allowed SSL versions. This
+     * replaces the obsolete SSL_Option* API.
+     *
+     * @param protoVariant indicates whether this setting is for type "stream"
+     * or "datagram".
+     *
+     * @param sslVersionRange_s takes on the form of "min:max" where min/max
+     * values can be "ssl3, tls1_0, tls1_1, or tls1_2". ssl2 is not supported for
+     * tomcatjss via this interface. The format is "sslVersionRange=min:max".
+     */
+    public void setSSLVersionRangeDefault(
+            String type,
+            SSLProtocolVariant protoVariant,
+            String sslVersionRange_s) throws SocketException,
+            IllegalArgumentException, IOException {
+
+        String[] sslVersionRange = sslVersionRange_s.split(":");
+        if (sslVersionRange.length != 2) {
+            throw new SocketException("SSL version range format error: " + sslVersionRange_s);
+        }
+
+        String min_s = sslVersionRange[0];
+        String max_s = sslVersionRange[1];
+
+        logger.fine("Setting SSL version range for " + type + ":");
+        logger.fine("* min: " + min_s);
+        logger.fine("* max: " + max_s);
+
+        int min = getSSLVersionRangeEnum(min_s);
+        int max = getSSLVersionRangeEnum(max_s);
+
+        if (min == -1 || max == -1) {
+            throw new SocketException("SSL version range format error: " + sslVersionRange_s);
+        }
+
+        SSLVersionRange range = new SSLVersionRange(min, max);
+        SSLSocket.setSSLVersionRangeDefault(protoVariant, range);
+    }
+
+    int getSSLVersionRangeEnum(String range) {
+
+        if (range == null) {
+            return -1;
+        }
+
+        if (range.equals("ssl3")) {
+            return SSLVersionRange.ssl3;
+        }
+
+        if (range.equals("tls1_0")) {
+            return SSLVersionRange.tls1_0;
+        }
+
+        if (range.equals("tls1_1")) {
+            return SSLVersionRange.tls1_1;
+        }
+
+        if (range.equals("tls1_2")) {
+            return SSLVersionRange.tls1_2;
+        }
+
+        return -1;
     }
 
     @Override
