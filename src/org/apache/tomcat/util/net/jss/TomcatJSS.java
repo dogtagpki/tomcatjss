@@ -58,6 +58,10 @@ public class TomcatJSS implements SSLSocketListener {
     String serverCertNickFile;
     String serverCertNick;
 
+    String clientAuth = "want";
+    boolean requireClientAuth;
+    boolean wantClientAuth;
+
     boolean enableOCSP;
     String ocspResponderURL;
     String ocspResponderCertNickname;
@@ -128,7 +132,23 @@ public class TomcatJSS implements SSLSocketListener {
         this.serverCertNick = serverCertNick;
     }
 
-    public boolean isEnableOCSP() {
+    public String getClientAuth() {
+        return clientAuth;
+    }
+
+    public void setClientAuth(String clientAuth) {
+        this.clientAuth = clientAuth;
+    }
+
+    public boolean getRequireClientAuth() {
+        return requireClientAuth;
+    }
+
+    public boolean getWantClientAuth() {
+        return wantClientAuth;
+    }
+
+    public boolean getEnableOCSP() {
         return enableOCSP;
     }
 
@@ -231,6 +251,25 @@ public class TomcatJSS implements SSLSocketListener {
 
         serverCertNick = new String(Files.readAllBytes(Paths.get(serverCertNickFile))).trim();
         logger.fine("serverCertNick: " + serverCertNick);
+
+        logger.fine("clientAuth: " + clientAuth);
+        if (clientAuth.equalsIgnoreCase("true")) {
+            requireClientAuth = true;
+
+        } else if (clientAuth.equalsIgnoreCase("yes")) {
+            requireClientAuth = true;
+            logger.warning("The \"yes\" value for clientAuth has been deprecated. Use \"true\" instead.");
+
+        } else if (clientAuth.equalsIgnoreCase("want")) {
+            wantClientAuth = true;
+        }
+
+        logger.fine("requireClientAuth: " + requireClientAuth);
+        logger.fine("wantClientAuth: " + wantClientAuth);
+
+        if (requireClientAuth || wantClientAuth) {
+            configureOCSP();
+        }
 
         logger.info("TomcatJSS: initialization complete");
 

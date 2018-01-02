@@ -325,9 +325,6 @@ public class JSSSocketFactory implements
     private AbstractEndpoint<?> endpoint;
     private Properties config;
 
-    protected boolean requireClientAuth = false;
-    protected boolean wantClientAuth = false;
-
     private boolean mStrictCiphers = false;
 
     public JSSSocketFactory(AbstractEndpoint<?> endpoint) {
@@ -573,6 +570,13 @@ public class JSSSocketFactory implements
             String serverCertNickFile = getProperty("serverCertNickFile");
             tomcatjss.setServerCertNickFile(serverCertNickFile);
 
+            // MUST look for "clientauth" (ALL lowercase) since "clientAuth"
+            // (camel case) has already been processed by Tomcat 7
+            String clientAuth = getProperty("clientauth");
+            if (clientAuth != null) {
+                tomcatjss.setClientAuth(clientAuth);
+            }
+
             String strEnableOCSP = getProperty("enableOCSP");
             boolean enableOCSP = Boolean.parseBoolean(strEnableOCSP);
             tomcatjss.setEnableOCSP(enableOCSP);
@@ -608,28 +612,6 @@ public class JSSSocketFactory implements
             }
 
             tomcatjss.init();
-
-            // MUST look for "clientauth" (ALL lowercase) since "clientAuth"
-            // (camel case) has already been processed by Tomcat 7
-            String clientAuthStr = getProperty("clientauth");
-            if (clientAuthStr == null) {
-                logger.fine("JSSSocketFactory: init: \"clientauth\" not found, default to want.");
-                clientAuthStr = "want";
-            }
-
-            if (clientAuthStr.equalsIgnoreCase("true")
-                    || clientAuthStr.equalsIgnoreCase("yes")) {
-                requireClientAuth = true;
-            } else if (clientAuthStr.equalsIgnoreCase("want")) {
-                wantClientAuth = true;
-            }
-
-            logger.fine("JSSSocketFActory: init: requireClientAuth "
-                    + requireClientAuth + " wantClientAuth " + wantClientAuth);
-
-            if (requireClientAuth || wantClientAuth) {
-                tomcatjss.configureOCSP();
-            }
 
             // 12 hours = 43200 seconds
             SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
@@ -705,13 +687,11 @@ public class JSSSocketFactory implements
         SSLSocket asock = null;
         try {
             asock = (SSLSocket) socket.accept();
-
-            TomcatJSS tomcatjss = TomcatJSS.getInstance();
             asock.addSocketListener(tomcatjss);
 
-            if (wantClientAuth || requireClientAuth) {
+            if (tomcatjss.getRequireClientAuth() || tomcatjss.getWantClientAuth()) {
                 asock.requestClientAuth(true);
-                if (requireClientAuth == true) {
+                if (tomcatjss.getRequireClientAuth()) {
                     asock.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
                 } else {
                     asock.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
@@ -757,9 +737,9 @@ public class JSSSocketFactory implements
              * call setSoTimeout() as needed. Zero means disable.
              */
             s.setSoTimeout(0);
-            if (wantClientAuth || requireClientAuth) {
+            if (tomcatjss.getRequireClientAuth() || tomcatjss.getWantClientAuth()) {
                 s.requestClientAuth(true);
-                if (requireClientAuth == true) {
+                if (tomcatjss.getRequireClientAuth()) {
                     s.requireClientAuth(SSLSocket.SSL_REQUIRE_ALWAYS);
                 } else {
                     s.requireClientAuth(SSLSocket.SSL_REQUIRE_NEVER);
