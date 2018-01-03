@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
@@ -386,6 +387,24 @@ public class TomcatJSS implements SSLSocketListener {
                     sslVersionRangeDatagram);
         }
 
+        /*
+         * According to NSS: the SSL_OptionSet-based API for controlling the
+         * enabled protocol versions are obsolete and replaced by the
+         * setSSLVersionRange calls. Therefore, if the "range" parameters
+         * are present in the attributes then the sslOptions parameter is
+         * ignored. Using the new version range API in conjunction with the
+         * older SSL_OptionSet-based API for controlling the enabled
+         * protocol versions may cause unexpected results
+         */
+        if (StringUtils.isNotEmpty(sslVersionRangeStream)
+                || StringUtils.isNotEmpty(sslVersionRangeDatagram)) {
+            /* deliberately lose the ssl2 here */
+            setSSLCiphers("sslRangeCiphers", sslRangeCiphers);
+
+        } else {
+            setSSLOptions();
+        }
+
         logger.info("TomcatJSS: initialization complete");
 
         initialized = true;
@@ -592,6 +611,129 @@ public class TomcatJSS implements SSLSocketListener {
         }
 
         return -1;
+    }
+
+    public void setSSLCiphers(String attr, String ciphers) throws SocketException, IOException {
+
+        if (StringUtils.isEmpty(ciphers)) {
+            logger.fine("Missing " + attr);
+            return;
+        }
+
+        logger.fine("Processing " + attr + ":");
+        StringTokenizer st = new StringTokenizer(ciphers, ", ");
+        while (st.hasMoreTokens()) {
+            String cipherStr = st.nextToken();
+
+            int cipherID = 0;
+            String name;
+            boolean enabled;
+
+            if (cipherStr.startsWith("+")) {
+                enabled = true;
+                name = cipherStr.substring(1);
+            } else if (cipherStr.startsWith("-")) {
+                enabled = false;
+                name = cipherStr.substring(1);
+            } else {
+                enabled = true; // no enable/disable flag, assume enable
+                name = cipherStr;
+            }
+
+            logger.fine("* " + name);
+            logger.fine("  enabled: " + enabled);
+
+            if (name.startsWith("0x") || name.startsWith("0X")) {
+                // this allows us to specify new ciphers
+                try {
+                    cipherID = Integer.parseInt(name.substring(2), 16);
+                } catch (Exception e) {
+                    logger.severe("Invalid SSL cipher: " + name);
+                    continue;
+                }
+            } else {
+                try {
+                    SSLCipher cipher = SSLCipher.valueOf(name);
+                    cipherID = cipher.getID();
+                } catch (IllegalArgumentException e) {
+                    logger.severe("Unknown SSL cipher: " + name);
+                    continue;
+                }
+            }
+
+            logger.fine("  ID: 0x" + Integer.toHexString(cipherID));
+
+            if (cipherID == 0) {
+                logger.severe("Unknown SSL cipher: " + name);
+                continue;
+            }
+
+            try {
+                SSLSocket.setCipherPreferenceDefault(cipherID, enabled);
+
+            } catch (Exception e) {
+                logger.warning("Unable to set SSL cipher preference: " + e);
+                SSLCipher cipher = SSLCipher.valueOf(cipherID);
+                if (cipher != null && cipher.isECC()) {
+                    logger.warning("SSL ECC cipher \""
+                                    + name
+                                    + "\" unsupported by NSS. "
+                                    + "This is probably O.K. unless ECC support has been installed.");
+                } else {
+                    logger.severe("SSL cipher \"" + name
+                            + "\" unsupported by NSS");
+                }
+            }
+        }
+    }
+
+    /**
+     * note: the SSL_OptionSet-based API for controlling the enabled protocol
+     * versions are obsolete and replaced by the setSSLVersionRange calls. If
+     * the "range" parameters are present in the attributes then the sslOptions
+     * parameter is ignored.
+     */
+    public void setSSLOptions() throws SocketException, IOException {
+
+        if (StringUtils.isEmpty(sslOptions)) {
+            logger.fine("JSSSocketFactory: no sslOptions specified");
+            return;
+        }
+
+        logger.fine("JSSSocketFactory: Processing sslOptions:");
+        StringTokenizer st = new StringTokenizer(sslOptions, ", ");
+        while (st.hasMoreTokens()) {
+            String option = st.nextToken();
+            logger.fine("JSSSocketFactory:  - " + option);
+
+            StringTokenizer st1 = new StringTokenizer(option, "=");
+            String name = st1.nextToken();
+            String value = st1.nextToken();
+            if (name.equals("ssl2")) {
+                if (value.equals("true")) {
+                    SSLSocket.enableSSL2Default(true);
+                    setSSLCiphers("ssl2Ciphers", ssl2Ciphers);
+                } else {
+                    SSLSocket.enableSSL2Default(false);
+                }
+            }
+            if (name.equals("ssl3")) {
+                if (value.equals("true")) {
+                    SSLSocket.enableSSL3Default(true);
+                    setSSLCiphers("ssl3Ciphers", ssl3Ciphers);
+                } else {
+                    SSLSocket.enableSSL3Default(false);
+                }
+            }
+            if (name.equals("tls")) {
+                if (value.equals("true")) {
+                    SSLSocket.enableTLSDefault(true);
+                    setSSLCiphers("tlsCiphers", tlsCiphers);
+                } else {
+                    SSLSocket.enableTLSDefault(false);
+                }
+            }
+        }
     }
 
     @Override
