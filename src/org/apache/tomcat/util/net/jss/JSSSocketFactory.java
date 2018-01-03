@@ -119,15 +119,14 @@ public class JSSSocketFactory implements
     public void setSSLCiphers(String attr) throws SocketException, IOException {
         String ciphers = getProperty(attr);
         if (StringUtils.isEmpty(ciphers)) {
-            logger.fine("JSSSocketFactory: setSSLCiphers: " + attr + " not found");
+            logger.fine("Missing " + attr);
             return;
         }
 
-        logger.fine("JSSSocketFactory: Processing " + attr + ":");
+        logger.fine("Processing " + attr + ":");
         StringTokenizer st = new StringTokenizer(ciphers, ", ");
         while (st.hasMoreTokens()) {
             String cipherstr = st.nextToken();
-            logger.fine("JSSSocketFactory:  - " + cipherstr);
 
             int cipherid = 0;
             String text;
@@ -144,13 +143,15 @@ public class JSSSocketFactory implements
                 text = cipherstr;
             }
 
+            logger.fine("* " + text + ":");
+            logger.fine("  enabled: " + state);
+
             if (text.startsWith("0x") || text.startsWith("0X")) {
                 // this allows us to specify new ciphers
                 try {
                     cipherid = Integer.parseInt(text.substring(2), 16);
                 } catch (Exception e) {
-                    logger.severe("Error: SSL cipher \"" + text
-                            + "\" cannot be read as an integer");
+                    logger.severe("Invalid SSL cipher: " + text);
                     continue;
                 }
             } else {
@@ -162,26 +163,28 @@ public class JSSSocketFactory implements
                     continue;
                 }
             }
-            if (cipherid != 0) {
-                try {
-                    logger.fine("JSSSocketFactory: setCipherPreferenceDefault:  " + cipherstr
-                            + ": 0x" + Integer.toHexString(cipherid));
-                    SSLSocket.setCipherPreferenceDefault(cipherid, state);
-                } catch (Exception e) {
-                    logger.warning("JSSSocketFactory: SSLSocket.setCipherPreferenceDefault exception:" +e);
-                    if (eccCipherMap.containsKey(cipherid)) {
-                        logger.warning("Warning: SSL ECC cipher \""
-                                        + text
-                                        + "\" unsupported by NSS. "
-                                        + "This is probably O.K. unless ECC support has been installed.");
-                    } else {
-                        logger.severe("Error: SSL cipher \"" + text
-                                + "\" unsupported by NSS");
-                    }
+
+            logger.fine("  ID: 0x" + Integer.toHexString(cipherid));
+
+            if (cipherid == 0) {
+                logger.severe("Unknown SSL cipher: " + text);
+                continue;
+            }
+
+            try {
+                SSLSocket.setCipherPreferenceDefault(cipherid, state);
+
+            } catch (Exception e) {
+                logger.warning("Unable to set SSL cipher preference: " + e);
+                if (eccCipherMap.containsKey(cipherid)) {
+                    logger.warning("SSL ECC cipher \""
+                                    + text
+                                    + "\" unsupported by NSS. "
+                                    + "This is probably O.K. unless ECC support has been installed.");
+                } else {
+                    logger.severe("SSL cipher \"" + text
+                            + "\" unsupported by NSS");
                 }
-            } else {
-                logger.severe("Error: SSL cipher \"" + text
-                        + "\" not recognized by tomcatjss");
             }
         }
     }
