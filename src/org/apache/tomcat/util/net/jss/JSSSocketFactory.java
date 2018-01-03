@@ -24,7 +24,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.HashMap;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -45,54 +44,6 @@ public class JSSSocketFactory implements
         org.apache.tomcat.util.net.SSLUtil {
 
     final static Logger logger = Logger.getLogger(JSSSocketFactory.class.getName());
-
-    private static HashMap<Integer, String> eccCipherMap = new HashMap<Integer, String>();
-    static {
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-                "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-                "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,
-                "TLS_ECDH_RSA_WITH_AES_256_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,
-                "TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
-                "TLS_ECDHE_ECDSA_WITH_RC4_128_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-                "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_RC4_128_SHA,
-                "TLS_ECDHE_RSA_WITH_RC4_128_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-                "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_RC4_128_SHA,
-                "TLS_ECDH_RSA_WITH_RC4_128_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,
-                "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_RC4_128_SHA,
-                "TLS_ECDH_ECDSA_WITH_RC4_128_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,
-                "TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,
-                "TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
-                "TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA,
-                "TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA,
-                "TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_NULL_SHA,
-                "TLS_ECDHE_ECDSA_WITH_NULL_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_NULL_SHA,
-                "TLS_ECDHE_RSA_WITH_NULL_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_RSA_WITH_NULL_SHA,
-                "TLS_ECDH_RSA_WITH_NULL_SHA");
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_NULL_SHA,
-                "TLS_ECDH_ECDSA_WITH_NULL_SHA");
-/* unsupported by nss
-        eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,
-                "TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256");
-*/
-    }
 
     TomcatJSS tomcatjss = TomcatJSS.getInstance();
 
@@ -176,7 +127,8 @@ public class JSSSocketFactory implements
 
             } catch (Exception e) {
                 logger.warning("Unable to set SSL cipher preference: " + e);
-                if (eccCipherMap.containsKey(cipherid)) {
+                SSLCipher cipher = SSLCipher.valueOf(cipherid);
+                if (cipher != null && cipher.isECC()) {
                     logger.warning("SSL ECC cipher \""
                                     + text
                                     + "\" unsupported by NSS. "
