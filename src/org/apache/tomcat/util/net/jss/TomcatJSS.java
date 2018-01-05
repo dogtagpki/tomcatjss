@@ -358,10 +358,10 @@ public class TomcatJSS implements SSLSocketListener {
         SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
 
         logger.fine("strictCiphers: " + strictCiphers);
-        if (strictCiphers.equalsIgnoreCase("true")) {
+        if ("true".equalsIgnoreCase(strictCiphers)) {
             boolStrictCiphers = true;
 
-        } else if (strictCiphers.equalsIgnoreCase("yes")) {
+        } else if ("yes".equalsIgnoreCase(strictCiphers)) {
             boolStrictCiphers = true;
             logger.warning("The \"yes\" value for strictCiphers has been deprecated. Use \"true\" instead.");
         }
