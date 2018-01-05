@@ -78,7 +78,7 @@ public class TomcatJSS implements SSLSocketListener {
     int ocspMaxCacheEntryDuration = 86400; // seconds (default: 24 hours)
     int ocspTimeout = 60; // seconds (default: 1 minute)
 
-    String strictCiphers;
+    String strictCiphers = "false";
     boolean boolStrictCiphers;
     String sslVersionRangeStream;
     String sslVersionRangeDatagram;
