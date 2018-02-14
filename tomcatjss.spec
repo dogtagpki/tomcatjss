@@ -24,17 +24,12 @@ BuildRequires:    jss >= 4.4.2-2
 %else
 BuildRequires:    jss >= 4.4.0-7
 %endif
-%if 0%{?fedora} >= 28
-BuildRequires:    tomcat >= 8.5
-%global           app_server tomcat-8.5
-%else
-%if 0%{?fedora} >= 23
-BuildRequires:    tomcat >= 8.0.18
+%if 0%{?fedora}
+BuildRequires:    tomcat >= 8.0.49
 %global           app_server tomcat-8.0
 %else  # rhel
 BuildRequires:    tomcat >= 7.0.68
 %global           app_server tomcat-7.0
-%endif
 %endif
 
 Requires:         apache-commons-lang
@@ -49,14 +44,10 @@ Requires:         jss >= 4.4.2-2
 %else
 Requires:         jss >= 4.4.0-7
 %endif
-%if 0%{?fedora} >= 28
-Requires:         tomcat >= 8.5
-%else
-%if 0%{?fedora} >= 23
-Requires:         tomcat >= 8.0.18
+%if 0%{?fedora}
+Requires:         tomcat >= 8.0.49
 %else
 Requires:         tomcat >= 7.0.68
-%endif
 %endif
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
