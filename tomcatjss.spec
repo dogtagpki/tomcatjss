@@ -1,6 +1,6 @@
 Name:     tomcatjss
 Version:  7.3.0
-Release:  0.1%{?dist}
+Release:  0.2%{?dist}
 Summary:  JSS Connector for Apache Tomcat, a JSSE module for Apache Tomcat that uses JSS
 URL:      http://pki.fedoraproject.org/
 License:  LGPLv2+
@@ -24,12 +24,17 @@ BuildRequires:    jss >= 4.4.2-2
 %else
 BuildRequires:    jss >= 4.4.0-7
 %endif
+%if 0%{?fedora} >= 27 || 0%{?rhel} > 7
+BuildRequires:     tomcat >= 8.5.23
+%global app_server tomcat-8.5
+%else
 %if 0%{?fedora}
-BuildRequires:    tomcat >= 8.0.49
-%global           app_server tomcat-8.0
-%else  # rhel
-BuildRequires:    tomcat >= 7.0.68
-%global           app_server tomcat-7.0
+BuildRequires:     tomcat >= 8.0.49
+%global app_server tomcat-8.0
+%else
+BuildRequires:     tomcat >= 7.0.68
+%global app_server tomcat-7.0
+%endif
 %endif
 
 Requires:         apache-commons-lang
@@ -44,10 +49,15 @@ Requires:         jss >= 4.4.2-2
 %else
 Requires:         jss >= 4.4.0-7
 %endif
+
+%if 0%{?fedora} >= 27 || 0%{?rhel} > 7
+Requires:         tomcat >= 8.5.23
+%else
 %if 0%{?fedora}
 Requires:         tomcat >= 8.0.49
 %else
 Requires:         tomcat >= 7.0.68
+%endif
 %endif
 
 # The 'tomcatjss' package conflicts with the 'tomcat-native' package
@@ -103,6 +113,9 @@ rm -rf %{buildroot}
 %{_javadir}/*
 
 %changelog
+* Thu Mar 15 2018 Christian Heimes <cheimes@redhat.com> - 7.3.0-0.2
+- tomcatjss Pagure Issue #1 - Build with Tomcat 8.5 support
+
 * Mon Jun 12 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.4-1
 - tomcatjss Pagure Issue #10 - Comply with ASF trademark rules (mharmsen)
 
