@@ -251,7 +251,7 @@
     <mkdir dir="${rpm.dist.dir}/RPMS"/>
     <mkdir dir="${rpm.dist.dir}/SRPMS"/>
     <mkdir dir="${rpm.dist.dir}/SPECS"/>
-    <copy file="${specfile}" tofile="${rpm.dist.dir}/SPECS/${specfile}"/>
+    <copy file="${specfile}.in" tofile="${rpm.dist.dir}/SPECS/${specfile}"/>
     <mkdir dir="${rpm.dist.dir}/BUILD"/>
 
 
