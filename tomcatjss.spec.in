@@ -8,7 +8,7 @@ Group:    System Environment/Libraries
 
 BuildArch:      noarch
 
-Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.tar.gz
+Source:   https://github.com/dogtagpki/tomcatjss/archive/v%{version}/tomcatjss-%{version}.tar.gz
 
 # jpackage-utils requires versioning to meet both build and runtime requirements
 # jss requires versioning to meet both build and runtime requirements
