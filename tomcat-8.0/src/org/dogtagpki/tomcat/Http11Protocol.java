@@ -44,15 +44,6 @@ public class Http11Protocol extends org.apache.coyote.http11.Http11Protocol {
 
     public void setServerCertNickFile(String serverCertNickFile) {
         tomcatjss.setServerCertNickFile(serverCertNickFile);
-
-        try {
-            Path path = Paths.get(serverCertNickFile);
-            String nickname = new String(Files.readAllBytes(path)).trim();
-            setKeyAlias(nickname);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public boolean getEnabledOCSP() {
