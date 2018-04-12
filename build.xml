@@ -51,7 +51,8 @@
   <property name="specfile" value="tomcatjss.spec"/>
   <property name="rhel" value="0"/>
   <property name="jnidir" value="/usr/lib/java" />
-  <property name="installdir" value="/usr/share/java" />
+  <property name="install.doc.dir" value="/usr/share/doc/tomcatjss" />
+  <property name="install.jar.dir" value="/usr/share/java" />
 
   <!--
     Set the properties related to the source tree
@@ -230,10 +231,12 @@
   </target>
 
   <target name="install" depends="compile,package">
-    <delete file="${installdir}/tomcatjss-${version}.jar"/>
-    <delete file="${installdir}/tomcatjss.jar"/>
-    <copy file="${build.jars}/tomcatjss.jar" tofile="${installdir}/tomcatjss-${version}.jar"/>
-    <symlink link="${installdir}/tomcatjss.jar" resource="tomcatjss-${version}.jar"/>
+    <copy file="LICENSE" todir="${install.doc.dir}"/>
+    <copy file="README" todir="${install.doc.dir}"/>
+    <delete file="${install.jar.dir}/tomcatjss-${version}.jar"/>
+    <delete file="${install.jar.dir}/tomcatjss.jar"/>
+    <copy file="${build.jars}/tomcatjss.jar" tofile="${install.jar.dir}/tomcatjss-${version}.jar"/>
+    <symlink link="${install.jar.dir}/tomcatjss.jar" resource="tomcatjss-${version}.jar"/>
   </target>
 
   <target name="main" depends="compile,package">

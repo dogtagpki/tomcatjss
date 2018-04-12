@@ -9,11 +9,20 @@ Group:    System Environment/Libraries
 BuildArch:      noarch
 
 Source:   https://github.com/dogtagpki/tomcatjss/archive/v%{version}/tomcatjss-%{version}.tar.gz
+%if 0%{?fedora} >= 27 || 0%{?rhel} > 7
+%global app_server tomcat-8.5
+%else
+%if 0%{?fedora}
+%global app_server tomcat-8.0
+%else
+%global app_server tomcat-7.0
+%endif
+%endif
 
 # jpackage-utils requires versioning to meet both build and runtime requirements
 # jss requires versioning to meet both build and runtime requirements
 # tomcat requires versioning to meet both build and runtime requirements
-Conflicts:        pki-base < 10.4.0
+Conflicts:        pki-base < 10.6.0
 BuildRequires:    ant
 BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
@@ -24,15 +33,12 @@ BuildRequires:    jss >= 4.4.2-2
 BuildRequires:    jss >= 4.4.0-7
 %endif
 %if 0%{?fedora} >= 27 || 0%{?rhel} > 7
-BuildRequires:     tomcat >= 8.5.23
-%global app_server tomcat-8.5
+BuildRequires:    tomcat >= 8.5.23
 %else
 %if 0%{?fedora}
-BuildRequires:     tomcat >= 8.0.49
-%global app_server tomcat-8.0
+BuildRequires:    tomcat >= 8.0.49
 %else
-BuildRequires:     tomcat >= 7.0.68
-%global app_server tomcat-7.0
+BuildRequires:    tomcat >= 7.0.68
 %endif
 %endif
 
@@ -82,29 +88,22 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
 
 %prep
 
-%setup -q
-chmod -c -x LICENSE README
-
-%build
-
-ant -f build.xml -Dversion=%{version} -Dsrc.dir=%{app_server} -Djnidir=%{_jnidir} dist
+%autosetup -n tomcatjss-%{version} -p 1
 
 %install
 
-# Unpack the files we just built
-cd dist/binary
-unzip %{name}-%{version}.zip -d %{buildroot}
-
-# Install our files
-cd %{buildroot}%{_javadir}
-%if 0%{?rhel} || 0%{?fedora} < 21
-mv %{name}.jar %{name}-%{version}.jar
-ln -s %{name}-%{version}.jar %{name}.jar
-%endif
+ant -f build.xml \
+    -Dversion=%{version} \
+    -Dsrc.dir=%{app_server} \
+    -Djnidir=%{_jnidir} \
+    -Dinstall.doc.dir=%{buildroot}%{_docdir}/%{name} \
+    -Dinstall.jar.dir=%{buildroot}%{_javadir} \
+    install
 
 %files
 %defattr(-,root,root)
-%doc README LICENSE
+%doc README
+%doc LICENSE
 %{_javadir}/*
 
 %changelog
