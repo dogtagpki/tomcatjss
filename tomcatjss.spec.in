@@ -8,7 +8,7 @@ License:          LGPLv2+
 BuildArch:        noarch
 
 Version:          7.3.0
-Release:          1%{?dist}
+Release:          2%{?dist}
 
 Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}/tomcatjss-%{version}.tar.gz
 
@@ -16,7 +16,7 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}/tom
 # Tomcat
 ################################################################################
 
-%if 0%{?fedora} >= 27 || 0%{?rhel} > 7
+%if 0%{?fedora} >= 28 || 0%{?rhel} > 7
 %global app_server tomcat-8.5
 %else
 %if 0%{?fedora}
@@ -33,23 +33,32 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}/tom
 # jpackage-utils requires versioning to meet both build and runtime requirements
 # jss requires versioning to meet both build and runtime requirements
 # tomcat requires versioning to meet both build and runtime requirements
-Conflicts:        pki-base < 10.6.0
+
+# Java
 BuildRequires:    ant
 BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
+
+# JSS
 %if 0%{?fedora}
 BuildRequires:    jss >= 4.4.2-2
 %else
 BuildRequires:    jss >= 4.4.0-7
 %endif
-%if 0%{?fedora} >= 27 || 0%{?rhel} > 7
-BuildRequires:    tomcat >= 8.5.23
+
+# Tomcat
+%if 0%{?fedora} >= 29 || 0%{?rhel} > 7
+BuildRequires:    tomcat >= 1:9.0.7
+%else
+%if 0%{?fedora} >= 28
+BuildRequires:    tomcat >= 1:8.5.23
 %else
 %if 0%{?fedora}
 BuildRequires:    tomcat >= 8.0.49
 %else
-BuildRequires:    tomcat >= 7.0.68
+BuildRequires:    tomcat >= 7.0.69
+%endif
 %endif
 %endif
 
@@ -57,6 +66,7 @@ BuildRequires:    tomcat >= 7.0.68
 # Runtime Dependencies
 ################################################################################
 
+# Java
 Requires:         apache-commons-lang
 %if 0%{?fedora} >= 21
 Requires:         java-headless
@@ -64,19 +74,27 @@ Requires:         java-headless
 Requires:         java
 %endif
 Requires:         jpackage-utils >= 0:1.7.5-15
+
+# JSS
 %if 0%{?fedora}
 Requires:         jss >= 4.4.2-2
 %else
 Requires:         jss >= 4.4.0-7
 %endif
 
-%if 0%{?fedora} >= 27 || 0%{?rhel} > 7
-Requires:         tomcat >= 8.5.23
+#Tomcat
+%if 0%{?fedora} >= 29 || 0%{?rhel} > 7
+Requires:         tomcat >= 1:9.0.7
+%else
+%if 0%{?fedora} >= 28
+Requires:         tomcat >= 1:8.5.23
 %else
 %if 0%{?fedora}
 Requires:         tomcat >= 8.0.49
+Conflicts:        tomcat >= 1:8.5
 %else
-Requires:         tomcat >= 7.0.68
+Requires:         tomcat >= 7.0.69
+%endif
 %endif
 %endif
 
@@ -85,6 +103,8 @@ Requires:         tomcat >= 7.0.68
 # OpenSSL security model, so these two packages may not co-exist.
 # (see Bugzilla Bug #441974 for details)
 Conflicts:        tomcat-native
+Conflicts:        pki-base < 10.6.0
+
 
 %if 0%{?rhel}
 # For EPEL, override the '_sharedstatedir' macro on RHEL
@@ -130,7 +150,6 @@ ant -f build.xml \
 
 ################################################################################
 %changelog
-################################################################################
 
 * Thu Mar 15 2018 Dogtag PKI Team <pki-devel@redhat.com> 7.3.0-0
 - To list changes in <branch> since <tag>:
