@@ -7,10 +7,25 @@ URL:              http://www.dogtagpki.org/wiki/TomcatJSS
 License:          LGPLv2+
 BuildArch:        noarch
 
-Version:          7.3.0
-Release:          2%{?dist}
+Version:          7.3.1
+Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
 
+# To generate the source tarball:
+# $ git clone https://github.com/dogtagpki/tomcatjss.git
+# $ cd tomcatjss
+# $ git archive \
+#     --format=tar.gz \
+#     --prefix tomcatjss-VERSION/ \
+#     -o tomcatjss-VERSION.tar.gz \
+#     <version tag>
 Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}/tomcatjss-%{version}.tar.gz
+
+# To create a patch for all changes since a version tag:
+# $ git format-patch \
+#     --stdout \
+#     <version tag> \
+#     > tomcatjss-VERSION-RELEASE.patch
+# Patch: tomcatjss-VERSION-RELEASE.patch
 
 ################################################################################
 # Tomcat
@@ -34,6 +49,9 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}/tom
 # jss requires versioning to meet both build and runtime requirements
 # tomcat requires versioning to meet both build and runtime requirements
 
+# autosetup
+BuildRequires:    git
+
 # Java
 BuildRequires:    ant
 BuildRequires:    apache-commons-lang
@@ -41,8 +59,8 @@ BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
 
 # JSS
-%if 0%{?fedora}
-BuildRequires:    jss >= 4.4.2-2
+%if 0%{?fedora} || 0%{?rhel} > 7
+BuildRequires:    jss >= 4.4.4-1
 %else
 BuildRequires:    jss >= 4.4.0-7
 %endif
@@ -76,8 +94,8 @@ Requires:         java
 Requires:         jpackage-utils >= 0:1.7.5-15
 
 # JSS
-%if 0%{?fedora}
-Requires:         jss >= 4.4.2-2
+%if 0%{?fedora} || 0%{?rhel} > 7
+Requires:         jss >= 4.4.4-1
 %else
 Requires:         jss >= 4.4.0-7
 %endif
@@ -125,7 +143,7 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
 %prep
 ################################################################################
 
-%autosetup -n tomcatjss-%{version} -p 1
+%autosetup -n tomcatjss-%{version} -p 1 -S git
 
 ################################################################################
 %install
