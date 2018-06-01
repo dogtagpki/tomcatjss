@@ -99,6 +99,7 @@
   -->
   <property name="jar.home" value="/usr/share/java" />
   <property name="commons-logging.jar" value="${jar.home}/commons-logging-api.jar" />
+  <property name="slf4j-api.jar" value="${jar.home}/slf4j/slf4j-api.jar" />
 
   <property name="tomcat.home" value="/usr/share/tomcat" />
   <property name="tomcat-coyote.jar" value="${tomcat.home}/lib/tomcat-coyote.jar" />
@@ -119,6 +120,7 @@
     <pathelement location="${tomcat-juli.jar}"/>
     <pathelement location="${commons-logging.jar}"/>
     <pathelement location="${commons-lang.jar}"/>
+    <pathelement location="${slf4j-api.jar}"/>
   </path>
 
   <!--
