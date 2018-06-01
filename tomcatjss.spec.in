@@ -58,6 +58,12 @@ BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
 
+# SLF4J
+BuildRequires:    slf4j
+%if 0%{?fedora} || 0%{?rhel} > 7
+BuildRequires:    slf4j-jdk14
+%endif
+
 # JSS
 %if 0%{?fedora} || 0%{?rhel} > 7
 BuildRequires:    jss >= 4.4.4-1
@@ -92,6 +98,12 @@ Requires:         java-headless
 Requires:         java
 %endif
 Requires:         jpackage-utils >= 0:1.7.5-15
+
+# SLF4J
+Requires:         slf4j
+%if 0%{?fedora} || 0%{?rhel} > 7
+Requires:         slf4j-jdk14
+%endif
 
 # JSS
 %if 0%{?fedora} || 0%{?rhel} > 7
