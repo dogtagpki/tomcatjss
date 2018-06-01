@@ -24,18 +24,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.SSLSupport;
 import org.apache.tomcat.util.net.SSLUtil;
 import org.apache.tomcat.util.net.ServerSocketFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;
 
 public class JSSImplementation extends SSLImplementation {
 
-    final static Logger logger = Logger.getLogger(JSSImplementation.class.getName());
+    public static Logger logger = LoggerFactory.getLogger(JSSImplementation.class);
 
     static final String JSSFactory = "org.apache.tomcat.util.net.jss.JSSFactory";
     static final String SSLSocketClass = "org.mozilla.jss.ssl.SSLSocket";
@@ -49,7 +50,7 @@ public class JSSImplementation extends SSLImplementation {
             Class<?> factcl = Class.forName(JSSFactory);
             factory = (JSSFactory) factcl.newInstance();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error getting factory: " + JSSFactory, e);
+            logger.error("Error getting factory: " + JSSFactory, e);
         }
     }
 
