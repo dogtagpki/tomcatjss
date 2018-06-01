@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
 
 import org.apache.tomcat.util.net.jss.TomcatJSS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Http11NioProtocol extends org.apache.coyote.http11.Http11NioProtocol {
 
-    final static Logger logger = Logger.getLogger(Http11NioProtocol.class.getName());
+    public static Logger logger = LoggerFactory.getLogger(Http11NioProtocol.class);
 
     TomcatJSS tomcatjss = TomcatJSS.getInstance();
 

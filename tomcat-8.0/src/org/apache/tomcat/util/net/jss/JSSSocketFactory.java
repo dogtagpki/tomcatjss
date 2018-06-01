@@ -25,7 +25,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -35,12 +34,14 @@ import javax.net.ssl.TrustManager;
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.mozilla.jss.ssl.SSLServerSocket;
 import org.mozilla.jss.ssl.SSLSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JSSSocketFactory implements
         org.apache.tomcat.util.net.ServerSocketFactory,
         org.apache.tomcat.util.net.SSLUtil {
 
-    final static Logger logger = Logger.getLogger(JSSSocketFactory.class.getName());
+    public static Logger logger = LoggerFactory.getLogger(JSSSocketFactory.class);
 
     TomcatJSS tomcatjss = TomcatJSS.getInstance();
 
@@ -165,7 +166,7 @@ public class JSSSocketFactory implements
             tomcatjss.init();
 
         } catch (Exception ex) {
-            logger.severe("JSSSocketFactory: " + ex);
+            logger.error("JSSSocketFactory: " + ex);
             // The idea is, if admin take the trouble to configure the
             // ocsp cache, and made a mistake, we want to make server
             // unavailable until they get it right
