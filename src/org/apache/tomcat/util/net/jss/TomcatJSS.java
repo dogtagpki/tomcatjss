@@ -438,6 +438,13 @@ public class TomcatJSS implements SSLSocketListener {
             return;
         }
 
+        if (token.isLoggedIn()) {
+            logger.debug("TomcatJSS: already logged into " + tag);
+            return;
+        }
+
+        logger.debug("TomcatJSS: logging into " + tag);
+
         int iteration = 0;
         do {
             String strPassword = passwordStore.getPassword(tag, iteration);
@@ -449,12 +456,6 @@ public class TomcatJSS implements SSLSocketListener {
 
             Password password = new Password(strPassword.toCharArray());
 
-            if (token.isLoggedIn()) {
-                logger.debug("TomcatJSS: already logged into " + tag);
-                return;
-            }
-
-            logger.debug("TomcatJSS: logging into " + tag);
             try {
                 token.login(password);
                 return;
@@ -462,6 +463,9 @@ public class TomcatJSS implements SSLSocketListener {
             } catch (IncorrectPasswordException e) {
                 logger.warn("TomcatJSS: incorrect password");
                 iteration ++;
+
+            } finally {
+                password.clear();
             }
 
         } while (iteration < MAX_LOGIN_ATTEMPTS);
