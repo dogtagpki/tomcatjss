@@ -290,6 +290,22 @@ public class JSSSocketFactory implements
                 SSLSocket.TLS_ECDH_RSA_WITH_AES_128_CBC_SHA);
         cipherMap.put("TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA",
                 SSLSocket.TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA);
+
+        // TLS_*_SHA384
+        cipherMap.put("TLS_RSA_WITH_AES_256_GCM_SHA384",
+                SSLSocket.TLS_RSA_WITH_AES_256_GCM_SHA384);
+        cipherMap.put("TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+                SSLSocket.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384);
+        cipherMap.put("TLS_DHE_DSS_WITH_AES_256_GCM_SHA384",
+                SSLSocket.TLS_DHE_DSS_WITH_AES_256_GCM_SHA384);
+        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+                SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384);
+        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+                SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384);
+        cipherMap.put("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384);
+        cipherMap.put("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+                SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
     }
 
     private static HashMap<Integer, String> eccCipherMap = new HashMap<Integer, String>();
@@ -338,6 +354,22 @@ public class JSSSocketFactory implements
         eccCipherMap.put(SSLSocket.TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,
                 "TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256");
 */
+
+        // TLS_*_SHA384
+        eccCipherMap.put(SSLSocket.TLS_RSA_WITH_AES_256_GCM_SHA384,
+                "TLS_RSA_WITH_AES_256_GCM_SHA384");
+        eccCipherMap.put(SSLSocket.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,
+                "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384");
+        eccCipherMap.put(SSLSocket.TLS_DHE_DSS_WITH_AES_256_GCM_SHA384,
+                "TLS_DHE_DSS_WITH_AES_256_GCM_SHA384");
+        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
+                "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384");
+        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
+                "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384");
+        eccCipherMap.put(SSLSocket.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+                "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384");
+        eccCipherMap.put(SSLSocket.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+                "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384");
     }
 
     private AbstractEndpoint endpoint;
@@ -429,23 +461,30 @@ public class JSSSocketFactory implements
             }
             if (cipherid != 0) {
                 try {
-                    debugWrite("JSSSocketFactory setSSLCiphers:  " + cipherstr
+                    debugWrite("JSSSocketFactory setSSLCiphers: setting: " + cipherstr
                             + ": 0x" + Integer.toHexString(cipherid) + "\n");
                     SSLSocket.setCipherPreferenceDefault(cipherid, state);
+                    debugWrite("JSSSocketFactory setSSLCiphers: done setting: " + cipherstr
+                            + ": 0x" + Integer.toHexString(cipherid) + "\n");
                 } catch (Exception e) {
-                    System.err.println("SSLSocket.setCipherPreferenceDefault exception:" +e);
+                    String errMsg = "SSLSocket.setCipherPreferenceDefault exception on: " + cipherstr + " : " +e;
+                    System.err.println(errMsg);
+                    debugWrite("JSSSocketFactory setSSLCiphers: " + errMsg);
                     if (eccCipherMap.containsKey(cipherid)) {
+                        debugWrite("JSSSocketFactory setSSLCiphers: Warning: cipher exists in eccCipherMap");
                         System.err
                                 .println("Warning: SSL ECC cipher \""
                                         + text
                                         + "\" unsupported by NSS. "
                                         + "This is probably O.K. unless ECC support has been installed.");
                     } else {
+                        debugWrite("JSSSocketFactory setSSLCiphers: Error: cipher does not exist in eccCipherMap");
                         System.err.println("Error: SSL cipher \"" + text
                                 + "\" unsupported by NSS");
                     }
                 }
             } else {
+                debugWrite("JSSSocketFactory setSSLCiphers: Error: cipher not recognized by tomcatjss");
                 System.err.println("Error: SSL cipher \"" + text
                         + "\" not recognized by tomcatjss");
             }
