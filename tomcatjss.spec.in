@@ -7,7 +7,7 @@ URL:              http://www.dogtagpki.org/wiki/TomcatJSS
 License:          LGPLv2+
 BuildArch:        noarch
 
-Version:          7.3.1
+Version:          7.3.2
 Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
 # global           _phase -a1
 
@@ -110,10 +110,10 @@ Requires:         slf4j-jdk14
 %if 0%{?rhel} && 0%{?rhel} <= 7
 Requires:         jss >= 4.4.0-7
 %else
-Requires:         jss >= 4.4.4-1
+Requires:         jss >= 4.5.0-0.3
 %endif
 
-#Tomcat
+# Tomcat
 %if 0%{?rhel} && 0%{?rhel} <= 7
 Requires:         tomcat >= 7.0.69
 %else
@@ -134,7 +134,9 @@ Requires:         tomcat >= 1:9.0.7
 # OpenSSL security model, so these two packages may not co-exist.
 # (see Bugzilla Bug #441974 for details)
 Conflicts:        tomcat-native
-Conflicts:        pki-base < 10.6.0
+
+# PKI
+Conflicts:        pki-base < 10.6.3
 
 
 %if 0%{?rhel}
