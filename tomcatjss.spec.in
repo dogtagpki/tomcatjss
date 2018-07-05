@@ -9,6 +9,7 @@ BuildArch:        noarch
 
 Version:          7.3.1
 Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
+# global           _phase -a1
 
 # To generate the source tarball:
 # $ git clone https://github.com/dogtagpki/tomcatjss.git
@@ -18,7 +19,7 @@ Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
 #     --prefix tomcatjss-VERSION/ \
 #     -o tomcatjss-VERSION.tar.gz \
 #     <version tag>
-Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}/tomcatjss-%{version}.tar.gz
+Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?_phase}/tomcatjss-%{version}%{?_phase}.tar.gz
 
 # To create a patch for all changes since a version tag:
 # $ git format-patch \
@@ -155,7 +156,7 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
 %prep
 ################################################################################
 
-%autosetup -n tomcatjss-%{version} -p 1 -S git
+%autosetup -n tomcatjss-%{version}%{?_phase} -p 1 -S git
 
 ################################################################################
 %install
