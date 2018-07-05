@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.mozilla.jss.CryptoManager;
+import org.mozilla.jss.InitializationValues;
 import org.mozilla.jss.NoSuchTokenException;
 import org.mozilla.jss.crypto.AlreadyInitializedException;
 import org.mozilla.jss.crypto.CryptoToken;
@@ -313,7 +314,7 @@ public class TomcatJSS implements SSLSocketListener {
             throw new Exception("Missing serverCertNickFile");
         }
 
-        CryptoManager.InitializationValues vals = new CryptoManager.InitializationValues(
+        InitializationValues vals = new InitializationValues(
                 certdbDir, "", "", "secmod.db");
 
         vals.removeSunProvider = false;
