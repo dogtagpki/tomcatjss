@@ -7,7 +7,7 @@ URL:              http://www.dogtagpki.org/wiki/TomcatJSS
 License:          LGPLv2+
 BuildArch:        noarch
 
-Version:          7.3.2
+Version:          7.3.3
 Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
 # global           _phase -a1
 
@@ -61,7 +61,9 @@ BuildRequires:    jpackage-utils >= 0:1.7.5-15
 
 # SLF4J
 BuildRequires:    slf4j
-%if 0%{?fedora} || 0%{?rhel} > 7
+%if 0%{?rhel} && 0%{?rhel} <= 7
+# no slf4j-jdk14
+%else
 BuildRequires:    slf4j-jdk14
 %endif
 
@@ -69,7 +71,7 @@ BuildRequires:    slf4j-jdk14
 %if 0%{?rhel} && 0%{?rhel} <= 7
 BuildRequires:    jss >= 4.4.0-7
 %else
-BuildRequires:    jss >= 4.5.0-0.3
+BuildRequires:    jss >= 4.5.0-0.4
 %endif
 
 # Tomcat
@@ -102,7 +104,9 @@ Requires:         jpackage-utils >= 0:1.7.5-15
 
 # SLF4J
 Requires:         slf4j
-%if 0%{?fedora} || 0%{?rhel} > 7
+%if 0%{?rhel} && 0%{?rhel} <= 7
+# no slf4j-jdk14
+%else
 Requires:         slf4j-jdk14
 %endif
 
@@ -110,7 +114,7 @@ Requires:         slf4j-jdk14
 %if 0%{?rhel} && 0%{?rhel} <= 7
 Requires:         jss >= 4.4.0-7
 %else
-Requires:         jss >= 4.5.0-0.3
+Requires:         jss >= 4.5.0-0.4
 %endif
 
 # Tomcat
@@ -183,7 +187,6 @@ ant -f build.xml \
 
 ################################################################################
 %changelog
-
 * Thu Mar 15 2018 Dogtag PKI Team <pki-devel@redhat.com> 7.3.0-0
 - To list changes in <branch> since <tag>:
   $ git log --pretty=oneline --abbrev-commit --no-decorate <tag>..<branch>
