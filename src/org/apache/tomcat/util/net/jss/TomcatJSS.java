@@ -562,8 +562,9 @@ public class TomcatJSS implements SSLSocketListener {
      * or "datagram".
      *
      * @param sslVersionRange_s takes on the form of "min:max" where min/max
-     * values can be "ssl3, tls1_0, tls1_1, or tls1_2". ssl2 is not supported for
-     * tomcatjss via this interface. The format is "sslVersionRange=min:max".
+     * values can be "ssl3, tls1_0, tls1_1, tls1_2, tls1_3". ssl2 is not
+     * supported for tomcatjss via this interface. The format is
+     * "sslVersionRange=min:max".
      */
     public void setSSLVersionRangeDefault(
             String type,
@@ -614,6 +615,10 @@ public class TomcatJSS implements SSLSocketListener {
 
         if (range.equals("tls1_2")) {
             return SSLVersionRange.tls1_2;
+        }
+
+        if (range.equals("tls1_3")) {
+            return SSLVersionRange.tls1_3;
         }
 
         return -1;
