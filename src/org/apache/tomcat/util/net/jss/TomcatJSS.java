@@ -42,6 +42,7 @@ import org.mozilla.jss.ssl.SSLSocket;
 import org.mozilla.jss.ssl.SSLSocket.SSLProtocolVariant;
 import org.mozilla.jss.ssl.SSLSocket.SSLVersionRange;
 import org.mozilla.jss.ssl.SSLSocketListener;
+import org.mozilla.jss.ssl.SSLVersion;
 import org.mozilla.jss.util.IncorrectPasswordException;
 import org.mozilla.jss.util.Password;
 import org.slf4j.Logger;
@@ -583,40 +584,11 @@ public class TomcatJSS implements SSLSocketListener {
         logger.debug("* min: " + min_s);
         logger.debug("* max: " + max_s);
 
-        int min = getSSLVersionRangeEnum(min_s);
-        int max = getSSLVersionRangeEnum(max_s);
+        SSLVersion minVersion = SSLVersion.findByAlias(min_s);
+        SSLVersion maxVersion = SSLVersion.findByAlias(max_s);
 
-        if (min == -1 || max == -1) {
-            throw new SocketException("SSL version range format error: " + sslVersionRange_s);
-        }
-
-        SSLVersionRange range = new SSLVersionRange(min, max);
+        SSLVersionRange range = new SSLVersionRange(minVersion, maxVersion);
         SSLSocket.setSSLVersionRangeDefault(protoVariant, range);
-    }
-
-    int getSSLVersionRangeEnum(String range) {
-
-        if (range == null) {
-            return -1;
-        }
-
-        if (range.equals("ssl3")) {
-            return SSLVersionRange.ssl3;
-        }
-
-        if (range.equals("tls1_0")) {
-            return SSLVersionRange.tls1_0;
-        }
-
-        if (range.equals("tls1_1")) {
-            return SSLVersionRange.tls1_1;
-        }
-
-        if (range.equals("tls1_2")) {
-            return SSLVersionRange.tls1_2;
-        }
-
-        return -1;
     }
 
     public void setSSLCiphers(String attr, String ciphers) throws SocketException, IOException {
