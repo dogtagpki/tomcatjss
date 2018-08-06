@@ -592,6 +592,11 @@ public class TomcatJSS implements SSLSocketListener {
         }
 
         SSLVersionRange range = new SSLVersionRange(min, max);
+        range = SSLSocket.boundSSLVersionRange(SSLProtocolVariant.STREAM, range);
+
+        logger.debug("Actual SSL version range for " + type + " after system policy correction:");
+        logger.debug("* min: " + range.getMinVersion());
+        logger.debug("* max: " + range.getMaxVersion());
         SSLSocket.setSSLVersionRangeDefault(protoVariant, range);
     }
 
