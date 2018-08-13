@@ -7,7 +7,7 @@ URL:              http://www.dogtagpki.org/wiki/TomcatJSS
 License:          LGPLv2+
 BuildArch:        noarch
 
-Version:          7.3.4
+Version:          7.3.5
 Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
 # global           _phase -a1
 
@@ -57,7 +57,7 @@ BuildRequires:    slf4j-jdk14
 %if 0%{?rhel} && 0%{?rhel} <= 7
 BuildRequires:    jss >= 4.4.0-7
 %else
-BuildRequires:    jss >= 4.5.0-0.6
+BuildRequires:    jss >= 4.5.0-1
 %endif
 
 # Tomcat
@@ -100,7 +100,7 @@ Requires:         slf4j-jdk14
 %if 0%{?rhel} && 0%{?rhel} <= 7
 Requires:         jss >= 4.4.0-7
 %else
-Requires:         jss >= 4.5.0-0.6
+Requires:         jss >= 4.5.0-1
 %endif
 
 # Tomcat

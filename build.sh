@@ -202,7 +202,7 @@ if [ "$BUILD_TARGET" != "src" ] &&
     exit 1
 fi
 
-SPEC_TEMPLATE="$SRC_DIR/$NAME.spec.in"
+SPEC_TEMPLATE="$SRC_DIR/$NAME.spec"
 VERSION="`rpmspec -P "$SPEC_TEMPLATE" | grep "^Version:" | awk '{print $2;}'`"
 
 if [ "$DEBUG" = true ] ; then
