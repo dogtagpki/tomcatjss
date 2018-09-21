@@ -500,13 +500,24 @@ public class TomcatJSS implements SSLSocketListener {
         }
 
         logger.debug("ocspResponderURL: " + ocspResponderURL);
+ 
         if (StringUtils.isEmpty(ocspResponderURL)) {
-            throw new Exception("Missing ocspResponderURL");
+            ocspResponderURL = null;
         }
 
         logger.debug("ocspResponderCertNickname: " + ocspResponderCertNickname);
         if (StringUtils.isEmpty(ocspResponderCertNickname)) {
-            throw new Exception("Missing ocspResponderCertNickname");
+            ocspResponderCertNickname = null;
+        }
+
+        // Check to see if the ocsp url and nickname are both set or not set
+
+        if (ocspResponderURL == null && ocspResponderCertNickname != null) {
+            throw new Exception("Missing OCSP responder URL");
+        }
+
+        if (ocspResponderURL != null && ocspResponderCertNickname == null) {
+            throw new Exception("Missing OCSP responder certificate nickname");
         }
 
         manager.configureOCSP(
