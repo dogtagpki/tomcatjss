@@ -740,8 +740,11 @@ public class JSSSocketFactory implements
                             "ocspResponderCertNickname");
                     debugWrite("JSSSocketFactory init - ocspResponderCertNickname"
                             + ocspResponderCertNickname + "\n");
-                    if (StringUtils.isNotEmpty(ocspResponderURL) &&
-                            StringUtils.isNotEmpty(ocspResponderCertNickname)) {
+
+                    if ((StringUtils.isNotEmpty(ocspResponderURL) &&
+                         	StringUtils.isNotEmpty(ocspResponderCertNickname))  ||
+                        	(StringUtils.isEmpty(ocspResponderURL)
+                            	&& StringUtils.isEmpty(ocspResponderCertNickname))) {
 
                         ocspConfigured = true;
                         try {
