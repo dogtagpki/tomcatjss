@@ -7,9 +7,9 @@ URL:              http://www.dogtagpki.org/wiki/TomcatJSS
 License:          LGPLv2+
 BuildArch:        noarch
 
-Version:          7.3.6
-Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
-# global           _phase -a1
+Version:          7.4.0
+Release:          0.1%{?_timestamp}%{?_commit_id}%{?dist}
+%global           _phase -a1
 
 # To generate the source tarball:
 # $ git clone https://github.com/dogtagpki/tomcatjss.git
