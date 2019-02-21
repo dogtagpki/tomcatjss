@@ -102,6 +102,8 @@
   <property name="slf4j-api.jar" value="${jar.home}/slf4j/slf4j-api.jar" />
 
   <property name="tomcat.home" value="/usr/share/tomcat" />
+  <property name="catalina.jar" value="${tomcat.home}/lib/catalina.jar" />
+  <property name="tomcat-api.jar" value="${tomcat.home}/lib/tomcat-api.jar" />
   <property name="tomcat-coyote.jar" value="${tomcat.home}/lib/tomcat-coyote.jar" />
   <property name="tomcat-juli.jar" value="${tomcat.home}/bin/tomcat-juli.jar" />
 
@@ -116,6 +118,8 @@
   -->
   <path id="classpath">
     <pathelement location="${jss.jar}"/>
+    <pathelement location="${catalina.jar}"/>
+    <pathelement location="${tomcat-api.jar}"/>
     <pathelement location="${tomcat-coyote.jar}"/>
     <pathelement location="${tomcat-juli.jar}"/>
     <pathelement location="${commons-logging.jar}"/>
