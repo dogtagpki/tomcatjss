@@ -19,6 +19,7 @@
 
 package org.apache.tomcat.util.net.jss;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
 import java.nio.file.Files;
@@ -298,25 +299,30 @@ public class TomcatJSS implements SSLSocketListener {
 
         logger.info("TomcatJSS: initialization");
 
-        logger.debug("certdbDir: " + certdbDir);
-        logger.debug("passwordClass: " + passwordClass);
-        logger.debug("passwordFile: " + passwordFile);
-        logger.debug("serverCertNickFile: " + serverCertNickFile);
-
         if (certdbDir == null) {
-            throw new Exception("Missing certdbDir");
+            certdbDir = System.getProperty("catalina.base") + File.separator + "alias";
         }
+
+        logger.debug("TomcatJSS: certdbDir: " + certdbDir);
 
         if (passwordClass == null) {
-            throw new Exception("Missing passwordClass");
+            passwordClass = PlainPasswordFile.class.getName();
         }
 
-        if (serverCertNickFile == null) {
-            throw new Exception("Missing serverCertNickFile");
+        logger.debug("TomcatJSS: passwordClass: " + passwordClass);
+
+        if (passwordFile == null) {
+            passwordFile = System.getProperty("catalina.base") + File.separator +
+                    "conf" + File.separator + "password.conf";
         }
 
-        InitializationValues vals = new InitializationValues(
-                certdbDir, "", "", "secmod.db");
+        logger.debug("TomcatJSS: passwordFile: " + passwordFile);
+
+        if (serverCertNickFile != null) {
+            logger.debug("TomcatJSS: serverCertNickFile: " + serverCertNickFile);
+        }
+
+        InitializationValues vals = new InitializationValues(certdbDir);
 
         vals.removeSunProvider = false;
         vals.installJSSProvider = true;
@@ -335,8 +341,10 @@ public class TomcatJSS implements SSLSocketListener {
 
         login();
 
-        serverCertNick = new String(Files.readAllBytes(Paths.get(serverCertNickFile))).trim();
-        logger.debug("serverCertNick: " + serverCertNick);
+        if (serverCertNickFile != null) {
+            serverCertNick = new String(Files.readAllBytes(Paths.get(serverCertNickFile))).trim();
+            logger.debug("serverCertNick: " + serverCertNick);
+        }
 
         logger.debug("clientAuth: " + clientAuth);
         if (clientAuth.equalsIgnoreCase("true")) {
@@ -500,7 +508,7 @@ public class TomcatJSS implements SSLSocketListener {
         }
 
         logger.debug("ocspResponderURL: " + ocspResponderURL);
- 
+
         if (StringUtils.isEmpty(ocspResponderURL)) {
             ocspResponderURL = null;
         }
