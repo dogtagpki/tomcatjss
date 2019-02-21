@@ -20,6 +20,8 @@
 package org.dogtagpki.tomcat;
 
 import java.io.File;
+import java.io.FileReader;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,6 +43,16 @@ public class JSSListener implements LifecycleListener {
 
     final static Logger logger = LoggerFactory.getLogger(JSSListener.class);
 
+    public String configFile;
+
+    public String getConfigFile() {
+        return configFile;
+    }
+
+    public void setConfigFile(String configFile) {
+        this.configFile = configFile;
+    }
+
     @Override
     public void lifecycleEvent(LifecycleEvent event) {
 
@@ -54,9 +66,14 @@ public class JSSListener implements LifecycleListener {
     public void initJSS() {
 
         logger.info("JSSListener: Initializing JSS");
+        logger.info("JSSListener: Config: " + configFile);
 
         try {
-            loadServerXml();
+            if (configFile != null) {
+                loadJSSConfig();
+            } else {
+                loadServerXml();
+            }
 
             TomcatJSS tomcatjss = TomcatJSS.getInstance();
             tomcatjss.init();
@@ -64,6 +81,86 @@ public class JSSListener implements LifecycleListener {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void loadJSSConfig() throws Exception {
+
+        Properties properties = new Properties();
+        properties.load(new FileReader(configFile));
+
+        TomcatJSS tomcatjss = TomcatJSS.getInstance();
+
+        String certDb = properties.getProperty("certdbDir");
+        if (certDb != null)
+            tomcatjss.setCertdbDir(certDb);
+
+        String passwordClass = properties.getProperty("passwordClass");
+        if (passwordClass != null)
+            tomcatjss.setPasswordClass(passwordClass);
+
+        String passwordFile = properties.getProperty("passwordFile");
+        if (passwordFile != null)
+            tomcatjss.setPasswordFile(passwordFile);
+
+        String enableOCSP = properties.getProperty("enableOCSP");
+        if (enableOCSP != null)
+            tomcatjss.setEnableOCSP(Boolean.parseBoolean(enableOCSP));
+
+        String ocspResponderURL = properties.getProperty("ocspResponderURL");
+        if (ocspResponderURL != null)
+            tomcatjss.setOcspResponderURL(ocspResponderURL);
+
+        String ocspResponderCertNickname = properties.getProperty("ocspResponderCertNickname");
+        if (ocspResponderCertNickname != null)
+            tomcatjss.setOcspResponderCertNickname(ocspResponderCertNickname);
+
+        String ocspCacheSize = properties.getProperty("ocspCacheSize");
+        if (StringUtils.isNotEmpty(ocspCacheSize))
+            tomcatjss.setOcspCacheSize(Integer.parseInt(ocspCacheSize));
+
+        String ocspMinCacheEntryDuration = properties.getProperty("ocspMinCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMinCacheEntryDuration))
+            tomcatjss.setOcspMinCacheEntryDuration(Integer.parseInt(ocspMinCacheEntryDuration));
+
+        String ocspMaxCacheEntryDuration = properties.getProperty("ocspMaxCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMaxCacheEntryDuration))
+            tomcatjss.setOcspMaxCacheEntryDuration(Integer.parseInt(ocspMaxCacheEntryDuration));
+
+        String ocspTimeout = properties.getProperty("ocspTimeout");
+        if (StringUtils.isNotEmpty(ocspTimeout))
+            tomcatjss.setOcspTimeout(Integer.parseInt(ocspTimeout));
+
+        String strictCiphers = properties.getProperty("strictCiphers");
+        if (strictCiphers != null)
+            tomcatjss.setStrictCiphers(strictCiphers);
+
+        String sslVersionRangeStream = properties.getProperty("sslVersionRangeStream");
+        if (sslVersionRangeStream != null)
+            tomcatjss.setSslVersionRangeStream(sslVersionRangeStream);
+
+        String sslVersionRangeDatagram = properties.getProperty("sslVersionRangeDatagram");
+        if (sslVersionRangeDatagram != null)
+            tomcatjss.setSslVersionRangeDatagram(sslVersionRangeDatagram);
+
+        String sslRangeCiphers = properties.getProperty("sslRangeCiphers");
+        if (sslRangeCiphers != null)
+            tomcatjss.setSslRangeCiphers(sslRangeCiphers);
+
+        String sslOptions = properties.getProperty("sslOptions");
+        if (sslOptions != null)
+            tomcatjss.setSslOptions(sslOptions);
+
+        String ssl2Ciphers = properties.getProperty("ssl2Ciphers");
+        if (ssl2Ciphers != null)
+            tomcatjss.setSsl2Ciphers(ssl2Ciphers);
+
+        String ssl3Ciphers = properties.getProperty("ssl3Ciphers");
+        if (ssl3Ciphers != null)
+            tomcatjss.setSsl3Ciphers(ssl3Ciphers);
+
+        String tlsCiphers = properties.getProperty("tlsCiphers");
+        if (tlsCiphers != null)
+            tomcatjss.setTlsCiphers(tlsCiphers);
     }
 
     public void loadServerXml() throws Exception {
