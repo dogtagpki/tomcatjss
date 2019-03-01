@@ -17,45 +17,37 @@
  * All rights reserved.
  * END COPYRIGHT BLOCK */
 
-package org.apache.tomcat.util.net.jss;
-
-import java.util.List;
+package org.dogtagpki.tomcat;
 
 import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLSessionContext;
 import javax.net.ssl.TrustManager;
 
-import org.apache.tomcat.util.net.SSLContext;
-import org.apache.tomcat.util.net.SSLUtil;
+import org.apache.tomcat.util.net.SSLHostConfigCertificate;
+import org.apache.tomcat.util.net.jsse.JSSEKeyManager;
+import org.apache.tomcat.util.net.jsse.JSSEUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class JSSUtil implements SSLUtil {
+public class JSSUtil extends JSSEUtil {
 
-    @Override
-    public void configureSessionContext(SSLSessionContext arg0) {
-    }
+    public static Logger logger = LoggerFactory.getLogger(JSSUtil.class);
 
-    @Override
-    public SSLContext createSSLContext(List<String> arg0) throws Exception {
-        return null;
-    }
-
-    @Override
-    public String[] getEnabledCiphers() throws IllegalArgumentException {
-        return null;
-    }
-
-    @Override
-    public String[] getEnabledProtocols() throws IllegalArgumentException {
-        return null;
+    public JSSUtil(SSLHostConfigCertificate cert) {
+        super(cert);
+        logger.debug("JSSUtil: instance created");
     }
 
     @Override
     public KeyManager[] getKeyManagers() throws Exception {
-        return null;
+        logger.debug("JSSUtil: getKeyManagers()");
+        String keyAlias = certificate.getCertificateKeyAlias();
+        KeyManager keyManager = new JSSEKeyManager(new JSSKeyManager(), keyAlias);
+        return new KeyManager[] { keyManager };
     }
 
     @Override
     public TrustManager[] getTrustManagers() throws Exception {
-        return null;
+        logger.debug("JSSUtil: getTrustManagers()");
+        return new TrustManager[] { new JSSTrustManager() };
     }
 }
