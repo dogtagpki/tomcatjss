@@ -7,7 +7,7 @@ URL:              http://www.dogtagpki.org/wiki/TomcatJSS
 License:          LGPLv2+
 BuildArch:        noarch
 
-Version:          7.3.6
+Version:          7.3.7
 Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
 # global           _phase -a1
 
@@ -57,7 +57,7 @@ BuildRequires:    slf4j-jdk14
 %if 0%{?rhel} && 0%{?rhel} <= 7
 BuildRequires:    jss >= 4.4.0-7
 %else
-BuildRequires:    jss >= 4.5.0-1
+BuildRequires:    jss >= 4.5.3
 %endif
 
 # Tomcat
@@ -70,7 +70,11 @@ BuildRequires:    tomcat >= 8.0.49
 %if 0%{?fedora} && 0%{?fedora} <= 28
 BuildRequires:    tomcat >= 1:8.5.23
 %else
+%if 0%{?rhel}
+BuildRequires:    pki-servlet-container >= 1:9.0.7
+%else
 BuildRequires:    tomcat >= 1:9.0.7
+%endif
 %endif
 %endif
 %endif
@@ -90,7 +94,7 @@ Requires:         jpackage-utils >= 0:1.7.5-15
 
 # SLF4J
 Requires:         slf4j
-%if 0%{?rhel} && 0%{?rhel} <= 7
+%if 0%{?rhel}
 # no slf4j-jdk14
 %else
 Requires:         slf4j-jdk14
@@ -100,7 +104,7 @@ Requires:         slf4j-jdk14
 %if 0%{?rhel} && 0%{?rhel} <= 7
 Requires:         jss >= 4.4.0-7
 %else
-Requires:         jss >= 4.5.0-1
+Requires:         jss >= 4.5.3
 %endif
 
 # Tomcat
@@ -113,7 +117,11 @@ Requires:         tomcat >= 8.0.49
 %if 0%{?fedora} && 0%{?fedora} <= 28
 Requires:         tomcat >= 1:8.5.23
 %else
+%if 0%{?rhel}
+Requires:         pki-servlet-container >= 1:9.0.7
+%else
 Requires:         tomcat >= 1:9.0.7
+%endif
 %endif
 %endif
 %endif
