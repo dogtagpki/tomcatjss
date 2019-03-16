@@ -7,7 +7,7 @@ URL:              http://www.dogtagpki.org/wiki/TomcatJSS
 License:          LGPLv2+
 BuildArch:        noarch
 
-Version:          7.2.4
+Version:          7.2.5
 Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
 %global           _phase -a1
 
@@ -150,6 +150,9 @@ ln -s %{name}-%{version}.jar %{name}.jar
 
 ################################################################################
 %changelog
+* Fri Mar 15 2019 Endi S. Dewata <edewata@redhat.com> 7.2.5-1
+- Rebased to tomcatjss 7.2.5
+
 * Mon Jun 12 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.4-1
 - tomcatjss Pagure Issue #10 - Comply with ASF trademark rules (mharmsen)
 
