@@ -1,35 +1,69 @@
-Name:     tomcatjss
-Version:  7.2.4
-Release:  1%{?dist}
-Summary:  JSS Connector for Apache Tomcat, a JSSE module for Apache Tomcat that uses JSS
-URL:      http://pki.fedoraproject.org/
-License:  LGPLv2+
-Group:    System Environment/Libraries
+################################################################################
+Name:             tomcatjss
+################################################################################
 
-BuildArch:      noarch
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+Summary:          JSS Connector for Apache Tomcat
+URL:              http://www.dogtagpki.org/wiki/TomcatJSS
+License:          LGPLv2+
+BuildArch:        noarch
 
-Source0:  http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.tar.gz
+Version:          7.2.4
+Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
+%global           _phase -a1
+
+# To generate the source tarball:
+# $ git clone https://github.com/dogtagpki/tomcatjss.git
+# $ cd tomcatjss
+# $ git archive \
+#     --format=tar.gz \
+#     --prefix tomcatjss-VERSION/ \
+#     -o tomcatjss-VERSION.tar.gz \
+#     <version tag>
+Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?_phase}/tomcatjss-%{version}%{?_phase}.tar.gz
+
+# To create a patch for all changes since a version tag:
+# $ git format-patch \
+#     --stdout \
+#     <version tag> \
+#     > tomcatjss-VERSION-RELEASE.patch
+# Patch: tomcatjss-VERSION-RELEASE.patch
+
+################################################################################
+# Build Dependencies
+################################################################################
 
 # jpackage-utils requires versioning to meet both build and runtime requirements
 # jss requires versioning to meet both build and runtime requirements
 # tomcat requires versioning to meet both build and runtime requirements
-Conflicts:        pki-base < 10.4.0
+
+# autosetup
+BuildRequires:    git
+
+# Java
 BuildRequires:    ant
 BuildRequires:    apache-commons-lang
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
+
+# JSS
 %if 0%{?fedora}
 BuildRequires:    jss >= 4.4.2-2
 %else
 BuildRequires:    jss >= 4.4.0-7
 %endif
+
+# Tomcat
 %if 0%{?fedora} >= 23
 BuildRequires:    tomcat >= 8.0.18
 %else
 BuildRequires:    tomcat >= 7.0.68
 %endif
 
+################################################################################
+# Runtime Dependencies
+################################################################################
+
+# Java
 Requires:         apache-commons-lang
 %if 0%{?fedora} >= 21
 Requires:         java-headless
@@ -37,11 +71,15 @@ Requires:         java-headless
 Requires:         java
 %endif
 Requires:         jpackage-utils >= 0:1.7.5-15
+
+# JSS
 %if 0%{?fedora}
 Requires:         jss >= 4.4.2-2
 %else
 Requires:         jss >= 4.4.0-7
 %endif
+
+# Tomcat
 %if 0%{?fedora} >= 23
 Requires:         tomcat >= 8.0.18
 %else
@@ -53,6 +91,10 @@ Requires:         tomcat >= 7.0.68
 # OpenSSL security model, so these two packages may not co-exist.
 # (see Bugzilla Bug #441974 for details)
 Conflicts:        tomcat-native
+
+# PKI
+Conflicts:        pki-base < 10.4.0
+
 
 %if 0%{?rhel}
 # For EPEL, override the '_sharedstatedir' macro on RHEL
@@ -69,18 +111,22 @@ NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
        because it uses an underlying NSS security model rather than the
        OpenSSL security model, so these two packages may not co-exist.
 
+################################################################################
 %prep
+################################################################################
 
-%setup -q
-chmod -c -x LICENSE README
+%autosetup -n tomcatjss-%{version}%{?_phase} -p 1 -S git
 
+################################################################################
 %build
+################################################################################
 
 ant -f build.xml -Djnidir=%{_jnidir}
 ant -f build.xml -Djnidir=%{_jnidir} dist
 
+################################################################################
 %install
-rm -rf %{buildroot}
+################################################################################
 
 # Unpack the files we just built
 cd dist/binary
@@ -93,14 +139,16 @@ mv %{name}.jar %{name}-%{version}.jar
 ln -s %{name}-%{version}.jar %{name}.jar
 %endif
 
-%clean
-rm -rf %{buildroot}
-
+################################################################################
 %files
+################################################################################
+
 %defattr(-,root,root)
-%doc README LICENSE
+%doc README
+%doc LICENSE
 %{_javadir}/*
 
+################################################################################
 %changelog
 * Mon Jun 12 2017 Matthew Harmsen <mharmsen@redhat.com> 7.2.4-1
 - tomcatjss Pagure Issue #10 - Comply with ASF trademark rules (mharmsen)
