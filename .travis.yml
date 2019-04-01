@@ -19,7 +19,7 @@ install:
       -v $(pwd):/root/tomcatjss
       registry.fedoraproject.org/fedora:$FEDORA
   - docker exec container dnf install -y dnf-plugins-core gcc make rpm-build
-  - docker exec container dnf copr -y enable ${TOMCATJSS_7_4_REPO:-@pki/10.7}
+  - docker exec container dnf copr -y enable ${TOMCATJSS_7_4_REPO:-@pki/master}
   - docker exec container dnf builddep -y --spec /root/tomcatjss/tomcatjss.spec
   - docker exec container dnf remove -y tomcat-native
   - docker exec container /root/tomcatjss/build.sh --with-timestamp --with-commit-id rpm
