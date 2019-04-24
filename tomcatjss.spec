@@ -8,8 +8,8 @@ License:          LGPLv2+
 BuildArch:        noarch
 
 Version:          7.4.0
-Release:          0.1%{?_timestamp}%{?_commit_id}%{?dist}
-%global           _phase -a1
+Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
+# global           _phase -a1
 
 # To generate the source tarball:
 # $ git clone https://github.com/dogtagpki/tomcatjss.git
@@ -71,7 +71,7 @@ BuildRequires:    tomcat >= 8.0.49
 BuildRequires:    tomcat >= 1:8.5.23
 %else
 %if 0%{?rhel}
-BuildRequires:    pki-servlet-container >= 1:9.0.7
+BuildRequires:    pki-servlet-engine >= 1:9.0.7
 %else
 BuildRequires:    tomcat >= 1:9.0.7
 %endif
@@ -118,7 +118,7 @@ Requires:         tomcat >= 8.0.49
 Requires:         tomcat >= 1:8.5.23
 %else
 %if 0%{?rhel}
-Requires:         pki-servlet-container >= 1:9.0.7
+Requires:         pki-servlet-engine >= 1:9.0.7
 %else
 Requires:         tomcat >= 1:9.0.7
 %endif
