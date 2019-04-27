@@ -20,6 +20,7 @@
 package org.apache.tomcat.util.net.jss;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.SocketException;
 import java.nio.file.Files;
@@ -27,7 +28,14 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Properties;
 import java.util.StringTokenizer;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.mozilla.jss.CryptoManager;
@@ -48,6 +56,8 @@ import org.mozilla.jss.util.IncorrectPasswordException;
 import org.mozilla.jss.util.Password;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class TomcatJSS implements SSLSocketListener {
 
@@ -289,6 +299,194 @@ public class TomcatJSS implements SSLSocketListener {
 
     public void setTlsCiphers(String tlsCiphers) {
         this.tlsCiphers = tlsCiphers;
+    }
+
+    public void loadJSSConfig(String jssConf) throws Exception {
+        File configFile = new File(jssConf);
+        loadJSSConfig(configFile);
+    }
+
+    public void loadJSSConfig(File configFile) throws Exception {
+
+        Properties config = new Properties();
+        config.load(new FileReader(configFile));
+
+        loadJSSConfig(config);
+    }
+
+    public void loadJSSConfig(Properties config) throws Exception {
+
+        String certDb = config.getProperty("certdbDir");
+        if (certDb != null)
+            setCertdbDir(certDb);
+
+        String passwordClass = config.getProperty("passwordClass");
+        if (passwordClass != null)
+            setPasswordClass(passwordClass);
+
+        String passwordFile = config.getProperty("passwordFile");
+        if (passwordFile != null)
+            setPasswordFile(passwordFile);
+
+        String enableOCSP = config.getProperty("enableOCSP");
+        if (enableOCSP != null)
+            setEnableOCSP(Boolean.parseBoolean(enableOCSP));
+
+        String ocspResponderURL = config.getProperty("ocspResponderURL");
+        if (ocspResponderURL != null)
+            setOcspResponderURL(ocspResponderURL);
+
+        String ocspResponderCertNickname = config.getProperty("ocspResponderCertNickname");
+        if (ocspResponderCertNickname != null)
+            setOcspResponderCertNickname(ocspResponderCertNickname);
+
+        String ocspCacheSize = config.getProperty("ocspCacheSize");
+        if (StringUtils.isNotEmpty(ocspCacheSize))
+            setOcspCacheSize(Integer.parseInt(ocspCacheSize));
+
+        String ocspMinCacheEntryDuration = config.getProperty("ocspMinCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMinCacheEntryDuration))
+            setOcspMinCacheEntryDuration(Integer.parseInt(ocspMinCacheEntryDuration));
+
+        String ocspMaxCacheEntryDuration = config.getProperty("ocspMaxCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMaxCacheEntryDuration))
+            setOcspMaxCacheEntryDuration(Integer.parseInt(ocspMaxCacheEntryDuration));
+
+        String ocspTimeout = config.getProperty("ocspTimeout");
+        if (StringUtils.isNotEmpty(ocspTimeout))
+            setOcspTimeout(Integer.parseInt(ocspTimeout));
+
+        String strictCiphers = config.getProperty("strictCiphers");
+        if (strictCiphers != null)
+            setStrictCiphers(strictCiphers);
+
+        String sslVersionRangeStream = config.getProperty("sslVersionRangeStream");
+        if (sslVersionRangeStream != null)
+            setSslVersionRangeStream(sslVersionRangeStream);
+
+        String sslVersionRangeDatagram = config.getProperty("sslVersionRangeDatagram");
+        if (sslVersionRangeDatagram != null)
+            setSslVersionRangeDatagram(sslVersionRangeDatagram);
+
+        String sslRangeCiphers = config.getProperty("sslRangeCiphers");
+        if (sslRangeCiphers != null)
+            setSslRangeCiphers(sslRangeCiphers);
+
+        String sslOptions = config.getProperty("sslOptions");
+        if (sslOptions != null)
+            setSslOptions(sslOptions);
+
+        String ssl2Ciphers = config.getProperty("ssl2Ciphers");
+        if (ssl2Ciphers != null)
+            setSsl2Ciphers(ssl2Ciphers);
+
+        String ssl3Ciphers = config.getProperty("ssl3Ciphers");
+        if (ssl3Ciphers != null)
+            setSsl3Ciphers(ssl3Ciphers);
+
+        String tlsCiphers = config.getProperty("tlsCiphers");
+        if (tlsCiphers != null)
+            setTlsCiphers(tlsCiphers);
+    }
+
+    public void loadTomcatConfig(String serverXml) throws Exception {
+        File configFile = new File(serverXml);
+        loadTomcatConfig(configFile);
+    }
+
+    public void loadTomcatConfig(File configFile) throws Exception {
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(configFile);
+
+        loadTomcatConfig(document);
+    }
+
+    public void loadTomcatConfig(Document document) throws Exception {
+
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+
+        Element connector = (Element) xpath.evaluate(
+                "/Server/Service[@name='Catalina']/Connector[@SSLEnabled='true']",
+                document, XPathConstants.NODE);
+
+        String certDb = connector.getAttribute("certdbDir");
+        if (certDb != null)
+            setCertdbDir(certDb);
+
+        String passwordClass = connector.getAttribute("passwordClass");
+        if (passwordClass != null)
+            setPasswordClass(passwordClass);
+
+        String passwordFile = connector.getAttribute("passwordFile");
+        if (passwordFile != null)
+            setPasswordFile(passwordFile);
+
+        String serverCertNickFile = connector.getAttribute("serverCertNickFile");
+        if (serverCertNickFile != null)
+            setServerCertNickFile(serverCertNickFile);
+
+        String enableOCSP = connector.getAttribute("enableOCSP");
+        if (enableOCSP != null)
+            setEnableOCSP(Boolean.parseBoolean(enableOCSP));
+
+        String ocspResponderURL = connector.getAttribute("ocspResponderURL");
+        if (ocspResponderURL != null)
+            setOcspResponderURL(ocspResponderURL);
+
+        String ocspResponderCertNickname = connector.getAttribute("ocspResponderCertNickname");
+        if (ocspResponderCertNickname != null)
+            setOcspResponderCertNickname(ocspResponderCertNickname);
+
+        String ocspCacheSize = connector.getAttribute("ocspCacheSize");
+        if (StringUtils.isNotEmpty(ocspCacheSize))
+            setOcspCacheSize(Integer.parseInt(ocspCacheSize));
+
+        String ocspMinCacheEntryDuration = connector.getAttribute("ocspMinCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMinCacheEntryDuration))
+            setOcspMinCacheEntryDuration(Integer.parseInt(ocspMinCacheEntryDuration));
+
+        String ocspMaxCacheEntryDuration = connector.getAttribute("ocspMaxCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMaxCacheEntryDuration))
+            setOcspMaxCacheEntryDuration(Integer.parseInt(ocspMaxCacheEntryDuration));
+
+        String ocspTimeout = connector.getAttribute("ocspTimeout");
+        if (StringUtils.isNotEmpty(ocspTimeout))
+            setOcspTimeout(Integer.parseInt(ocspTimeout));
+
+        String strictCiphers = connector.getAttribute("strictCiphers");
+        if (strictCiphers != null)
+            setStrictCiphers(strictCiphers);
+
+        String sslVersionRangeStream = connector.getAttribute("sslVersionRangeStream");
+        if (sslVersionRangeStream != null)
+            setSslVersionRangeStream(sslVersionRangeStream);
+
+        String sslVersionRangeDatagram = connector.getAttribute("sslVersionRangeDatagram");
+        if (sslVersionRangeDatagram != null)
+            setSslVersionRangeDatagram(sslVersionRangeDatagram);
+
+        String sslRangeCiphers = connector.getAttribute("sslRangeCiphers");
+        if (sslRangeCiphers != null)
+            setSslRangeCiphers(sslRangeCiphers);
+
+        String sslOptions = connector.getAttribute("sslOptions");
+        if (sslOptions != null)
+            setSslOptions(sslOptions);
+
+        String ssl2Ciphers = connector.getAttribute("ssl2Ciphers");
+        if (ssl2Ciphers != null)
+            setSsl2Ciphers(ssl2Ciphers);
+
+        String ssl3Ciphers = connector.getAttribute("ssl3Ciphers");
+        if (ssl3Ciphers != null)
+            setSsl3Ciphers(ssl3Ciphers);
+
+        String tlsCiphers = connector.getAttribute("tlsCiphers");
+        if (tlsCiphers != null)
+            setTlsCiphers(tlsCiphers);
     }
 
     public void init() throws Exception {
