@@ -28,6 +28,9 @@ import org.apache.tomcat.util.net.jsse.JSSEUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.mozilla.jss.provider.javax.crypto.JSSKeyManager;
+import org.mozilla.jss.provider.javax.crypto.JSSTrustManager;
+
 public class JSSUtil extends JSSEUtil {
 
     public static Logger logger = LoggerFactory.getLogger(JSSUtil.class);
