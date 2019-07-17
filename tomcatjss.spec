@@ -126,12 +126,6 @@ Requires:         tomcat >= 1:9.0.7
 %endif
 %endif
 
-# The 'tomcatjss' package conflicts with the 'tomcat-native' package
-# because it uses an underlying NSS security model rather than the
-# OpenSSL security model, so these two packages may not co-exist.
-# (see Bugzilla Bug #441974 for details)
-Conflicts:        tomcat-native
-
 # PKI
 Conflicts:        pki-base < 10.6.5
 
