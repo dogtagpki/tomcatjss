@@ -8,7 +8,7 @@ License:          LGPLv2+
 BuildArch:        noarch
 
 Version:          7.4.1
-Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
+Release:          2%{?_timestamp}%{?_commit_id}%{?dist}
 # global           _phase -a1
 
 # To generate the source tarball:
@@ -57,7 +57,7 @@ BuildRequires:    slf4j-jdk14
 %if 0%{?rhel} && 0%{?rhel} <= 7
 BuildRequires:    jss >= 4.4.0-7
 %else
-BuildRequires:    jss >= 4.5.3
+BuildRequires:    jss >= 4.6.0
 %endif
 
 # Tomcat
@@ -104,7 +104,7 @@ Requires:         slf4j-jdk14
 %if 0%{?rhel} && 0%{?rhel} <= 7
 Requires:         jss >= 4.4.0-7
 %else
-Requires:         jss >= 4.5.3
+Requires:         jss >= 4.6.0
 %endif
 
 # Tomcat
