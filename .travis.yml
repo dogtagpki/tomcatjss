@@ -7,8 +7,8 @@ services:
   - docker
 
 env:
-  - FEDORA=29
   - FEDORA=30
+  - FEDORA=31
 
 install:
   - docker pull registry.fedoraproject.org/fedora:$FEDORA
