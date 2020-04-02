@@ -19,38 +19,92 @@
 
 package org.dogtagpki.tomcat;
 
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.net.SSLHostConfigCertificate;
 import org.apache.tomcat.util.net.jsse.JSSEKeyManager;
-import org.apache.tomcat.util.net.jsse.JSSEUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.tomcat.util.net.SSLContext;
+import org.apache.tomcat.util.net.SSLUtil;
+import org.apache.tomcat.util.net.SSLUtilBase;
 
+import org.mozilla.jss.crypto.Policy;
 import org.mozilla.jss.provider.javax.crypto.JSSKeyManager;
-import org.mozilla.jss.provider.javax.crypto.JSSTrustManager;
+import org.mozilla.jss.provider.javax.crypto.JSSNativeTrustManager;
+import org.mozilla.jss.ssl.SSLCipher;
+import org.mozilla.jss.ssl.SSLVersion;
 
-public class JSSUtil extends JSSEUtil {
+public class JSSUtil extends SSLUtilBase {
+    public static Log logger = LogFactory.getLog(JSSUtil.class);
 
-    public static Logger logger = LoggerFactory.getLogger(JSSUtil.class);
+    private String keyAlias;
 
     public JSSUtil(SSLHostConfigCertificate cert) {
         super(cert);
+
+        keyAlias = certificate.getCertificateKeyAlias();
         logger.debug("JSSUtil: instance created");
     }
 
     @Override
     public KeyManager[] getKeyManagers() throws Exception {
         logger.debug("JSSUtil: getKeyManagers()");
-        String keyAlias = certificate.getCertificateKeyAlias();
-        KeyManager keyManager = new JSSEKeyManager(new JSSKeyManager(), keyAlias);
-        return new KeyManager[] { keyManager };
+        return new KeyManager[] { new JSSKeyManager() };
     }
 
     @Override
     public TrustManager[] getTrustManagers() throws Exception {
         logger.debug("JSSUtil: getTrustManagers()");
-        return new TrustManager[] { new JSSTrustManager() };
+        return new TrustManager[] { new JSSNativeTrustManager() };
+    }
+
+    @Override
+    public SSLContext createSSLContextInternal(List<String> negotiableProtocols) throws Exception {
+        logger.debug("JSSUtil createSSLContextInternal(...) keyAlias=" + keyAlias);
+        return new JSSContext(keyAlias);
+    }
+
+    @Override
+    public boolean isTls13RenegAuthAvailable() {
+        logger.debug("JSSUtil: isTls13RenegAuthAvailable()");
+        return true;
+    }
+
+    @Override
+    public Log getLog() {
+        logger.debug("JSSUtil: getLog()");
+        return logger;
+    }
+
+    @Override
+    protected Set<String> getImplementedProtocols() {
+        logger.debug("JSSUtil: getImplementedProtocols()");
+
+        Set<String> protocols = new HashSet<String>();
+        for (SSLVersion ver : Policy.TLS_VERSION_RANGE.getAllInRange()) {
+            protocols.add(ver.jdkAlias());
+        }
+
+        return protocols;
+    }
+
+    @Override
+    protected Set<String> getImplementedCiphers() {
+        logger.debug("JSSUtil: getImplementedCiphers()");
+
+        Set<String> ciphers = new HashSet<String>();
+        for (SSLCipher cipher : SSLCipher.values()) {
+            if (cipher.isSupported()) {
+                ciphers.add(cipher.name());
+            }
+        }
+
+        return ciphers;
     }
 }
