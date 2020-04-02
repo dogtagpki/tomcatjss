@@ -19,19 +19,30 @@
 
 package org.dogtagpki.tomcat;
 
+import javax.net.ssl.SSLSession;
+
+import org.apache.tomcat.util.net.jsse.JSSESupport;
 import org.apache.tomcat.util.net.SSLHostConfig;
 import org.apache.tomcat.util.net.SSLHostConfigCertificate;
+import org.apache.tomcat.util.net.SSLImplementation;
+import org.apache.tomcat.util.net.SSLSupport;
 import org.apache.tomcat.util.net.SSLUtil;
-import org.apache.tomcat.util.net.jsse.JSSEImplementation;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JSSImplementation extends JSSEImplementation {
+public class JSSImplementation extends SSLImplementation {
 
     public static Logger logger = LoggerFactory.getLogger(JSSUtil.class);
 
     public JSSImplementation() {
         logger.debug("JSSImplementation: instance created");
+    }
+
+    @Override
+    public SSLSupport getSSLSupport(SSLSession session) {
+        logger.debug("JSSImplementation.getSSLSupport()");
+        return new JSSESupport(session);
     }
 
     @Override
@@ -46,5 +57,11 @@ public class JSSImplementation extends JSSEImplementation {
         logger.debug("JSSImplementation: truststore provider: " + hostConfig.getTruststoreProvider());
 
         return new JSSUtil(cert);
+    }
+
+    @Override
+    public boolean isAlpnSupported() {
+        // NSS supports ALPN but JSS doesn't yet support ALPN.
+        return false;
     }
 }
