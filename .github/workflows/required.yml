@@ -1,0 +1,20 @@
+name: Required Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      matrix:
+        image: ['fedora:30', 'fedora:31']
+    steps:
+    - run: dnf install -y dnf-plugins-core gcc make rpm-build git
+    - name: Clone the repository
+      uses: actions/checkout@v2
+    - run: dnf copr -y enable ${TOMCATJSS_7_4_REPO:-@pki/master}
+    - run: dnf builddep -y --spec tomcatjss.spec
+    - run: dnf remove -y tomcat-native
+    - run: ./build.sh --with-timestamp --with-commit-id --work-dir=../packages rpm
+    - run: rpm -Uvh ../packages/RPMS/*
