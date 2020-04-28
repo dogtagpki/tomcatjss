@@ -39,17 +39,24 @@ import org.mozilla.jss.provider.javax.crypto.JSSKeyManager;
 import org.mozilla.jss.provider.javax.crypto.JSSNativeTrustManager;
 import org.mozilla.jss.ssl.SSLCipher;
 import org.mozilla.jss.ssl.SSLVersion;
+import org.mozilla.jss.ssl.javax.JSSEngineReferenceImpl;
 
 public class JSSUtil extends SSLUtilBase {
     public static Log logger = LogFactory.getLog(JSSUtil.class);
 
     private String keyAlias;
+    private String[] protocols;
+    private String[] ciphers;
 
     public JSSUtil(SSLHostConfigCertificate cert) {
         super(cert);
 
         keyAlias = certificate.getCertificateKeyAlias();
         logger.debug("JSSUtil: instance created");
+
+        JSSEngine eng = new JSSEngineReferenceImpl();
+        protocols = eng.getSupportedProtocols();
+        ciphers = eng.getSupportedCipherSuites();
     }
 
     @Override
@@ -86,24 +93,12 @@ public class JSSUtil extends SSLUtilBase {
     protected Set<String> getImplementedProtocols() {
         logger.debug("JSSUtil: getImplementedProtocols()");
 
-        Set<String> protocols = new HashSet<String>();
-        for (SSLVersion ver : Policy.TLS_VERSION_RANGE.getAllInRange()) {
-            protocols.add(ver.jdkAlias());
-        }
-
         return protocols;
     }
 
     @Override
     protected Set<String> getImplementedCiphers() {
         logger.debug("JSSUtil: getImplementedCiphers()");
-
-        Set<String> ciphers = new HashSet<String>();
-        for (SSLCipher cipher : SSLCipher.values()) {
-            if (cipher.isSupported()) {
-                ciphers.add(cipher.name());
-            }
-        }
 
         return ciphers;
     }
