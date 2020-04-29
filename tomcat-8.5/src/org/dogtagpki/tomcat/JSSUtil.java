@@ -19,6 +19,7 @@
 
 package org.dogtagpki.tomcat;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -45,8 +46,8 @@ public class JSSUtil extends SSLUtilBase {
     public static Log logger = LogFactory.getLog(JSSUtil.class);
 
     private String keyAlias;
-    private String[] protocols;
-    private String[] ciphers;
+    private Set<String> protocols;
+    private Set<String> ciphers;
 
     public JSSUtil(SSLHostConfigCertificate cert) {
         super(cert);
@@ -54,9 +55,9 @@ public class JSSUtil extends SSLUtilBase {
         keyAlias = certificate.getCertificateKeyAlias();
         logger.debug("JSSUtil: instance created");
 
-        JSSEngine eng = new JSSEngineReferenceImpl();
-        protocols = eng.getSupportedProtocols();
-        ciphers = eng.getSupportedCipherSuites();
+        JSSEngineReferenceImpl eng = new JSSEngineReferenceImpl();
+        protocols = new HashSet<String>(Arrays.asList(eng.getSupportedProtocols()));
+        ciphers = new HashSet<String>(Arrays.asList(eng.getSupportedCipherSuites()));
     }
 
     @Override
