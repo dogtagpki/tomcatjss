@@ -48,11 +48,11 @@ public class JSSUtil extends SSLUtilBase {
 
     private String keyAlias;
 
-    private JSSEngineReferenceImpl engine = new JSSEngineReferenceImpl();
-    private Set<String> protocols = Collections.unmodifiableSet(
+    private static JSSEngineReferenceImpl engine = new JSSEngineReferenceImpl();
+    private static Set<String> protocols = Collections.unmodifiableSet(
         new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()))
     );
-    private Set<String> ciphers = Collections.unmodifiableSet(
+    private static Set<String> ciphers = Collections.unmodifiableSet(
         new HashSet<String>(Arrays.asList(engine.getSupportedCipherSuites()))
     );
 
