@@ -12,6 +12,7 @@ import javax.net.ssl.TrustManager;
 
 import org.apache.tomcat.util.net.SSLContext;
 
+import org.mozilla.jss.JSSProvider;
 import org.mozilla.jss.provider.javax.crypto.JSSKeyManager;
 import org.mozilla.jss.provider.javax.crypto.JSSTrustManager;
 import org.mozilla.jss.ssl.javax.JSSEngine;
@@ -43,7 +44,12 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
         logger.debug("JSSContext.init(...)");
 
         try {
-            ctx = javax.net.ssl.SSLContext.getInstance("TLS", "Mozilla-JSS");
+            String provider = "SunJSSE";
+            if (JSSProvider.ENABLE_JSSENGINE) {
+                provider = "Mozilla-JSS";
+            }
+
+            ctx = javax.net.ssl.SSLContext.getInstance("TLS", provider);
             ctx.init(kms, tms, sr);
         } catch (Exception e) {
             throw new KeyManagementException(e.getMessage(), e);
