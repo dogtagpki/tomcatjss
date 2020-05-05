@@ -39,9 +39,12 @@ import org.apache.tomcat.util.net.SSLUtilBase;
 import org.mozilla.jss.crypto.Policy;
 import org.mozilla.jss.provider.javax.crypto.JSSKeyManager;
 import org.mozilla.jss.provider.javax.crypto.JSSNativeTrustManager;
+import org.mozilla.jss.provider.javax.crypto.JSSTrustManager;
 import org.mozilla.jss.ssl.SSLCipher;
 import org.mozilla.jss.ssl.SSLVersion;
 import org.mozilla.jss.ssl.javax.JSSEngineReferenceImpl;
+
+import org.mozilla.jss.JSSProvider;
 
 public class JSSUtil extends SSLUtilBase {
     public static Log logger = LogFactory.getLog(JSSUtil.class);
@@ -73,6 +76,9 @@ public class JSSUtil extends SSLUtilBase {
     @Override
     public TrustManager[] getTrustManagers() throws Exception {
         logger.debug("JSSUtil: getTrustManagers()");
+        if (!JSSProvider.ENABLE_JSSENGINE) {
+            return new TrustManager[] { new JSSTrustManager() };
+        }
         return new TrustManager[] { new JSSNativeTrustManager() };
     }
 
