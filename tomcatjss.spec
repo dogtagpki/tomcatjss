@@ -176,6 +176,8 @@ ant -f build.xml \
 %files
 ################################################################################
 
+%license LICENSE
+
 %defattr(-,root,root)
 %doc README
 %doc LICENSE
