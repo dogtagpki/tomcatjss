@@ -27,6 +27,7 @@ import java.util.HashSet;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.SSLEngine;
 
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
@@ -36,28 +37,22 @@ import org.apache.tomcat.util.net.SSLContext;
 import org.apache.tomcat.util.net.SSLUtil;
 import org.apache.tomcat.util.net.SSLUtilBase;
 
+import org.mozilla.jss.JSSProvider;
 import org.mozilla.jss.crypto.Policy;
 import org.mozilla.jss.provider.javax.crypto.JSSKeyManager;
 import org.mozilla.jss.provider.javax.crypto.JSSNativeTrustManager;
 import org.mozilla.jss.provider.javax.crypto.JSSTrustManager;
 import org.mozilla.jss.ssl.SSLCipher;
 import org.mozilla.jss.ssl.SSLVersion;
-import org.mozilla.jss.ssl.javax.JSSEngineReferenceImpl;
-
-import org.mozilla.jss.JSSProvider;
 
 public class JSSUtil extends SSLUtilBase {
     public static Log logger = LogFactory.getLog(JSSUtil.class);
 
     private String keyAlias;
 
-    private static JSSEngineReferenceImpl engine = new JSSEngineReferenceImpl();
-    private static Set<String> protocols = Collections.unmodifiableSet(
-        new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()))
-    );
-    private static Set<String> ciphers = Collections.unmodifiableSet(
-        new HashSet<String>(Arrays.asList(engine.getSupportedCipherSuites()))
-    );
+    private SSLEngine engine;
+    private Set<String> protocols;
+    private Set<String> ciphers;
 
     public JSSUtil(SSLHostConfigCertificate cert) {
         super(cert);
@@ -66,6 +61,27 @@ public class JSSUtil extends SSLUtilBase {
         logger.debug("JSSUtil: instance created");
     }
 
+    private void init() {
+        if (engine != null) {
+            return;
+        }
+
+        try {
+            JSSContext ctx = new JSSContext(null);
+            ctx.init(null, null, null);
+            engine = ctx.createSSLEngine();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        protocols = Collections.unmodifiableSet(
+            new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()))
+        );
+
+        ciphers = Collections.unmodifiableSet(
+            new HashSet<String>(Arrays.asList(engine.getSupportedCipherSuites()))
+        );
+    }
 
     @Override
     public KeyManager[] getKeyManagers() throws Exception {
@@ -103,13 +119,14 @@ public class JSSUtil extends SSLUtilBase {
     @Override
     protected Set<String> getImplementedProtocols() {
         logger.debug("JSSUtil: getImplementedProtocols()");
-
+        init();
         return protocols;
     }
 
     @Override
     protected Set<String> getImplementedCiphers() {
         logger.debug("JSSUtil: getImplementedCiphers()");
+        init();
 
         return ciphers;
     }
