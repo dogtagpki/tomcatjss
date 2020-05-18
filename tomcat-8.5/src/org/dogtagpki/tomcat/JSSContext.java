@@ -61,7 +61,7 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
         javax.net.ssl.SSLEngine eng = ctx.createSSLEngine();
 
         if (eng instanceof JSSEngine) {
-            JSSEngine j_eng = (JSSEngine) ctx.createSSLEngine();
+            JSSEngine j_eng = (JSSEngine) eng;
             j_eng.setCertFromAlias(alias);
         }
 
