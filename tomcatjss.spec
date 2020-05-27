@@ -8,7 +8,7 @@ License:          LGPLv2+
 BuildArch:        noarch
 
 Version:          7.5.0
-Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
+Release:          0.1%{?_timestamp}%{?_commit_id}%{?dist}
 %global           _phase -a1
 
 # To generate the source tarball:
