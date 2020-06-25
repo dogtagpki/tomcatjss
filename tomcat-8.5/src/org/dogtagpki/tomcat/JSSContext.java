@@ -9,6 +9,7 @@ import java.util.List;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.tomcat.util.net.SSLContext;
 
@@ -36,8 +37,15 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
 
         /* These KeyManagers and TrustManagers aren't used with the SSLEngine;
          * they're only used to implement certain function calls below. */
-        jkm = new JSSKeyManager();
-        jtm = new JSSTrustManager();
+        try {
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("NssX509", "Mozilla-JSS");
+            jkm = (JSSKeyManager) kmf.getKeyManagers()[0];
+
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("NssX509", "Mozilla-JSS");
+            jtm = (JSSTrustManager) tmf.getTrustManagers()[0];
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     public void init(KeyManager[] kms, TrustManager[] tms, SecureRandom sr) throws KeyManagementException {
