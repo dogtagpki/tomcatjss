@@ -26,7 +26,9 @@ import java.util.Set;
 import java.util.HashSet;
 
 import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.SSLEngine;
 
 import org.apache.juli.logging.Log;
@@ -39,9 +41,7 @@ import org.apache.tomcat.util.net.SSLUtilBase;
 
 import org.mozilla.jss.JSSProvider;
 import org.mozilla.jss.crypto.Policy;
-import org.mozilla.jss.provider.javax.crypto.JSSKeyManager;
 import org.mozilla.jss.provider.javax.crypto.JSSNativeTrustManager;
-import org.mozilla.jss.provider.javax.crypto.JSSTrustManager;
 import org.mozilla.jss.ssl.SSLCipher;
 import org.mozilla.jss.ssl.SSLVersion;
 
@@ -86,15 +86,18 @@ public class JSSUtil extends SSLUtilBase {
     @Override
     public KeyManager[] getKeyManagers() throws Exception {
         logger.debug("JSSUtil: getKeyManagers()");
-        return new KeyManager[] { new JSSKeyManager() };
+        KeyManagerFactory jkm = KeyManagerFactory.getInstance("NssX509", "Mozilla-JSS");
+        return jkm.getKeyManagers();
     }
 
     @Override
     public TrustManager[] getTrustManagers() throws Exception {
         logger.debug("JSSUtil: getTrustManagers()");
         if (!JSSProvider.ENABLE_JSSENGINE) {
-            return new TrustManager[] { new JSSTrustManager() };
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("NssX509");
+            return tmf.getTrustManagers();
         }
+
         return new TrustManager[] { new JSSNativeTrustManager() };
     }
 
