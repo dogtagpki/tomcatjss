@@ -226,7 +226,7 @@ if [ "$DEBUG" = true ] ; then
 fi
 
 if [ "$WITH_TIMESTAMP" = true ] ; then
-    TIMESTAMP="`date +"%Y%m%d%H%M%S"`"
+    TIMESTAMP="$(date -u +"%Y%m%d%H%M%S%Z")"
     _TIMESTAMP=".$TIMESTAMP"
 fi
 
