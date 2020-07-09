@@ -8,8 +8,8 @@ License:          LGPLv2+
 BuildArch:        noarch
 
 Version:          7.5.0
-Release:          0.4%{?_timestamp}%{?_commit_id}%{?dist}
-%global           _phase -b2
+Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
+#global           _phase -a1
 
 # To generate the source tarball:
 # $ git clone https://github.com/dogtagpki/tomcatjss.git
