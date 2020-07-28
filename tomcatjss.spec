@@ -141,10 +141,6 @@ is a Java Secure Socket Extension (JSSE) module for Apache Tomcat that
 uses Java Security Services (JSS), a Java interface to Network Security
 Services (NSS).
 
-NOTE:  The 'tomcatjss' package conflicts with the 'tomcat-native' package
-       because it uses an underlying NSS security model rather than the
-       OpenSSL security model, so these two packages may not co-exist.
-
 ################################################################################
 %prep
 ################################################################################
