@@ -20,7 +20,7 @@
 <project name="tomcatjss" default="main" basedir=".">
   <!--
      Give user a chance to override without editing this file
-       (and without typing -D each time it compiles it) 
+       (and without typing -D each time it compiles it)
    -->
 
   <property file=".ant.properties"/>
@@ -111,7 +111,7 @@
   <!-- This property is set to '/dirsec' when built on rhel4 -->
   <property name="dirsec" value="" />
   <property name="jss.jar" value="${jss.home}${dirsec}/jss4.jar" />
-  <property name="commons-lang.jar" value="${jar.home}/commons-lang.jar" />
+  <property name="commons-lang3.jar" value="${jar.home}/commons-lang3.jar" />
 
   <!--
     Classpath
@@ -123,7 +123,7 @@
     <pathelement location="${tomcat-coyote.jar}"/>
     <pathelement location="${tomcat-juli.jar}"/>
     <pathelement location="${commons-logging.jar}"/>
-    <pathelement location="${commons-lang.jar}"/>
+    <pathelement location="${commons-lang3.jar}"/>
     <pathelement location="${slf4j-api.jar}"/>
   </path>
 

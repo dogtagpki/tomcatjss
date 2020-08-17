@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="tomcat-8.5/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/usr/share/java/apache-commons-lang.jar"/>
+	<classpathentry kind="lib" path="/usr/share/java/apache-commons-lang3.jar"/>
 	<classpathentry kind="lib" path="/usr/share/java/apache-commons-logging.jar"/>
 	<classpathentry kind="lib" path="/usr/lib/java/jss4.jar"/>
 	<classpathentry kind="lib" path="/usr/share/java/tomcat/tomcat-coyote.jar"/>
