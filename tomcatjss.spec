@@ -41,7 +41,7 @@ BuildRequires:    git
 
 # Java
 BuildRequires:    ant
-BuildRequires:    apache-commons-lang
+BuildRequires:    apache-commons-lang3
 BuildRequires:    java-devel
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
 
@@ -84,7 +84,7 @@ BuildRequires:    tomcat >= 1:9.0.7
 ################################################################################
 
 # Java
-Requires:         apache-commons-lang
+Requires:         apache-commons-lang3
 %if 0%{?fedora} >= 21
 Requires:         java-headless
 %else
