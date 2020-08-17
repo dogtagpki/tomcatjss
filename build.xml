@@ -20,7 +20,7 @@
 <project name="tomcatjss" default="main" basedir=".">
   <!--
      Give user a chance to override without editing this file
-       (and without typing -D each time it compiles it) 
+       (and without typing -D each time it compiles it)
    -->
 
   <property file=".ant.properties"/>
@@ -217,7 +217,7 @@
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
     <mkdir dir="${build.classes}"/>
-    <javac debug="on" destdir="${build.classes}">
+    <javac debug="on" destdir="${build.classes}" source="1.8" target="1.8">
       <src path="src"/>
       <src path="${src.dir}"/>
       <classpath refid="classpath"/>
