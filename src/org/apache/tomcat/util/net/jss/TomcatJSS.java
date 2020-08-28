@@ -44,14 +44,11 @@ import org.mozilla.jss.NoSuchTokenException;
 import org.mozilla.jss.crypto.AlreadyInitializedException;
 import org.mozilla.jss.crypto.CryptoToken;
 import org.mozilla.jss.ssl.SSLAlertEvent;
-import org.mozilla.jss.ssl.SSLCipher;
 import org.mozilla.jss.ssl.SSLHandshakeCompletedEvent;
 import org.mozilla.jss.ssl.SSLProtocolVariant;
 import org.mozilla.jss.ssl.SSLServerSocket;
 import org.mozilla.jss.ssl.SSLSocket;
 import org.mozilla.jss.ssl.SSLSocketListener;
-import org.mozilla.jss.ssl.SSLVersion;
-import org.mozilla.jss.ssl.SSLVersionRange;
 import org.mozilla.jss.util.IncorrectPasswordException;
 import org.mozilla.jss.util.Password;
 import org.slf4j.Logger;
@@ -94,8 +91,6 @@ public class TomcatJSS implements SSLSocketListener {
 
     String strictCiphers;
     boolean boolStrictCiphers;
-    String sslVersionRangeStream;
-    String sslVersionRangeDatagram;
 
     String sslRangeCiphers;
     String sslOptions;
@@ -237,70 +232,6 @@ public class TomcatJSS implements SSLSocketListener {
         this.ocspTimeout = ocspTimeout;
     }
 
-    public String getStrictCiphers() {
-        return strictCiphers;
-    }
-
-    public void setStrictCiphers(String strictCiphers) {
-        this.strictCiphers = strictCiphers;
-    }
-
-    public String getSslVersionRangeStream() {
-        return sslVersionRangeStream;
-    }
-
-    public void setSslVersionRangeStream(String sslVersionRangeStream) {
-        this.sslVersionRangeStream = sslVersionRangeStream;
-    }
-
-    public String getSslVersionRangeDatagram() {
-        return sslVersionRangeDatagram;
-    }
-
-    public void setSslVersionRangeDatagram(String sslVersionRangeDatagram) {
-        this.sslVersionRangeDatagram = sslVersionRangeDatagram;
-    }
-
-    public String getSslRangeCiphers() {
-        return sslRangeCiphers;
-    }
-
-    public void setSslRangeCiphers(String sslRangeCiphers) {
-        this.sslRangeCiphers = sslRangeCiphers;
-    }
-
-    public String getSslOptions() {
-        return sslOptions;
-    }
-
-    public void setSslOptions(String sslOptions) {
-        this.sslOptions = sslOptions;
-    }
-
-    public String getSsl2Ciphers() {
-        return ssl2Ciphers;
-    }
-
-    public void setSsl2Ciphers(String ssl2Ciphers) {
-        this.ssl2Ciphers = ssl2Ciphers;
-    }
-
-    public String getSsl3Ciphers() {
-        return ssl3Ciphers;
-    }
-
-    public void setSsl3Ciphers(String ssl3Ciphers) {
-        this.ssl3Ciphers = ssl3Ciphers;
-    }
-
-    public String getTlsCiphers() {
-        return tlsCiphers;
-    }
-
-    public void setTlsCiphers(String tlsCiphers) {
-        this.tlsCiphers = tlsCiphers;
-    }
-
     public void loadJSSConfig(String jssConf) throws Exception {
         File configFile = new File(jssConf);
         loadJSSConfig(configFile);
@@ -355,38 +286,6 @@ public class TomcatJSS implements SSLSocketListener {
         String ocspTimeout = config.getProperty("ocspTimeout");
         if (StringUtils.isNotEmpty(ocspTimeout))
             setOcspTimeout(Integer.parseInt(ocspTimeout));
-
-        String strictCiphers = config.getProperty("strictCiphers");
-        if (strictCiphers != null)
-            setStrictCiphers(strictCiphers);
-
-        String sslVersionRangeStream = config.getProperty("sslVersionRangeStream");
-        if (sslVersionRangeStream != null)
-            setSslVersionRangeStream(sslVersionRangeStream);
-
-        String sslVersionRangeDatagram = config.getProperty("sslVersionRangeDatagram");
-        if (sslVersionRangeDatagram != null)
-            setSslVersionRangeDatagram(sslVersionRangeDatagram);
-
-        String sslRangeCiphers = config.getProperty("sslRangeCiphers");
-        if (sslRangeCiphers != null)
-            setSslRangeCiphers(sslRangeCiphers);
-
-        String sslOptions = config.getProperty("sslOptions");
-        if (sslOptions != null)
-            setSslOptions(sslOptions);
-
-        String ssl2Ciphers = config.getProperty("ssl2Ciphers");
-        if (ssl2Ciphers != null)
-            setSsl2Ciphers(ssl2Ciphers);
-
-        String ssl3Ciphers = config.getProperty("ssl3Ciphers");
-        if (ssl3Ciphers != null)
-            setSsl3Ciphers(ssl3Ciphers);
-
-        String tlsCiphers = config.getProperty("tlsCiphers");
-        if (tlsCiphers != null)
-            setTlsCiphers(tlsCiphers);
     }
 
     public void loadTomcatConfig(String serverXml) throws Exception {
@@ -455,38 +354,6 @@ public class TomcatJSS implements SSLSocketListener {
         String ocspTimeout = connector.getAttribute("ocspTimeout");
         if (StringUtils.isNotEmpty(ocspTimeout))
             setOcspTimeout(Integer.parseInt(ocspTimeout));
-
-        String strictCiphers = connector.getAttribute("strictCiphers");
-        if (strictCiphers != null)
-            setStrictCiphers(strictCiphers);
-
-        String sslVersionRangeStream = connector.getAttribute("sslVersionRangeStream");
-        if (sslVersionRangeStream != null)
-            setSslVersionRangeStream(sslVersionRangeStream);
-
-        String sslVersionRangeDatagram = connector.getAttribute("sslVersionRangeDatagram");
-        if (sslVersionRangeDatagram != null)
-            setSslVersionRangeDatagram(sslVersionRangeDatagram);
-
-        String sslRangeCiphers = connector.getAttribute("sslRangeCiphers");
-        if (sslRangeCiphers != null)
-            setSslRangeCiphers(sslRangeCiphers);
-
-        String sslOptions = connector.getAttribute("sslOptions");
-        if (sslOptions != null)
-            setSslOptions(sslOptions);
-
-        String ssl2Ciphers = connector.getAttribute("ssl2Ciphers");
-        if (ssl2Ciphers != null)
-            setSsl2Ciphers(ssl2Ciphers);
-
-        String ssl3Ciphers = connector.getAttribute("ssl3Ciphers");
-        if (ssl3Ciphers != null)
-            setSsl3Ciphers(ssl3Ciphers);
-
-        String tlsCiphers = connector.getAttribute("tlsCiphers");
-        if (tlsCiphers != null)
-            setTlsCiphers(tlsCiphers);
     }
 
     public void init() throws Exception {
@@ -565,54 +432,6 @@ public class TomcatJSS implements SSLSocketListener {
 
         // 12 hours = 43200 seconds
         SSLServerSocket.configServerSessionIDCache(0, 43200, 43200, null);
-
-        logger.debug("strictCiphers: " + strictCiphers);
-        if ("true".equalsIgnoreCase(strictCiphers)) {
-            boolStrictCiphers = true;
-
-        } else if ("yes".equalsIgnoreCase(strictCiphers)) {
-            boolStrictCiphers = true;
-            logger.warn("The \"yes\" value for strictCiphers has been deprecated. Use \"true\" instead.");
-        }
-
-        if (boolStrictCiphers) {
-            // what ciphers do we have to start with? turn them all off
-            unsetSSLCiphers();
-        }
-
-        logger.debug("sslVersionRangeStream: " + sslVersionRangeStream);
-        if (StringUtils.isNotEmpty(sslVersionRangeStream)) {
-            setSSLVersionRangeDefault(
-                    "STREAM",
-                    SSLProtocolVariant.STREAM,
-                    sslVersionRangeStream);
-        }
-
-        logger.debug("sslVersionRangeDatagram: " + sslVersionRangeDatagram);
-        if (StringUtils.isNotEmpty(sslVersionRangeDatagram)) {
-            setSSLVersionRangeDefault(
-                    "DATA_GRAM",
-                    SSLProtocolVariant.DATA_GRAM,
-                    sslVersionRangeDatagram);
-        }
-
-        /*
-         * According to NSS: the SSL_OptionSet-based API for controlling the
-         * enabled protocol versions are obsolete and replaced by the
-         * setSSLVersionRange calls. Therefore, if the "range" parameters
-         * are present in the attributes then the sslOptions parameter is
-         * ignored. Using the new version range API in conjunction with the
-         * older SSL_OptionSet-based API for controlling the enabled
-         * protocol versions may cause unexpected results
-         */
-        if (StringUtils.isNotEmpty(sslVersionRangeStream)
-                || StringUtils.isNotEmpty(sslVersionRangeDatagram)) {
-            /* deliberately lose the ssl2 here */
-            setSSLCiphers("sslRangeCiphers", sslRangeCiphers);
-
-        } else {
-            setSSLOptions();
-        }
 
         logger.info("TomcatJSS: initialization complete");
 
@@ -742,195 +561,6 @@ public class TomcatJSS implements SSLSocketListener {
         logger.debug("ocspTimeout: " + ocspTimeout);
 
         manager.setOCSPTimeout(ocspTimeout);
-    }
-
-    /**
-     * Disables all SSL ciphers to start with a clean slate.
-     */
-    public void unsetSSLCiphers() throws SocketException {
-
-        logger.debug("Disabling SSL ciphers:");
-
-        int[] cipherIDs = SSLSocket.getImplementedCipherSuites();
-        if (cipherIDs == null) return;
-
-        for (int cipherID : cipherIDs) {
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("* 0x");
-            sb.append(Integer.toHexString(cipherID));
-
-            SSLCipher cipher = SSLCipher.valueOf(cipherID);
-            if (cipher != null) {
-                sb.append(": ");
-                sb.append(cipher.name());
-            }
-
-            logger.debug(sb.toString());
-
-            SSLSocket.setCipherPreferenceDefault(cipherID, false);
-        }
-    }
-
-    /**
-     * setSSLVersionRangeDefault sets the range of allowed SSL versions. This
-     * replaces the obsolete SSL_Option* API.
-     *
-     * @param protoVariant indicates whether this setting is for type "stream"
-     * or "datagram".
-     *
-     * @param sslVersionRange_s takes on the form of "min:max" where min/max
-     * values can be "ssl3, tls1_0, tls1_1, tls1_2, tls1_3". ssl2 is not
-     * supported for tomcatjss via this interface. The format is
-     * "sslVersionRange=min:max".
-     */
-    public void setSSLVersionRangeDefault(
-            String type,
-            SSLProtocolVariant protoVariant,
-            String sslVersionRange_s) throws SocketException,
-            IllegalArgumentException, IOException {
-
-        String[] sslVersionRange = sslVersionRange_s.split(":");
-        if (sslVersionRange.length != 2) {
-            throw new SocketException("SSL version range format error: " + sslVersionRange_s);
-        }
-
-        String min_s = sslVersionRange[0];
-        String max_s = sslVersionRange[1];
-
-        logger.debug("Setting SSL version range for " + type + ":");
-        logger.debug("* min: " + min_s);
-        logger.debug("* max: " + max_s);
-
-        SSLVersion minVersion = SSLVersion.findByAlias(min_s);
-        SSLVersion maxVersion = SSLVersion.findByAlias(max_s);
-
-        SSLVersionRange range = new SSLVersionRange(minVersion, maxVersion);
-        range = SSLSocket.boundSSLVersionRange(SSLProtocolVariant.STREAM, range);
-
-        logger.debug("Actual SSL version range for " + type + " after system policy correction:");
-        logger.debug("* min: " + range.getMinVersion());
-        logger.debug("* max: " + range.getMaxVersion());
-        SSLSocket.setSSLVersionRangeDefault(protoVariant, range);
-    }
-
-    public void setSSLCiphers(String attr, String ciphers) throws SocketException, IOException {
-
-        if (StringUtils.isEmpty(ciphers)) {
-            logger.debug("Missing " + attr);
-            return;
-        }
-
-        logger.debug("Processing " + attr + ":");
-        StringTokenizer st = new StringTokenizer(ciphers, ", ");
-        while (st.hasMoreTokens()) {
-            String cipherStr = st.nextToken();
-
-            String name;
-            boolean enabled;
-
-            if (cipherStr.startsWith("+")) {
-                enabled = true;
-                name = cipherStr.substring(1);
-            } else if (cipherStr.startsWith("-")) {
-                enabled = false;
-                name = cipherStr.substring(1);
-            } else {
-                enabled = true; // no enable/disable flag, assume enable
-                name = cipherStr;
-            }
-
-            logger.debug("* " + name);
-            logger.debug("  enabled: " + enabled);
-
-            int cipherID;
-
-            if (name.startsWith("0x") || name.startsWith("0X")) {
-                // this allows us to specify new ciphers
-                try {
-                    cipherID = Integer.parseInt(name.substring(2), 16);
-                } catch (Exception e) {
-                    logger.error("Invalid SSL cipher: " + name);
-                    continue;
-                }
-            } else {
-                try {
-                    SSLCipher cipher = SSLCipher.valueOf(name);
-                    cipherID = cipher.getID();
-                } catch (IllegalArgumentException e) {
-                    logger.error("Unknown SSL cipher: " + name);
-                    continue;
-                }
-            }
-
-            logger.debug("  ID: 0x" + Integer.toHexString(cipherID));
-
-            try {
-                SSLSocket.setCipherPreferenceDefault(cipherID, enabled);
-
-            } catch (Exception e) {
-                logger.warn("Unable to set SSL cipher preference: " + e);
-                SSLCipher cipher = SSLCipher.valueOf(cipherID);
-                if (cipher != null && cipher.isECC()) {
-                    logger.warn("SSL ECC cipher \""
-                                    + name
-                                    + "\" unsupported by NSS. "
-                                    + "This is probably O.K. unless ECC support has been installed.");
-                } else {
-                    logger.error("SSL cipher \"" + name
-                            + "\" unsupported by NSS");
-                }
-            }
-        }
-    }
-
-    /**
-     * note: the SSL_OptionSet-based API for controlling the enabled protocol
-     * versions are obsolete and replaced by the setSSLVersionRange calls. If
-     * the "range" parameters are present in the attributes then the sslOptions
-     * parameter is ignored.
-     */
-    public void setSSLOptions() throws SocketException, IOException {
-
-        if (StringUtils.isEmpty(sslOptions)) {
-            logger.debug("JSSSocketFactory: no sslOptions specified");
-            return;
-        }
-
-        logger.debug("JSSSocketFactory: Processing sslOptions:");
-        StringTokenizer st = new StringTokenizer(sslOptions, ", ");
-        while (st.hasMoreTokens()) {
-            String option = st.nextToken();
-            logger.debug("JSSSocketFactory:  - " + option);
-
-            StringTokenizer st1 = new StringTokenizer(option, "=");
-            String name = st1.nextToken();
-            String value = st1.nextToken();
-            if (name.equals("ssl2")) {
-                if (value.equals("true")) {
-                    SSLSocket.enableSSL2Default(true);
-                    setSSLCiphers("ssl2Ciphers", ssl2Ciphers);
-                } else {
-                    SSLSocket.enableSSL2Default(false);
-                }
-            }
-            if (name.equals("ssl3")) {
-                if (value.equals("true")) {
-                    SSLSocket.enableSSL3Default(true);
-                    setSSLCiphers("ssl3Ciphers", ssl3Ciphers);
-                } else {
-                    SSLSocket.enableSSL3Default(false);
-                }
-            }
-            if (name.equals("tls")) {
-                if (value.equals("true")) {
-                    SSLSocket.enableTLSDefault(true);
-                    setSSLCiphers("tlsCiphers", tlsCiphers);
-                } else {
-                    SSLSocket.enableTLSDefault(false);
-                }
-            }
-        }
     }
 
     @Override
