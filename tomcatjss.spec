@@ -47,36 +47,16 @@ BuildRequires:    jpackage-utils >= 0:1.7.5-15
 
 # SLF4J
 BuildRequires:    slf4j
-%if 0%{?rhel} && 0%{?rhel} <= 7
-# no slf4j-jdk14
-%else
 BuildRequires:    slf4j-jdk14
-%endif
 
 # JSS
-%if 0%{?rhel} && 0%{?rhel} <= 7
-BuildRequires:    jss >= 4.4.0-7
-%else
-BuildRequires:    jss >= 4.7.0
-%endif
+BuildRequires:    jss >= 4.8.0
 
 # Tomcat
-%if 0%{?rhel} && 0%{?rhel} <= 7
-BuildRequires:    tomcat >= 7.0.69
-%else
-%if 0%{?fedora} && 0%{?fedora} <= 27
-BuildRequires:    tomcat >= 8.0.49
-%else
-%if 0%{?fedora} && 0%{?fedora} <= 28
-BuildRequires:    tomcat >= 1:8.5.23
-%else
 %if 0%{?rhel}
 BuildRequires:    pki-servlet-engine >= 1:9.0.7
 %else
 BuildRequires:    tomcat >= 1:9.0.7
-%endif
-%endif
-%endif
 %endif
 
 ################################################################################
@@ -94,36 +74,16 @@ Requires:         jpackage-utils >= 0:1.7.5-15
 
 # SLF4J
 Requires:         slf4j
-%if 0%{?rhel}
-# no slf4j-jdk14
-%else
 Requires:         slf4j-jdk14
-%endif
 
 # JSS
-%if 0%{?rhel} && 0%{?rhel} <= 7
-Requires:         jss >= 4.4.0-7
-%else
-Requires:         jss >= 4.7.0
-%endif
+Requires:         jss >= 4.8.0
 
 # Tomcat
-%if 0%{?rhel} && 0%{?rhel} <= 7
-Requires:         tomcat >= 7.0.69
-%else
-%if 0%{?fedora} && 0%{?fedora} <= 27
-Requires:         tomcat >= 8.0.49
-%else
-%if 0%{?fedora} && 0%{?fedora} <= 28
-Requires:         tomcat >= 1:8.5.23
-%else
 %if 0%{?rhel}
 Requires:         pki-servlet-engine >= 1:9.0.7
 %else
 Requires:         tomcat >= 1:9.0.7
-%endif
-%endif
-%endif
 %endif
 
 # PKI
