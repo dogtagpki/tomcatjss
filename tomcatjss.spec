@@ -87,7 +87,7 @@ Requires:         tomcat >= 1:9.0.7
 %endif
 
 # PKI
-Conflicts:        pki-base < 10.6.5
+Conflicts:        pki-base < 10.10.0
 
 
 %if 0%{?rhel}
