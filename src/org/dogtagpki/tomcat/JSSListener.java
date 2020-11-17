@@ -19,8 +19,6 @@
 
 package org.dogtagpki.tomcat;
 
-import java.io.File;
-
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
@@ -58,21 +56,7 @@ public class JSSListener implements LifecycleListener {
 
         try {
             TomcatJSS tomcatjss = TomcatJSS.getInstance();
-
-            String catalinaBase = System.getProperty("catalina.base");
-            String jssConf = catalinaBase + "/conf/jss.conf";
-            File configFile = new File(jssConf);
-
-            if (configFile.exists()) {
-                logger.info("JSSListener: Loading JSS configuration from " + jssConf);
-                tomcatjss.loadJSSConfig(configFile);
-
-            } else {
-                String serverXml = catalinaBase + "/conf/server.xml";
-                logger.info("JSSListener: Loading JSS configuration from " + serverXml);
-                tomcatjss.loadTomcatConfig(serverXml);
-            }
-
+            tomcatjss.loadConfig();
             tomcatjss.init();
 
         } catch (Exception e) {

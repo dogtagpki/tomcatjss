@@ -21,15 +21,12 @@ package org.apache.tomcat.util.net.jss;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
-import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -45,9 +42,7 @@ import org.mozilla.jss.crypto.AlreadyInitializedException;
 import org.mozilla.jss.crypto.CryptoToken;
 import org.mozilla.jss.ssl.SSLAlertEvent;
 import org.mozilla.jss.ssl.SSLHandshakeCompletedEvent;
-import org.mozilla.jss.ssl.SSLProtocolVariant;
 import org.mozilla.jss.ssl.SSLServerSocket;
-import org.mozilla.jss.ssl.SSLSocket;
 import org.mozilla.jss.ssl.SSLSocketListener;
 import org.mozilla.jss.util.IncorrectPasswordException;
 import org.mozilla.jss.util.Password;
@@ -354,6 +349,25 @@ public class TomcatJSS implements SSLSocketListener {
         String ocspTimeout = connector.getAttribute("ocspTimeout");
         if (StringUtils.isNotEmpty(ocspTimeout))
             setOcspTimeout(Integer.parseInt(ocspTimeout));
+    }
+
+    /**
+     * Load configuration from jss.conf (if available) or server.xml.
+     */
+    public void loadConfig() throws Exception {
+        String catalinaBase = System.getProperty("catalina.base");
+        String jssConf = catalinaBase + "/conf/jss.conf";
+        File configFile = new File(jssConf);
+
+        if (configFile.exists()) {
+            logger.info("TomcatJSS: Loading JSS configuration from " + jssConf);
+            loadJSSConfig(configFile);
+
+        } else {
+            String serverXml = catalinaBase + "/conf/server.xml";
+            logger.info("TomcatJSS: Loading JSS configuration from " + serverXml);
+            loadTomcatConfig(serverXml);
+        }
     }
 
     public void init() throws Exception {
