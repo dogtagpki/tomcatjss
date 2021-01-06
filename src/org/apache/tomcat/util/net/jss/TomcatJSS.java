@@ -37,7 +37,6 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.mozilla.jss.CryptoManager;
 import org.mozilla.jss.InitializationValues;
-import org.mozilla.jss.NoSuchTokenException;
 import org.mozilla.jss.crypto.AlreadyInitializedException;
 import org.mozilla.jss.crypto.CryptoToken;
 import org.mozilla.jss.ssl.SSLAlertEvent;
@@ -471,13 +470,7 @@ public class TomcatJSS implements SSLSocketListener {
 
     public void login(String tag) throws Exception {
 
-        CryptoToken token;
-        try {
-            token = getToken(tag);
-        } catch (NoSuchTokenException e) {
-            logger.warn("TomcatJSS: token for " + tag + " not found");
-            return;
-        }
+        CryptoToken token = getToken(tag);
 
         if (token.isLoggedIn()) {
             logger.debug("TomcatJSS: already logged into " + tag);
