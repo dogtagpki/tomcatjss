@@ -58,7 +58,7 @@
     Set the properties related to the source tree
   -->
   <exec executable="pwd" failonerror="true" outputproperty="cwd"/>
-  <property name="src.dir" value="tomcat-8.5"/>
+  <property name="src.dir" value="tomcat-9.0"/>
   <property name="lib.dir" value="lib"/>
   <property name="docs.dir" value="docs"/>
 
@@ -173,7 +173,7 @@
         <include name="README"/>
         <include name="LICENSE"/>
         <include name="build.xml"/>
-        <include name="src/**"/>
+        <include name="core/src/**"/>
         <include name="${src.dir}/**"/>
       </zipfileset>
     </zip>
@@ -182,7 +182,7 @@
         <include name="README"/>
         <include name="LICENSE"/>
         <include name="build.xml"/>
-        <include name="src/**"/>
+        <include name="core/src/**"/>
         <include name="${src.dir}/**"/>
       </tarfileset>
     </tar>
@@ -218,8 +218,8 @@
     <!-- Compile the java code from ${src} into ${build} -->
     <mkdir dir="${build.classes}"/>
     <javac debug="on" destdir="${build.classes}" source="1.8" target="1.8">
-      <src path="src"/>
-      <src path="${src.dir}"/>
+      <src path="core/src/main/java"/>
+      <src path="${src.dir}/src/main/java"/>
       <classpath refid="classpath"/>
     </javac>
   </target>

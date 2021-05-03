@@ -113,12 +113,7 @@ Services (NSS).
 
 # get Tomcat <major>.<minor> version number
 tomcat_version=`/usr/sbin/tomcat version | sed -n 's/Server number: *\([0-9]\+\.[0-9]\+\).*/\1/p'`
-
-if [ $tomcat_version == "9.0" ]; then
-    app_server=tomcat-8.5
-else
-    app_server=tomcat-$tomcat_version
-fi
+app_server=tomcat-$tomcat_version
 
 ant -f build.xml \
     -Dversion=%{version} \
