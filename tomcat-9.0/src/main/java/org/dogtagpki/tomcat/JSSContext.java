@@ -1,24 +1,17 @@
 package org.dogtagpki.tomcat;
 
-import java.security.Provider;
 import java.security.KeyManagementException;
 import java.security.SecureRandom;
-import java.security.Security;
-import java.util.List;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.tomcat.util.net.SSLContext;
-
 import org.mozilla.jss.JSSProvider;
 import org.mozilla.jss.provider.javax.crypto.JSSKeyManager;
 import org.mozilla.jss.provider.javax.crypto.JSSTrustManager;
 import org.mozilla.jss.ssl.javax.JSSEngine;
-import org.mozilla.jss.ssl.javax.JSSParameters;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
