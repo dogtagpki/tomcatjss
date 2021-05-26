@@ -36,9 +36,6 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?_
 # jss requires versioning to meet both build and runtime requirements
 # tomcat requires versioning to meet both build and runtime requirements
 
-# autosetup
-BuildRequires:    git
-
 # Java
 BuildRequires:    ant
 BuildRequires:    apache-commons-lang3
@@ -105,7 +102,7 @@ Services (NSS).
 %prep
 ################################################################################
 
-%autosetup -n tomcatjss-%{version}%{?_phase} -p 1 -S git
+%autosetup -n tomcatjss-%{version}%{?_phase} -p 1
 
 ################################################################################
 %install
