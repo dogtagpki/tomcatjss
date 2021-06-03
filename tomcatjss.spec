@@ -29,6 +29,14 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?_
 # Patch: tomcatjss-VERSION-RELEASE.patch
 
 ################################################################################
+# Java
+################################################################################
+
+%define java_devel java-11-openjdk-devel
+%define java_headless java-11-openjdk-headless
+%define java_home /usr/lib/jvm/java-11-openjdk
+
+################################################################################
 # Build Dependencies
 ################################################################################
 
@@ -39,7 +47,7 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?_
 # Java
 BuildRequires:    ant
 BuildRequires:    apache-commons-lang3
-BuildRequires:    java-devel
+BuildRequires:    %{java_devel}
 BuildRequires:    jpackage-utils >= 0:1.7.5-15
 
 # SLF4J
@@ -62,11 +70,7 @@ BuildRequires:    tomcat >= 1:9.0.7
 
 # Java
 Requires:         apache-commons-lang3
-%if 0%{?fedora} >= 21
-Requires:         java-headless
-%else
-Requires:         java
-%endif
+Requires:         %{java_headless}
 Requires:         jpackage-utils >= 0:1.7.5-15
 
 # SLF4J
