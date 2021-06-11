@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="tomcat-9.0/src/main/java"/>
 	<classpathentry kind="lib" path="/usr/share/java/apache-commons-lang3.jar"/>
 	<classpathentry kind="lib" path="/usr/share/java/apache-commons-logging.jar"/>
-	<classpathentry kind="lib" path="/usr/lib/java/jss4.jar"/>
+	<classpathentry kind="lib" path="/usr/lib/java/jss.jar"/>
 	<classpathentry kind="lib" path="/usr/share/java/tomcat/tomcat-coyote.jar"/>
 	<classpathentry kind="lib" path="/usr/share/java/tomcat/tomcat-juli.jar"/>
 	<classpathentry kind="lib" path="/usr/share/java/tomcat/tomcat-util.jar"/>

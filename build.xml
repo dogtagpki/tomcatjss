@@ -110,7 +110,7 @@
   <property name="jss.home" value="${jnidir}" />
   <!-- This property is set to '/dirsec' when built on rhel4 -->
   <property name="dirsec" value="" />
-  <property name="jss.jar" value="${jss.home}${dirsec}/jss4.jar" />
+  <property name="jss.jar" value="${jss.home}${dirsec}/jss.jar" />
   <property name="commons-lang3.jar" value="${jar.home}/commons-lang3.jar" />
 
   <!--
