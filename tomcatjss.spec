@@ -9,7 +9,7 @@ BuildArch:        noarch
 
 # For development (i.e. unsupported) releases, use x.y.z-0.n.<phase>.
 # For official (i.e. supported) releases, use x.y.z-r where r >=1.
-Version:          7.7.0
+Version:          8.0.0
 Release:          0.1.alpha1%{?_timestamp}%{?_commit_id}%{?dist}
 %global           _phase -alpha1
 
@@ -63,7 +63,7 @@ BuildRequires:    slf4j
 BuildRequires:    slf4j-jdk14
 
 # JSS
-BuildRequires:    jss >= 4.8.0
+BuildRequires:    jss >= 5.0.0
 
 # Tomcat
 %if 0%{?rhel} && ! 0%{?eln}
@@ -86,7 +86,7 @@ Requires:         slf4j
 Requires:         slf4j-jdk14
 
 # JSS
-Requires:         jss >= 4.8.0
+Requires:         jss >= 5.0.0
 
 # Tomcat
 %if 0%{?rhel} && ! 0%{?eln}
