@@ -1,0 +1,127 @@
+name: PKI Tests
+
+on: [push, pull_request]
+
+jobs:
+  init:
+    name: Initializing Workflow
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set up test matrix
+        id: set-matrix
+        run: |
+          export latest=$(cat /etc/fedora-release | awk '{ print $3 }')
+          export previous=$(cat /etc/fedora-release | awk '{ print $3 - 1 }')
+          echo "Running CI against Fedora $previous and $latest"
+          if [ "${{ secrets.MATRIX }}" == "" ]
+          then
+              echo "::set-output name=matrix::{\"os\":[\"$previous\", \"$latest\"]}"
+          else
+              echo "::set-output name=matrix::${{ secrets.MATRIX }}"
+          fi
+
+  build:
+    name: Building TomcatJSS
+    needs: init
+    runs-on: ubuntu-latest
+    env:
+      COPR_REPO: "@pki/10.11"
+    strategy:
+      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build runner image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          build-args: |
+            OS_VERSION=${{ matrix.os }}
+            COPR_REPO=${{ env.COPR_REPO }}
+            BUILD_OPTS=--with-timestamp --with-commit-id
+          tags: tomcatjss-runner
+          target: tomcatjss-runner
+          outputs: type=docker,dest=/tmp/tomcatjss-runner.tar
+
+      - name: Upload runner image
+        uses: actions/upload-artifact@v2
+        with:
+          name: tomcatjss-runner-${{ matrix.os }}
+          path: /tmp/tomcatjss-runner.tar
+
+  ca-test:
+    name: Installing CA
+    needs: [init, build]
+    runs-on: ubuntu-latest
+    env:
+      SHARED: /tmp/workdir/tomcatjss
+      COPR_REPO: "@pki/10.11"
+    strategy:
+      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+
+      - name: Download runner image
+        uses: actions/download-artifact@v2
+        with:
+          name: tomcatjss-runner-${{ matrix.os }}
+          path: /tmp
+
+      - name: Load runner image
+        run: docker load --input /tmp/tomcatjss-runner.tar
+
+      - name: Run container
+        run: |
+          IMAGE=tomcatjss-runner \
+          NAME=pki \
+          HOSTNAME=pki.example.com \
+          tests/bin/runner-init.sh
+
+      - name: Install DS and PKI packages
+        run: docker exec pki dnf install -y 389-ds-base pki-ca
+
+      - name: Install DS
+        run: docker exec pki ${SHARED}/tests/bin/ds-create.sh
+
+      - name: Install CA
+        run: docker exec pki pkispawn -f /usr/share/pki/server/examples/installation/ca.cfg -s CA -v
+
+      - name: Run PKI healthcheck
+        run: docker exec pki pki-healthcheck --debug
+
+      - name: Verify CA admin
+        run: |
+          docker exec pki pki-server cert-export ca_signing --cert-file ca_signing.crt
+          docker exec pki pki client-cert-import ca_signing --ca-cert ca_signing.crt
+          docker exec pki pki client-cert-import \
+              --pkcs12 /root/.dogtag/pki-tomcat/ca_admin_cert.p12 \
+              --pkcs12-password-file /root/.dogtag/pki-tomcat/ca/pkcs12_password.conf
+          docker exec pki pki -n caadmin ca-user-show caadmin
+
+      - name: Gather artifacts
+        if: always()
+        run: |
+          tests/bin/ds-artifacts-save.sh pki
+          tests/bin/pki-artifacts-save.sh pki
+
+      - name: Remove CA
+        run: docker exec pki pkidestroy -i pki-tomcat -s CA -v
+
+      - name: Remove DS
+        run: docker exec pki ${SHARED}/tests/bin/ds-remove.sh
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ca-${{ matrix.os }}
+          path: |
+            /tmp/artifacts/pki
