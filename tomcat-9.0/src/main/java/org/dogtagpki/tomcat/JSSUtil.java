@@ -69,11 +69,11 @@ public class JSSUtil extends SSLUtilBase {
         }
 
         protocols = Collections.unmodifiableSet(
-            new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()))
+            new HashSet<>(Arrays.asList(engine.getSupportedProtocols()))
         );
 
         ciphers = Collections.unmodifiableSet(
-            new HashSet<String>(Arrays.asList(engine.getSupportedCipherSuites()))
+            new HashSet<>(Arrays.asList(engine.getSupportedCipherSuites()))
         );
     }
 
