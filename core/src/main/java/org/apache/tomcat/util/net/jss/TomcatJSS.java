@@ -59,7 +59,7 @@ public class TomcatJSS implements SSLSocketListener {
 
     public static TomcatJSS getInstance() { return INSTANCE; }
 
-    Collection<SSLSocketListener> socketListeners = new ArrayList<SSLSocketListener>();
+    Collection<SSLSocketListener> socketListeners = new ArrayList<>();
 
     String certdbDir;
     CryptoManager manager;
