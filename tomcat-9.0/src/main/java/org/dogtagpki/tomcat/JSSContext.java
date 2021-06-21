@@ -41,6 +41,7 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
         }
     }
 
+    @Override
     public void init(KeyManager[] kms, TrustManager[] tms, SecureRandom sr) throws KeyManagementException {
         logger.debug("JSSContext.init(...)");
 
@@ -57,6 +58,7 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
         }
     }
 
+    @Override
     public javax.net.ssl.SSLEngine createSSLEngine() {
         logger.debug("JSSContext.createSSLEngine()");
         javax.net.ssl.SSLEngine eng = ctx.createSSLEngine();
@@ -69,21 +71,25 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
         return eng;
     }
 
+    @Override
     public javax.net.ssl.SSLSessionContext getServerSessionContext() {
         logger.debug("JSSContext.getServerSessionContext()");
         return ctx.getServerSessionContext();
     }
 
+    @Override
     public javax.net.ssl.SSLServerSocketFactory getServerSocketFactory() {
         logger.debug("JSSContext.getServerSocketFactory()");
         return ctx.getServerSocketFactory();
     }
 
+    @Override
     public javax.net.ssl.SSLParameters getSupportedSSLParameters() {
         logger.debug("JSSContext.getSupportedSSLParameters()");
         return ctx.getSupportedSSLParameters();
     }
 
+    @Override
     public java.security.cert.X509Certificate[] getCertificateChain(java.lang.String alias) {
         logger.debug("JSSContext.getCertificateChain(" + alias + ")");
 
@@ -94,6 +100,7 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
         }
     }
 
+    @Override
     public java.security.cert.X509Certificate[] getAcceptedIssuers() {
         logger.debug("JSSContext.getAcceptedIssuers()");
 
@@ -104,6 +111,7 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
         }
     }
 
+    @Override
     public void destroy() {
         logger.debug("JSSContext.destory()");
     }

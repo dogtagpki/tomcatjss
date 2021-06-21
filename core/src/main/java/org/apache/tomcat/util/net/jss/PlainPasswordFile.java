@@ -81,6 +81,7 @@ public class PlainPasswordFile implements IPasswordStore {
      * @exception IOException if an error occurred when reading from the
      *                input stream.
      */
+    @Override
     public void init(String pwdPath) throws IOException {
         logger.debug("PlainPasswordFile: Initializing PlainPasswordFile");
         // initialize mPwdStore
@@ -111,24 +112,29 @@ public class PlainPasswordFile implements IPasswordStore {
         }
     }
 
+    @Override
     public String getPassword(String tag) {
         return getPassword(tag, 0);
     }
 
+    @Override
     public String getPassword(String tag, int iteration) {
         return mPwdStore.getProperty(tag);
     }
 
     // return an array of String-based tag
+    @Override
     @SuppressWarnings("unchecked")
     public Enumeration<String> getTags() {
         return (Enumeration<String>) mPwdStore.propertyNames();
     }
 
+    @Override
     public Object putPassword(String tag, String password) {
         return mPwdStore.setProperty(tag, password);
     }
 
+    @Override
     public synchronized void commit()
             throws IOException, ClassCastException, NullPointerException {
         try (FileOutputStream file = new FileOutputStream(mPwdPath);
