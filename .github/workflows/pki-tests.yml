@@ -52,8 +52,113 @@ jobs:
           name: tomcatjss-runner-${{ matrix.os }}
           path: /tmp/tomcatjss-runner.tar
 
+  # https://github.com/dogtagpki/pki/blob/master/docs/installation/server/Installing_Basic_PKI_Server.md
+  ssl-test:
+    name: Testing SSL Connector
+    needs: [init, build]
+    runs-on: ubuntu-latest
+    env:
+      SHARED: /tmp/workdir/tomcatjss
+    strategy:
+      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+
+      - name: Download runner image
+        uses: actions/download-artifact@v2
+        with:
+          name: tomcatjss-runner-${{ matrix.os }}
+          path: /tmp
+
+      - name: Load runner image
+        run: docker load --input /tmp/tomcatjss-runner.tar
+
+      - name: Run container
+        run: |
+          IMAGE=tomcatjss-runner \
+          NAME=pki \
+          HOSTNAME=pki.example.com \
+          tests/bin/runner-init.sh
+
+      - name: Install PKI packages
+        run: docker exec pki dnf install -y pki-server sslscan
+
+      - name: Create PKI server
+        run: docker exec pki pki-server create
+
+      - name: Create NSS database
+        run: docker exec pki pki-server nss-create --no-password
+
+      - name: Create SSL server cert request
+        run: |
+          docker exec pki pki \
+              -d /var/lib/pki/pki-tomcat/conf/alias \
+              nss-cert-request \
+              --subject "CN=pki.example.com" \
+              --ext /usr/share/pki/server/certs/sslserver.conf \
+              --csr sslserver.csr
+          docker exec pki openssl req -text -noout -in sslserver.csr
+
+      - name: Issue self-signed SSL server cert
+        run: |
+          docker exec pki pki \
+              -d /var/lib/pki/pki-tomcat/conf/alias \
+              nss-cert-issue \
+              --csr sslserver.csr \
+              --ext /usr/share/pki/server/certs/sslserver.conf \
+              --cert sslserver.crt
+          docker exec pki openssl x509 -text -noout -in sslserver.crt
+
+      - name: Import SSL server cert
+        run: |
+          docker exec pki pki \
+              -d /var/lib/pki/pki-tomcat/conf/alias \
+              nss-cert-import \
+              --cert sslserver.crt \
+              sslserver
+
+      - name: Enable JSS in PKI server
+        run: docker exec pki pki-server jss-enable
+
+      - name: Create SSL connector
+        run: |
+          docker exec pki pki-server http-connector-add \
+              --port 8443 \
+              --scheme https \
+              --secure true \
+              --sslEnabled true \
+              --sslProtocol SSL \
+              --sslImpl org.dogtagpki.tomcat.JSSImplementation \
+              Secure
+
+      - name: Configure SSL certificate
+        run: |
+          docker exec pki pki-server http-connector-cert-add \
+              --keyAlias sslserver \
+              --keystoreType pkcs11 \
+              --keystoreProvider Mozilla-JSS
+
+      - name: Create ROOT web application
+        run: |
+          docker exec pki mkdir /var/lib/pki/pki-tomcat/webapps/ROOT
+          docker exec pki touch /var/lib/pki/pki-tomcat/webapps/ROOT/index.html
+
+      - name: Start PKI server
+        run: docker exec pki pki-server start --wait
+
+      - name: Verify SSL connection
+        run: docker exec pki sslscan pki.example.com:8443
+
+      - name: Stop PKI server
+        run: docker exec pki pki-server stop --wait
+
+      - name: Remove PKI server
+        run: docker exec pki pki-server remove
+
+  # https://github.com/dogtagpki/pki/blob/master/docs/installation/ca/Installing_CA.md
   ca-test:
-    name: Installing CA
+    name: Testing CA Installation
     needs: [init, build]
     runs-on: ubuntu-latest
     env:
