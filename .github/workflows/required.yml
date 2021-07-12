@@ -13,7 +13,7 @@ jobs:
     - run: dnf install -y dnf-plugins-core gcc make rpm-build git
     - name: Clone the repository
       uses: actions/checkout@v2
-    - run: dnf copr -y enable ${TOMCATJSS_7_4_REPO:-@pki/master}
+    - run: dnf copr -y enable @pki/10.10
     - run: dnf builddep -y --spec tomcatjss.spec
     - run: dnf remove -y tomcat-native
     - run: ./build.sh --with-timestamp --with-commit-id --work-dir=../packages rpm
