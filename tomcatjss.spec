@@ -65,11 +65,7 @@ BuildRequires:    tomcat >= 1:9.0.7
 
 # Java
 Requires:         apache-commons-lang3
-%if 0%{?fedora} >= 21
 Requires:         java-headless
-%else
-Requires:         java
-%endif
 Requires:         jpackage-utils >= 0:1.7.5-15
 
 # SLF4J
