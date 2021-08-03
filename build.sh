@@ -7,10 +7,10 @@
 
 NAME=tomcatjss
 
-SCRIPT_PATH=`readlink -f "$0"`
-SCRIPT_NAME=`basename "$SCRIPT_PATH"`
+SCRIPT_PATH="$(readlink -f "$0")"
+SCRIPT_NAME="$(basename "$SCRIPT_PATH")"
 
-SRC_DIR=`dirname "$SCRIPT_PATH"`
+SRC_DIR="$(dirname "$SCRIPT_PATH")"
 WORK_DIR="$HOME/build/$NAME"
 
 SOURCE_TAG=
@@ -61,8 +61,8 @@ generate_rpm_sources() {
 
         if [ "$SOURCE_TAG" != "HEAD" ] ; then
 
-            TAG_ID=`git -C "$SRC_DIR" rev-parse $SOURCE_TAG`
-            HEAD_ID=`git -C "$SRC_DIR" rev-parse HEAD`
+            TAG_ID="$(git -C "$SRC_DIR" rev-parse $SOURCE_TAG)"
+            HEAD_ID="$(git -C "$SRC_DIR" rev-parse HEAD)"
 
             if [ "$TAG_ID" != "$HEAD_ID" ] ; then
                 generate_patch
@@ -136,7 +136,7 @@ while getopts v-: arg ; do
 
         case $OPTARG in
         work-dir=?*)
-            WORK_DIR=`readlink -f "$LONG_OPTARG"`
+            WORK_DIR="$(readlink -f "$LONG_OPTARG")"
             ;;
         source-tag=?*)
             SOURCE_TAG="$LONG_OPTARG"
@@ -203,13 +203,13 @@ if [ "$BUILD_TARGET" != "src" ] &&
 fi
 
 SPEC_TEMPLATE="$SRC_DIR/$NAME.spec"
-VERSION="`rpmspec -P "$SPEC_TEMPLATE" | grep "^Version:" | awk '{print $2;}'`"
+VERSION="$(rpmspec -P "$SPEC_TEMPLATE" | grep "^Version:" | awk '{print $2;}')"
 
 if [ "$DEBUG" = true ] ; then
     echo "VERSION: $VERSION"
 fi
 
-RELEASE="`rpmspec -P "$SPEC_TEMPLATE" --undefine dist | grep "^Release:" | awk '{print $2;}'`"
+RELEASE="$(rpmspec -P "$SPEC_TEMPLATE" --undefine dist | grep "^Release:" | awk '{print $2;}')"
 
 if [ "$DEBUG" = true ] ; then
     echo "RELEASE: $RELEASE"
@@ -235,7 +235,7 @@ if [ "$DEBUG" = true ] ; then
 fi
 
 if [ "$WITH_COMMIT_ID" = true ]; then
-    COMMIT_ID="`git -C "$SRC_DIR" rev-parse --short=8 HEAD`"
+    COMMIT_ID="$(git -C "$SRC_DIR" rev-parse --short=8 HEAD)"
     _COMMIT_ID=".$COMMIT_ID"
 fi
 
@@ -329,7 +329,7 @@ if [ $rc != 0 ]; then
     exit 1
 fi
 
-SRPM=`find "$WORK_DIR/SRPMS" -type f`
+SRPM="$(find "$WORK_DIR/SRPMS" -type f)"
 
 echo "SRPM package:"
 echo " $SRPM"
