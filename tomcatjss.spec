@@ -121,6 +121,7 @@ app_server=tomcat-$tomcat_version
 ant -f build.xml \
     -Dversion=%{version} \
     -Dsrc.dir=$app_server \
+    -Ddist.dir=%{_vpath_builddir} \
     -Djnidir=%{_jnidir} \
     -Dinstall.doc.dir=%{buildroot}%{_docdir}/%{name} \
     -Dinstall.jar.dir=%{buildroot}%{_javadir} \
