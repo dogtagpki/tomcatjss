@@ -217,7 +217,7 @@
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
     <mkdir dir="${build.classes}"/>
-    <javac debug="on" destdir="${build.classes}" source="1.8" target="1.8">
+    <javac debug="on" destdir="${build.classes}">
       <src path="core/src/main/java"/>
       <src path="${src.dir}/src/main/java"/>
       <classpath refid="classpath"/>
