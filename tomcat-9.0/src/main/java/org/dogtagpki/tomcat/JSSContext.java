@@ -70,9 +70,9 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
         if (eng instanceof JSSEngine) {
             JSSEngine j_eng = (JSSEngine) eng;
             j_eng.setCertFromAlias(alias);
-	    if(instance != null) {
-	        j_eng.setListeners(instance.getSocketListeners());
-	    }
+            if(instance != null) {
+                j_eng.setListeners(instance.getSocketListeners());
+            }
         }
 
         return eng;
