@@ -1,8 +1,10 @@
 package org.dogtagpki.tomcat;
 
+import org.apache.tomcat.util.net.jss.TomcatJSS;
 import java.security.KeyManagementException;
 import java.security.SecureRandom;
-
+import java.util.Collection;
+import java.util.EventListener;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
@@ -63,9 +65,14 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
         logger.debug("JSSContext.createSSLEngine()");
         javax.net.ssl.SSLEngine eng = ctx.createSSLEngine();
 
+	TomcatJSS instance = TomcatJSS.getInstance();
+
         if (eng instanceof JSSEngine) {
             JSSEngine j_eng = (JSSEngine) eng;
             j_eng.setCertFromAlias(alias);
+            if(instance != null) {
+                j_eng.setListeners(instance.getSocketListeners());
+            }
         }
 
         return eng;
