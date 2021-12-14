@@ -241,8 +241,7 @@
     <copy file="README" todir="${install.doc.dir}"/>
     <delete file="${install.jar.dir}/tomcatjss-${version}.jar"/>
     <delete file="${install.jar.dir}/tomcatjss.jar"/>
-    <copy file="${build.jars}/tomcatjss.jar" tofile="${install.jar.dir}/tomcatjss-${version}.jar"/>
-    <symlink link="${install.jar.dir}/tomcatjss.jar" resource="tomcatjss-${version}.jar"/>
+    <copy file="${build.jars}/tomcatjss.jar" tofile="${install.jar.dir}/tomcatjss.jar"/>
   </target>
 
   <target name="main" depends="compile,package">
