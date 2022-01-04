@@ -123,7 +123,7 @@ ant -f build.xml \
     -Dsrc.dir=$app_server \
     -Ddist.dir=%{_vpath_builddir} \
     -Djnidir=%{_jnidir} \
-    -Dinstall.doc.dir=%{buildroot}%{_docdir}/%{name} \
+    -Dinstall.doc.dir=%{buildroot}%{_docdir} \
     -Dinstall.jar.dir=%{buildroot}%{_javadir} \
     install
 
