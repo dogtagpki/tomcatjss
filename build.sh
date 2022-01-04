@@ -5,12 +5,11 @@
 # All rights reserved.
 # END COPYRIGHT BLOCK
 
-NAME=tomcatjss
-
 SCRIPT_PATH="$(readlink -f "$0")"
 SCRIPT_NAME="$(basename "$SCRIPT_PATH")"
-
 SRC_DIR="$(dirname "$SCRIPT_PATH")"
+
+NAME=tomcatjss
 WORK_DIR="$HOME/build/$NAME"
 
 SOURCE_TAG=
@@ -26,7 +25,7 @@ usage() {
     echo "Usage: $SCRIPT_NAME [OPTIONS] <target>"
     echo
     echo "Options:"
-    echo "    --work-dir=<path>      Working directory (default: $WORK_DIR)."
+    echo "    --work-dir=<path>      Working directory (default: $WORK_DIR)"
     echo "    --source-tag=<tag>     Generate RPM sources from a source tag."
     echo "    --with-timestamp       Append timestamp to release number."
     echo "    --with-commit-id       Append commit ID to release number."
@@ -36,10 +35,10 @@ usage() {
     echo "    --help                 Show help message."
     echo
     echo "Target:"
-    echo "    src    Generate RPM sources."
-    echo "    spec   Generate RPM spec."
-    echo "    srpm   Build SRPM package."
-    echo "    rpm    Build RPM packages (default)."
+    echo "    src      Generate RPM sources."
+    echo "    spec     Generate RPM spec."
+    echo "    srpm     Build SRPM package."
+    echo "    rpm      Build RPM packages."
 }
 
 generate_rpm_sources() {
@@ -55,7 +54,7 @@ generate_rpm_sources() {
         git -C "$SRC_DIR" \
             archive \
             --format=tar.gz \
-            --prefix $NAME-$VERSION${_PHASE}/ \
+            --prefix "$NAME-$VERSION${_PHASE}/" \
             -o "$WORK_DIR/SOURCES/$TARBALL" \
             $SOURCE_TAG
 
@@ -80,6 +79,9 @@ generate_rpm_sources() {
         --transform "s,^./,$NAME-$VERSION${_PHASE}/," \
         --exclude .git \
         --exclude bin \
+        --exclude build \
+        --exclude dist \
+        --exclude target \
         -C "$SRC_DIR" \
         .
 }
@@ -118,7 +120,7 @@ generate_rpm_spec() {
 
     # hard-code patch
     if [ "$PATCH" != "" ] ; then
-        commands="${commands}; s/# Patch: tomcatjss-VERSION-RELEASE.patch/Patch: $PATCH/g"
+        commands="${commands}; s/# Patch: $NAME-VERSION-RELEASE.patch/Patch: $PATCH/g"
     fi
 
     sed "$commands" "$SPEC_TEMPLATE" > "$WORK_DIR/SPECS/$RPM_SPEC"
@@ -275,7 +277,7 @@ mkdir SRPMS
 generate_rpm_sources
 
 echo "RPM sources:"
-find "$WORK_DIR/SOURCES" -type f -printf " %p\n"
+find "$WORK_DIR/SOURCES" -type f -printf " %p\\n"
 
 if [ "$BUILD_TARGET" = "src" ] ; then
     exit
@@ -288,7 +290,7 @@ fi
 generate_rpm_spec
 
 echo "RPM spec:"
-find "$WORK_DIR/SPECS" -type f -printf " %p\n"
+find "$WORK_DIR/SPECS" -type f -printf " %p\\n"
 
 if [ "$BUILD_TARGET" = "spec" ] ; then
     exit
@@ -316,7 +318,7 @@ if [ "$DIST" != "" ] ; then
 fi
 
 if [ "$DEBUG" = true ] ; then
-    echo "rpmbuild -bs ${OPTIONS[@]} $WORK_DIR/SPECS/$RPM_SPEC"
+    echo rpmbuild -bs "${OPTIONS[@]}" "$WORK_DIR/SPECS/$RPM_SPEC"
 fi
 
 # build SRPM with user-provided options
@@ -351,7 +353,7 @@ fi
 OPTIONS+=(--define "_topdir ${WORK_DIR}")
 
 if [ "$DEBUG" = true ] ; then
-    echo "rpmbuild --rebuild ${OPTIONS[@]} $SRPM"
+    echo rpmbuild --rebuild "${OPTIONS[@]}" "$SRPM"
 fi
 
 # rebuild RPM with hard-coded options in SRPM
@@ -374,4 +376,4 @@ find "$WORK_DIR/RPMS" -mindepth 2 -type f -exec mv -i '{}' "$WORK_DIR/RPMS" ';'
 find "$WORK_DIR/RPMS" -mindepth 1 -type d -delete
 
 echo "RPM packages:"
-find "$WORK_DIR/RPMS" -type f -printf " %p\n"
+find "$WORK_DIR/RPMS" -type f -printf " %p\\n"
