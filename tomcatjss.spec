@@ -111,7 +111,7 @@ Services (NSS).
 %autosetup -n tomcatjss-%{version}%{?_phase} -p 1
 
 ################################################################################
-%install
+%build
 ################################################################################
 
 # get Tomcat <major>.<minor> version number
@@ -119,10 +119,21 @@ tomcat_version=`/usr/sbin/tomcat version | sed -n 's/Server number: *\([0-9]\+\.
 app_server=tomcat-$tomcat_version
 
 ant -f build.xml \
+    %{?_verbose:-v} \
     -Dversion=%{version} \
-    -Dsrc.dir=$app_server \
-    -Ddist.dir=%{_vpath_builddir} \
     -Djnidir=%{_jnidir} \
+    -Dsrc.dir=$app_server \
+    -Dbuild.dir=%{_vpath_builddir} \
+    compile package
+
+################################################################################
+%install
+################################################################################
+
+ant -f build.xml \
+    %{?_verbose:-v} \
+    -Dversion=%{version} \
+    -Dbuild.dir=%{_vpath_builddir} \
     -Dinstall.doc.dir=%{buildroot}%{_docdir} \
     -Dinstall.jar.dir=%{buildroot}%{_javadir} \
     install
