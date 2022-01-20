@@ -114,28 +114,24 @@ Services (NSS).
 %build
 ################################################################################
 
-# get Tomcat <major>.<minor> version number
-tomcat_version=`/usr/sbin/tomcat version | sed -n 's/Server number: *\([0-9]\+\.[0-9]\+\).*/\1/p'`
-app_server=tomcat-$tomcat_version
-
-ant -f build.xml \
+./build.sh \
     %{?_verbose:-v} \
-    -Dversion=%{version} \
-    -Djnidir=%{_jnidir} \
-    -Dsrc.dir=$app_server \
-    -Dbuild.dir=%{_vpath_builddir} \
-    compile package
+    --work-dir=%{_vpath_builddir} \
+    --version=%{version} \
+    --jni-dir=%{_jnidir} \
+    dist
 
 ################################################################################
 %install
 ################################################################################
 
-ant -f build.xml \
+./build.sh \
     %{?_verbose:-v} \
-    -Dversion=%{version} \
-    -Dbuild.dir=%{_vpath_builddir} \
-    -Dinstall.doc.dir=%{buildroot}%{_docdir} \
-    -Dinstall.jar.dir=%{buildroot}%{_javadir} \
+    --work-dir=%{_vpath_builddir} \
+    --version=%{version} \
+    --java-dir=%{_javadir} \
+    --doc-dir=%{_docdir} \
+    --install-dir=%{buildroot} \
     install
 
 ################################################################################
