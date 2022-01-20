@@ -1,0 +1,8 @@
+= Development Changes =
+
+== Build Changes ==
+
+By default the `./build.sh` will only create the JAR file instead of the RPM package.
+The JAR file can be installed on the system using `./build.sh install`.
+
+To build the RPM package, run `./build.sh rpm`.

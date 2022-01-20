@@ -11,6 +11,10 @@ SRC_DIR="$(dirname "$SCRIPT_PATH")"
 
 NAME=tomcatjss
 WORK_DIR="$HOME/build/$NAME"
+JNI_DIR="/usr/lib/java"
+JAVA_DIR="/usr/share/java"
+DOC_DIR="/usr/share/doc"
+INSTALL_DIR=
 
 SOURCE_TAG=
 SPEC_TEMPLATE=
@@ -29,6 +33,10 @@ usage() {
     echo
     echo "Options:"
     echo "    --work-dir=<path>      Working directory (default: $WORK_DIR)"
+    echo "    --jni-dir=<path>       JNI directory (default: $JNI_DIR)"
+    echo "    --java-dir=<path>      Java directory (default: $JAVA_DIR)"
+    echo "    --doc-dir=<path>       Documentation directory (default: $DOC_DIR)"
+    echo "    --install-dir=<path>   Installation directory"
     echo "    --source-tag=<tag>     Generate RPM sources from a source tag."
     echo "    --spec=<file>          Use the specified RPM spec."
     echo "    --version=<version>    Use the specified version."
@@ -41,6 +49,8 @@ usage() {
     echo "    --help                 Show help message."
     echo
     echo "Target:"
+    echo "    dist     Build JSS binaries (default)."
+    echo "    install  Install JSS binaries."
     echo "    src      Generate RPM sources."
     echo "    spec     Generate RPM spec."
     echo "    srpm     Build SRPM package."
@@ -146,6 +156,18 @@ while getopts v-: arg ; do
         work-dir=?*)
             WORK_DIR="$(readlink -f "$LONG_OPTARG")"
             ;;
+        jni-dir=?*)
+            JNI_DIR=$(readlink -f "$LONG_OPTARG")
+            ;;
+        java-dir=?*)
+            JAVA_DIR=$(readlink -f "$LONG_OPTARG")
+            ;;
+        doc-dir=?*)
+            DOC_DIR=$(readlink -f "$LONG_OPTARG")
+            ;;
+        install-dir=?*)
+            INSTALL_DIR=$(readlink -f "$LONG_OPTARG")
+            ;;
         source-tag=?*)
             SOURCE_TAG="$LONG_OPTARG"
             ;;
@@ -181,7 +203,7 @@ while getopts v-: arg ; do
         '')
             break # "--" terminates argument processing
             ;;
-        work-dir* | source-tag* | spec* | version* | release* | dist*)
+        work-dir* | jni-dir* | java-dir* | doc-dir* | install-dir* | source-tag* | spec* | version* | release* | dist*)
             echo "ERROR: Missing argument for --$OPTARG option" >&2
             exit 1
             ;;
@@ -201,17 +223,23 @@ done
 shift $((OPTIND-1))
 
 if [ "$#" -lt 1 ] ; then
-    BUILD_TARGET=rpm
+    BUILD_TARGET=dist
 else
     BUILD_TARGET=$1
 fi
 
 if [ "$DEBUG" = true ] ; then
     echo "WORK_DIR: $WORK_DIR"
+    echo "JNI_DIR: $JNI_DIR"
+    echo "JAVA_DIR: $JAVA_DIR"
+    echo "DOC_DIR: $DOC_DIR"
+    echo "INSTALL_DIR: $INSTALL_DIR"
     echo "BUILD_TARGET: $BUILD_TARGET"
 fi
 
-if [ "$BUILD_TARGET" != "src" ] &&
+if [ "$BUILD_TARGET" != "dist" ] &&
+        [ "$BUILD_TARGET" != "install" ] &&
+        [ "$BUILD_TARGET" != "src" ] &&
         [ "$BUILD_TARGET" != "spec" ] &&
         [ "$BUILD_TARGET" != "srpm" ] &&
         [ "$BUILD_TARGET" != "rpm" ] ; then
@@ -234,6 +262,73 @@ fi
 if [ "$DEBUG" = true ] ; then
     echo "VERSION: $VERSION"
 fi
+
+if [ "$BUILD_TARGET" = "dist" ] ; then
+
+    if [ "$VERBOSE" = "true" ] ; then
+        echo "Building $NAME-$VERSION"
+    fi
+
+    # get Tomcat <major>.<minor> version number
+    TOMCAT_VERSION=`/usr/sbin/tomcat version | sed -n 's/Server number: *\([0-9]\+\.[0-9]\+\).*/\1/p'`
+
+    if [ "$VERBOSE" = "true" ] ; then
+        echo "Tomcat: $TOMCAT_VERSION"
+    fi
+
+    OPTIONS=()
+
+    if [ "$VERBOSE" = "true" ] ; then
+        OPTIONS+=(-v)
+    fi
+
+    OPTIONS+=(-f $SRC_DIR/build.xml)
+    OPTIONS+=(-Dversion=$VERSION)
+    OPTIONS+=(-Djnidir=$JNI_DIR)
+    OPTIONS+=(-Dsrc.dir=tomcat-$TOMCAT_VERSION)
+    OPTIONS+=(-Dbuild.dir=$WORK_DIR)
+
+    echo ant "${OPTIONS[@]}" compile package
+    ant "${OPTIONS[@]}" compile package
+
+    echo
+    echo "Build artifacts:"
+    echo "- Java archive: $WORK_DIR/build/jars/$NAME.jar"
+    echo
+    echo "To install the build: $0 install"
+    echo "To create RPM packages: $0 rpm"
+    echo
+
+    exit
+fi
+
+if [ "$BUILD_TARGET" = "install" ] ; then
+
+    if [ "$VERBOSE" = true ] ; then
+        echo "Installing $NAME-$VERSION"
+    fi
+
+    OPTIONS=()
+
+    if [ "$VERBOSE" = "true" ] ; then
+        OPTIONS+=(-v)
+    fi
+
+    OPTIONS+=(-f $SRC_DIR/build.xml)
+    OPTIONS+=(-Dversion=$VERSION)
+    OPTIONS+=(-Dbuild.dir=$WORK_DIR)
+    OPTIONS+=(-Dinstall.doc.dir=$INSTALL_DIR$DOC_DIR)
+    OPTIONS+=(-Dinstall.jar.dir=$INSTALL_DIR$JAVA_DIR)
+
+    echo ant "${OPTIONS[@]}" install
+    ant "${OPTIONS[@]}" install
+
+    exit
+fi
+
+################################################################################
+# Prepare RPM build
+################################################################################
 
 if [ "$RELEASE" = "" ] ; then
     # if release not specified, get from spec template
