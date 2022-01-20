@@ -1,0 +1,10 @@
+= Packaging Changes =
+
+== Java Dependency Changes ==
+
+TomcatJSS will now require OpenJDK 17.
+
+== Java Archive Changes ==
+
+The `/usr/share/java/tomcatjss-<version>.jar` has been removed.
+Use `/usr/share/java/tomcatjss.jar` instead.
