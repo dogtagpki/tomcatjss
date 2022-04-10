@@ -120,6 +120,6 @@ public class JSSContext implements org.apache.tomcat.util.net.SSLContext {
 
     @Override
     public void destroy() {
-        logger.debug("JSSContext.destory()");
+        logger.debug("JSSContext.destroy()");
     }
 }
