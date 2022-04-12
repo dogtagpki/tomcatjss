@@ -44,13 +44,13 @@ jobs:
             BUILD_OPTS=--with-timestamp --with-commit-id
           tags: tomcatjss-runner
           target: tomcatjss-runner
-          outputs: type=docker,dest=/tmp/tomcatjss-runner.tar
+          outputs: type=docker,dest=tomcatjss-runner.tar
 
-      - name: Upload runner image
-        uses: actions/upload-artifact@v2
+      - name: Store runner image
+        uses: actions/cache@v3
         with:
-          name: tomcatjss-runner-${{ matrix.os }}
-          path: /tmp/tomcatjss-runner.tar
+          key: tomcatjss-runner-${{ matrix.os }}-${{ github.run_id }}
+          path: tomcatjss-runner.tar
 
   # https://github.com/dogtagpki/pki/blob/master/docs/installation/server/Installing_Basic_PKI_Server.md
   ssl-test:
@@ -65,14 +65,14 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v2
 
-      - name: Download runner image
-        uses: actions/download-artifact@v2
+      - name: Retrieve runner image
+        uses: actions/cache@v3
         with:
-          name: tomcatjss-runner-${{ matrix.os }}
-          path: /tmp
+          key: tomcatjss-runner-${{ matrix.os }}-${{ github.run_id }}
+          path: tomcatjss-runner.tar
 
       - name: Load runner image
-        run: docker load --input /tmp/tomcatjss-runner.tar
+        run: docker load --input tomcatjss-runner.tar
 
       - name: Run container
         run: |
@@ -169,14 +169,14 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v2
 
-      - name: Download runner image
-        uses: actions/download-artifact@v2
+      - name: Retrieve runner image
+        uses: actions/cache@v3
         with:
-          name: tomcatjss-runner-${{ matrix.os }}
-          path: /tmp
+          key: tomcatjss-runner-${{ matrix.os }}-${{ github.run_id }}
+          path: tomcatjss-runner.tar
 
       - name: Load runner image
-        run: docker load --input /tmp/tomcatjss-runner.tar
+        run: docker load --input tomcatjss-runner.tar
 
       - name: Run container
         run: |
