@@ -17,7 +17,7 @@ DOC_DIR="/usr/share/doc"
 INSTALL_DIR=
 
 SOURCE_TAG=
-SPEC_TEMPLATE="$SRC_DIR/$NAME.spec"
+SPEC_TEMPLATE="$SRC_DIR/tomcatjss.spec"
 SPEC_FILE=
 
 VERSION=
@@ -34,6 +34,7 @@ usage() {
     echo "Usage: $SCRIPT_NAME [OPTIONS] <target>"
     echo
     echo "Options:"
+    echo "    --name=<name>          Package name (default: $NAME)."
     echo "    --work-dir=<path>      Working directory (default: $WORK_DIR)"
     echo "    --jni-dir=<path>       JNI directory (default: $JNI_DIR)"
     echo "    --java-dir=<path>      Java directory (default: $JAVA_DIR)"
@@ -61,7 +62,7 @@ usage() {
 
 generate_rpm_sources() {
 
-    TARBALL="$NAME-$VERSION${_PHASE}.tar.gz"
+    TARBALL="tomcatjss-$VERSION${_PHASE}.tar.gz"
 
     if [ "$SOURCE_TAG" != "" ] ; then
 
@@ -72,7 +73,7 @@ generate_rpm_sources() {
         git -C "$SRC_DIR" \
             archive \
             --format=tar.gz \
-            --prefix "$NAME-$VERSION${_PHASE}/" \
+            --prefix "tomcatjss-$VERSION${_PHASE}/" \
             -o "$WORK_DIR/SOURCES/$TARBALL" \
             $SOURCE_TAG
 
@@ -94,7 +95,7 @@ generate_rpm_sources() {
     fi
 
     tar czf "$WORK_DIR/SOURCES/$TARBALL" \
-        --transform "s,^./,$NAME-$VERSION${_PHASE}/," \
+        --transform "s,^./,tomcatjss-$VERSION${_PHASE}/," \
         --exclude .git \
         --exclude bin \
         --exclude build \
@@ -106,7 +107,7 @@ generate_rpm_sources() {
 
 generate_patch() {
 
-    PATCH="$NAME-$VERSION-$RELEASE.patch"
+    PATCH="tomcatjss-$VERSION-$RELEASE.patch"
 
     if [ "$VERBOSE" = true ] ; then
         echo "Generating $PATCH for all changes since $SOURCE_TAG tag"
@@ -121,11 +122,16 @@ generate_patch() {
 
 generate_rpm_spec() {
 
+    SPEC_FILE="$WORK_DIR/SPECS/$NAME.spec"
+
     if [ "$VERBOSE" = true ] ; then
         echo "Creating $SPEC_FILE"
     fi
 
     cp "$SPEC_TEMPLATE" "$SPEC_FILE"
+
+    # hard-code package name
+    sed -i "s/^\(Name: *\).*\$/\1${NAME}/g" "$SPEC_FILE"
 
     # hard-code timestamp
     sed -i "s/%{?_timestamp}/${_TIMESTAMP}/g" "$SPEC_FILE"
@@ -138,7 +144,7 @@ generate_rpm_spec() {
 
     # hard-code patch
     if [ "$PATCH" != "" ] ; then
-        sed -i "s/# Patch: $NAME-VERSION-RELEASE.patch/Patch: $PATCH/g" "$SPEC_FILE"
+        sed -i "s/# Patch: tomcatjss-VERSION-RELEASE.patch/Patch: $PATCH/g" "$SPEC_FILE"
     fi
 
     # rpmlint "$SPEC_FILE"
@@ -153,6 +159,9 @@ while getopts v-: arg ; do
         LONG_OPTARG="${OPTARG#*=}"
 
         case $OPTARG in
+        name=?*)
+            NAME="$LONG_OPTARG"
+            ;;
         work-dir=?*)
             WORK_DIR="$(readlink -f "$LONG_OPTARG")"
             ;;
@@ -203,7 +212,8 @@ while getopts v-: arg ; do
         '')
             break # "--" terminates argument processing
             ;;
-        work-dir* | jni-dir* | java-dir* | doc-dir* | install-dir* | source-tag* | spec* | version* | release* | dist*)
+        name* | work-dir* | jni-dir* | java-dir* | doc-dir* | install-dir* | \
+        source-tag* | spec* | version* | release* | dist*)
             echo "ERROR: Missing argument for --$OPTARG option" >&2
             exit 1
             ;;
@@ -229,6 +239,7 @@ else
 fi
 
 if [ "$DEBUG" = true ] ; then
+    echo "NAME: $NAME"
     echo "WORK_DIR: $WORK_DIR"
     echo "JNI_DIR: $JNI_DIR"
     echo "JAVA_DIR: $JAVA_DIR"
@@ -247,6 +258,14 @@ if [ "$BUILD_TARGET" != "dist" ] &&
     exit 1
 fi
 
+################################################################################
+# Initialization
+################################################################################
+
+if [ "$VERBOSE" = true ] ; then
+    echo "Initializing $WORK_DIR"
+fi
+
 mkdir -p "$WORK_DIR"
 cd "$WORK_DIR"
 
@@ -258,6 +277,10 @@ fi
 if [ "$DEBUG" = true ] ; then
     echo "VERSION: $VERSION"
 fi
+
+################################################################################
+# Build Tomcat JSS
+################################################################################
 
 if [ "$BUILD_TARGET" = "dist" ] ; then
 
@@ -289,7 +312,7 @@ if [ "$BUILD_TARGET" = "dist" ] ; then
 
     echo
     echo "Build artifacts:"
-    echo "- Java archive: $WORK_DIR/build/jars/$NAME.jar"
+    echo "- Java archive: $WORK_DIR/build/jars/tomcatjss.jar"
     echo
     echo "To install the build: $0 install"
     echo "To create RPM packages: $0 rpm"
@@ -297,6 +320,10 @@ if [ "$BUILD_TARGET" = "dist" ] ; then
 
     exit
 fi
+
+################################################################################
+# Install Tomcat JSS
+################################################################################
 
 if [ "$BUILD_TARGET" = "install" ] ; then
 
@@ -313,6 +340,7 @@ if [ "$BUILD_TARGET" = "install" ] ; then
     OPTIONS+=(-f $SRC_DIR/build.xml)
     OPTIONS+=(-Dversion=$VERSION)
     OPTIONS+=(-Dbuild.dir=$WORK_DIR)
+    OPTIONS+=(-Dpackage=$NAME)
     OPTIONS+=(-Dinstall.doc.dir=$INSTALL_DIR$DOC_DIR)
     OPTIONS+=(-Dinstall.jar.dir=$INSTALL_DIR$JAVA_DIR)
 
@@ -325,8 +353,6 @@ fi
 ################################################################################
 # Prepare RPM build
 ################################################################################
-
-SPEC_FILE="$WORK_DIR/SPECS/$NAME.spec"
 
 if [ "$RELEASE" = "" ] ; then
     # if release not specified, get from spec template
@@ -366,14 +392,6 @@ if [ "$DEBUG" = true ] ; then
 fi
 
 echo "Building $NAME-$VERSION-$RELEASE${_TIMESTAMP}${_COMMIT_ID}"
-
-################################################################################
-# Initialize working directory
-################################################################################
-
-if [ "$VERBOSE" = true ] ; then
-    echo "Initializing $WORK_DIR"
-fi
 
 rm -rf BUILD
 rm -rf RPMS

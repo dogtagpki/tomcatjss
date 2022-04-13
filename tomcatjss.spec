@@ -89,6 +89,10 @@ Requires:         pki-servlet-engine >= 1:9.0.7
 Requires:         tomcat >= 1:9.0.7
 %endif
 
+%if "%{name}" != "tomcatjss"
+Provides:         tomcatjss = %{version}-%{release}
+%endif
+
 # PKI
 Conflicts:        pki-base < 10.10.0
 
@@ -116,6 +120,7 @@ Services (NSS).
 
 ./build.sh \
     %{?_verbose:-v} \
+    --name=%{name} \
     --work-dir=%{_vpath_builddir} \
     --version=%{version} \
     --jni-dir=%{_jnidir} \
@@ -127,6 +132,7 @@ Services (NSS).
 
 ./build.sh \
     %{?_verbose:-v} \
+    --name=%{name} \
     --work-dir=%{_vpath_builddir} \
     --version=%{version} \
     --java-dir=%{_javadir} \

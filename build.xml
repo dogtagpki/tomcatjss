@@ -50,6 +50,7 @@
   <property name="optimize" value="true"/>
   <property name="specfile" value="tomcatjss.spec"/>
   <property name="jnidir" value="/usr/lib/java" />
+  <property name="package" value="${name}" />
   <property name="install.doc.dir" value="/usr/share/doc" />
   <property name="install.jar.dir" value="/usr/share/java" />
 
@@ -236,8 +237,8 @@
   </target>
 
   <target name="install" depends="compile,package">
-    <copy file="LICENSE" todir="${install.doc.dir}/tomcatjss"/>
-    <copy file="README" todir="${install.doc.dir}/tomcatjss"/>
+    <copy file="LICENSE" todir="${install.doc.dir}/${package}"/>
+    <copy file="README" todir="${install.doc.dir}/${package}"/>
     <delete file="${install.jar.dir}/tomcatjss.jar"/>
     <copy file="${build.jars}/tomcatjss.jar" tofile="${install.jar.dir}/tomcatjss.jar"/>
   </target>
