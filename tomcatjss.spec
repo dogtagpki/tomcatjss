@@ -30,6 +30,9 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?_
 #     > tomcatjss-VERSION-RELEASE.patch
 # Patch: tomcatjss-VERSION-RELEASE.patch
 
+# Java 17 and md2man are not available on i686
+ExcludeArch: i686
+
 ################################################################################
 # Java
 ################################################################################
