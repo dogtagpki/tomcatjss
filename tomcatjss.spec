@@ -3,7 +3,7 @@ Name:             tomcatjss
 ################################################################################
 
 Summary:          JSS Connector for Apache Tomcat
-URL:              http://www.dogtagpki.org/wiki/TomcatJSS
+URL:              https://www.dogtagpki.org/wiki/Tomcat_JSS
 License:          LGPLv2+
 BuildArch:        noarch
 
