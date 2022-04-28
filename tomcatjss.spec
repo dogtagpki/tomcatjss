@@ -2,6 +2,9 @@
 Name:             tomcatjss
 ################################################################################
 
+%undefine         timestamp
+%undefine         commit_id
+
 Summary:          JSS Connector for Apache Tomcat
 URL:              https://www.dogtagpki.org/wiki/Tomcat_JSS
 License:          LGPLv2+
@@ -10,7 +13,7 @@ BuildArch:        noarch
 # For development (i.e. unsupported) releases, use x.y.z-0.n.<phase>.
 # For official (i.e. supported) releases, use x.y.z-r where r >=1.
 Version:          8.2.0
-Release:          0.2.beta1%{?_timestamp}%{?_commit_id}%{?dist}
+Release:          0.2.beta1%{?timestamp:.}%{?timestamp}%{?commit_id:.}%{?commit_id}%{?dist}
 %global           _phase -beta1
 
 # To generate the source tarball:
