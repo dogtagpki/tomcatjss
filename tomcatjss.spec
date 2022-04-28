@@ -2,6 +2,8 @@
 Name:             tomcatjss
 ################################################################################
 
+%global           product_id dogtag-tomcatjss
+
 # Upstream version number:
 %global           major_version 8
 %global           minor_version 2
@@ -81,9 +83,17 @@ BuildRequires:    pki-servlet-engine >= 1:9.0.7
 BuildRequires:    tomcat >= 1:9.0.7
 %endif
 
+%description
+JSS Connector for Apache Tomcat, installed via the tomcatjss package,
+is a Java Secure Socket Extension (JSSE) module for Apache Tomcat that
+uses Java Security Services (JSS), a Java interface to Network Security
+Services (NSS).
+
 ################################################################################
-# Runtime Dependencies
+%package -n %{product_id}
 ################################################################################
+
+Summary:          JSS Connector for Apache Tomcat
 
 # Java
 Requires:         apache-commons-lang3
@@ -104,9 +114,8 @@ Requires:         pki-servlet-engine >= 1:9.0.7
 Requires:         tomcat >= 1:9.0.7
 %endif
 
-%if "%{name}" != "tomcatjss"
+Obsoletes:        tomcatjss < %{version}-%{release}
 Provides:         tomcatjss = %{version}-%{release}
-%endif
 
 # PKI
 Conflicts:        pki-base < 10.10.0
@@ -117,7 +126,7 @@ Conflicts:        pki-base < 10.10.0
 %define           _sharedstatedir    /var/lib
 %endif
 
-%description
+%description -n %{product_id}
 JSS Connector for Apache Tomcat, installed via the tomcatjss package,
 is a Java Secure Socket Extension (JSSE) module for Apache Tomcat that
 uses Java Security Services (JSS), a Java interface to Network Security
@@ -135,7 +144,7 @@ Services (NSS).
 
 ./build.sh \
     %{?_verbose:-v} \
-    --name=%{name} \
+    --name=%{product_id} \
     --work-dir=%{_vpath_builddir} \
     --version=%{version} \
     --jni-dir=%{_jnidir} \
@@ -147,7 +156,7 @@ Services (NSS).
 
 ./build.sh \
     %{?_verbose:-v} \
-    --name=%{name} \
+    --name=%{product_id} \
     --work-dir=%{_vpath_builddir} \
     --version=%{version} \
     --java-dir=%{_javadir} \
@@ -156,7 +165,7 @@ Services (NSS).
     install
 
 ################################################################################
-%files
+%files -n %{product_id}
 ################################################################################
 
 %license LICENSE
