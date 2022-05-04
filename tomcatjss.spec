@@ -2,6 +2,8 @@
 Name:             tomcatjss
 ################################################################################
 
+%global           product_id dogtag-tomcatjss
+
 Summary:          JSS Connector for Apache Tomcat
 URL:              http://www.dogtagpki.org/wiki/TomcatJSS
 License:          LGPLv2+
@@ -72,9 +74,17 @@ BuildRequires:    pki-servlet-engine >= 1:9.0.7
 BuildRequires:    tomcat >= 1:9.0.7
 %endif
 
+%description
+JSS Connector for Apache Tomcat, installed via the tomcatjss package,
+is a Java Secure Socket Extension (JSSE) module for Apache Tomcat that
+uses Java Security Services (JSS), a Java interface to Network Security
+Services (NSS).
+
 ################################################################################
-# Runtime Dependencies
+%package -n %{product_id}
 ################################################################################
+
+Summary:          JSS Connector for Apache Tomcat
 
 # Java
 Requires:         apache-commons-lang3
@@ -95,6 +105,9 @@ Requires:         pki-servlet-engine >= 1:9.0.7
 Requires:         tomcat >= 1:9.0.7
 %endif
 
+Obsoletes:        tomcatjss < %{version}-%{release}
+Provides:         tomcatjss = %{version}-%{release}
+
 # PKI
 Conflicts:        pki-base < 10.10.0
 
@@ -104,7 +117,7 @@ Conflicts:        pki-base < 10.10.0
 %define           _sharedstatedir    /var/lib
 %endif
 
-%description
+%description -n %{product_id}
 JSS Connector for Apache Tomcat, installed via the tomcatjss package,
 is a Java Secure Socket Extension (JSSE) module for Apache Tomcat that
 uses Java Security Services (JSS), a Java interface to Network Security
@@ -128,12 +141,12 @@ ant -f build.xml \
     -Dversion=%{version} \
     -Dsrc.dir=$app_server \
     -Djnidir=%{_jnidir} \
-    -Dinstall.doc.dir=%{buildroot}%{_docdir}/%{name} \
+    -Dinstall.doc.dir=%{buildroot}%{_docdir}/%{product_id} \
     -Dinstall.jar.dir=%{buildroot}%{_javadir} \
     install
 
 ################################################################################
-%files
+%files -n %{product_id}
 ################################################################################
 
 %license LICENSE
