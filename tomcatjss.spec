@@ -65,7 +65,7 @@ BuildRequires:    slf4j
 BuildRequires:    slf4j-jdk14
 
 # JSS
-BuildRequires:    jss >= 4.9.0, jss < 5.0.0
+BuildRequires:    jss = 4.10
 
 # Tomcat
 %if 0%{?rhel} && ! 0%{?eln}
@@ -96,7 +96,7 @@ Requires:         slf4j
 Requires:         slf4j-jdk14
 
 # JSS
-Requires:         jss >= 4.9.0, jss < 5.0.0
+Requires:         jss = 4.10
 
 # Tomcat
 %if 0%{?rhel} && ! 0%{?eln}
