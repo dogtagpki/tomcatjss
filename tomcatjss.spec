@@ -2,6 +2,11 @@
 Name:             tomcatjss
 ################################################################################
 
+# Upstream version number:
+%global           major_version 7
+%global           minor_version 7
+%global           update_version 0
+
 Summary:          JSS Connector for Apache Tomcat
 URL:              http://www.dogtagpki.org/wiki/TomcatJSS
 License:          LGPLv2+
@@ -9,7 +14,7 @@ BuildArch:        noarch
 
 # For development (i.e. unsupported) releases, use x.y.z-0.n.<phase>.
 # For official (i.e. supported) releases, use x.y.z-r where r >=1.
-Version:          7.7.0
+Version:          %{major_version}.%{minor_version}.%{update_version}
 Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
 #global           _phase -alpha1
 
@@ -94,6 +99,8 @@ Requires:         pki-servlet-engine >= 1:9.0.7
 %else
 Requires:         tomcat >= 1:9.0.7
 %endif
+
+Provides:         tomcatjss = %{major_version}.%{minor_version}
 
 # PKI
 Conflicts:        pki-base < 10.10.0
