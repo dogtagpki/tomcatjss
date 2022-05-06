@@ -4,6 +4,11 @@ Name:             tomcatjss
 
 %global           product_id dogtag-tomcatjss
 
+# Upstream version number:
+%global           major_version 7
+%global           minor_version 8
+%global           update_version 0
+
 Summary:          JSS Connector for Apache Tomcat
 URL:              https://github.com/dogtagpki/tomcatjss
 License:          LGPLv2+
@@ -11,7 +16,7 @@ BuildArch:        noarch
 
 # For development (i.e. unsupported) releases, use x.y.z-0.n.<phase>.
 # For official (i.e. supported) releases, use x.y.z-r where r >=1.
-Version:          7.8.0
+Version:          %{major_version}.%{minor_version}.%{update_version}
 Release:          0.1.alpha1%{?_timestamp}%{?_commit_id}%{?dist}
 %global           _phase -alpha1
 
@@ -107,6 +112,8 @@ Requires:         tomcat >= 1:9.0.7
 
 Obsoletes:        tomcatjss < %{version}-%{release}
 Provides:         tomcatjss = %{version}-%{release}
+Provides:         tomcatjss = %{major_version}.%{minor_version}
+Provides:         %{product_id} = %{major_version}.%{minor_version}
 
 # PKI
 Conflicts:        pki-base < 10.10.0
