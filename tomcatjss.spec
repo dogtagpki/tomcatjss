@@ -142,6 +142,8 @@ Services (NSS).
 %build
 ################################################################################
 
+export JAVA_HOME=%{java_home}
+
 ./build.sh \
     %{?_verbose:-v} \
     --name=%{product_id} \
