@@ -77,7 +77,7 @@ jobs:
 
       - name: Run container
         run: |
-          IMAGE=ldapjdk-runner \
+          IMAGE=tomcatjss-runner \
           NAME=pki \
           tests/bin/runner-init.sh
 
