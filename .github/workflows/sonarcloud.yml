@@ -1,0 +1,110 @@
+name: Sonarcloud
+on: [push, pull_request]
+jobs:
+  init:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    name: Initializing Workflow
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.init.outputs.matrix }}
+      repo: ${{ steps.init.outputs.repo }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+
+      - name: Initialize workflow
+        id: init
+        env:
+          BASE64_MATRIX: ${{ secrets.BASE64_MATRIX }}
+          BASE64_REPO: ${{ secrets.BASE64_REPO }}
+        run: |
+          tests/bin/init-workflow.sh
+
+  build:
+    name: Building TomcatJSS
+    needs: init
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build runner image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          build-args: |
+            OS_VERSION=${{ matrix.os }}
+            COPR_REPO=${{ needs.init.outputs.repo }}
+            BUILD_OPTS=--with-timestamp --with-commit-id
+          tags: tomcatjss-runner
+          target: tomcatjss-runner
+          outputs: type=docker,dest=sonar-runner.tar
+
+      - name: Store runner image
+        uses: actions/cache@v3
+        with:
+          key: sonar-runner-${{ matrix.os }}-${{ github.run_id }}
+          path: sonar-runner.tar
+
+
+  sonarcloud:
+    name: SonarCloud
+    needs: [init, build] 
+    runs-on: ubuntu-latest
+    env:
+      SHARED: /tmp/workdir/tomcatjss
+    strategy:
+      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+
+      - name: Retrieve runner image
+        uses: actions/cache@v3
+        with:
+          key: sonar-runner-${{ matrix.os }}-${{ github.run_id }}
+          path: sonar-runner.tar
+
+      - name: Load runner image
+        run: docker load --input sonar-runner.tar
+
+      - name: Run container
+        run: |
+          IMAGE=tomcatjss-runner \
+          NAME=pki \
+          tests/bin/runner-init.sh
+
+      - name: Copy builds in current folder
+        run: |
+          mkdir build
+          docker cp pki:/usr/share/java/tomcatjss.jar build/
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  get-pr-ref:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+    name: Sonar cloud PR fork analyses deferring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Save PR number
+        run: |
+          mkdir -p ./pr
+          echo ${{ github.event.number }} > ./pr/NR
+
+      - name: Upload pr as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: pr
+          path: pr/
+
