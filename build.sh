@@ -319,7 +319,7 @@ if [ "$BUILD_TARGET" = "dist" ] ; then
 
     echo
     echo "Build artifacts:"
-    echo "- Java archive: $WORK_DIR/build/jars/tomcatjss.jar"
+    echo "- Java archive: $WORK_DIR/jars/tomcatjss.jar"
     echo
     echo "To install the build: $0 install"
     echo "To create RPM packages: $0 rpm"
