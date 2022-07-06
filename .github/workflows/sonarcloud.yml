@@ -86,6 +86,9 @@ jobs:
           mkdir build
           docker cp pki:/usr/share/java/tomcatjss.jar build/
 
+      - name: Remove maven related file
+        run: rm -f pom.xml
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
