@@ -21,19 +21,18 @@ package org.dogtagpki.tomcat;
 
 import javax.net.ssl.SSLSession;
 
-import org.apache.tomcat.util.net.jsse.JSSESupport;
 import org.apache.tomcat.util.net.SSLHostConfig;
 import org.apache.tomcat.util.net.SSLHostConfigCertificate;
 import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.SSLSupport;
 import org.apache.tomcat.util.net.SSLUtil;
-
+import org.apache.tomcat.util.net.jsse.JSSESupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JSSImplementation extends SSLImplementation {
 
-    public static Logger logger = LoggerFactory.getLogger(JSSUtil.class);
+    public static final Logger logger = LoggerFactory.getLogger(JSSUtil.class);
 
     public JSSImplementation() {
         logger.debug("JSSImplementation: instance created");

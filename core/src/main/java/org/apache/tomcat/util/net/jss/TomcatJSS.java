@@ -52,9 +52,9 @@ import org.w3c.dom.Element;
 
 public class TomcatJSS implements SSLSocketListener {
 
-    public static Logger logger = LoggerFactory.getLogger(TomcatJSS.class);
+    public static final Logger logger = LoggerFactory.getLogger(TomcatJSS.class);
 
-    public final static TomcatJSS INSTANCE = new TomcatJSS();
+    public static final TomcatJSS INSTANCE = new TomcatJSS();
     public static final int MAX_LOGIN_ATTEMPTS = 3;
 
     public static TomcatJSS getInstance() { return INSTANCE; }
