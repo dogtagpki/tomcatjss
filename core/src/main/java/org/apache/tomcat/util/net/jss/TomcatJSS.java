@@ -68,6 +68,7 @@ public class TomcatJSS implements SSLSocketListener {
 
     public static final TomcatJSS INSTANCE = new TomcatJSS();
     public static final int MAX_LOGIN_ATTEMPTS = 3;
+    public static final String CATALINA_BASE = "catalina.base";
 
     public static TomcatJSS getInstance() { return INSTANCE; }
 
@@ -374,7 +375,7 @@ public class TomcatJSS implements SSLSocketListener {
      * @throws XPathExpressionException
      */
     public void loadConfig() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
-        String catalinaBase = System.getProperty("catalina.base");
+        String catalinaBase = System.getProperty(CATALINA_BASE);
         String jssConf = catalinaBase + "/conf/jss.conf";
         File configFile = new File(jssConf);
 
@@ -401,7 +402,7 @@ public class TomcatJSS implements SSLSocketListener {
         logger.info("TomcatJSS: initialization");
 
         if (certdbDir == null) {
-            certdbDir = System.getProperty("catalina.base") + File.separator + "alias";
+            certdbDir = System.getProperty(CATALINA_BASE) + File.separator + "alias";
         }
 
         logger.debug("TomcatJSS: certdbDir: {}", certdbDir);
@@ -413,7 +414,7 @@ public class TomcatJSS implements SSLSocketListener {
         logger.debug("TomcatJSS: passwordClass: {}", passwordClass);
 
         if (passwordFile == null) {
-            passwordFile = System.getProperty("catalina.base") + File.separator +
+            passwordFile = System.getProperty(CATALINA_BASE) + File.separator +
                     "conf" + File.separator + "password.conf";
         }
 
@@ -515,12 +516,10 @@ public class TomcatJSS implements SSLSocketListener {
 
             try {
                 token.login(password);
-                return;
-
+                return; //NOSONAR - Not a redundant return, break will print the final error message even on success.
             } catch (IncorrectPasswordException e) {
                 logger.warn("TomcatJSS: incorrect password");
                 iteration ++;
-
             } finally {
                 password.clear();
             }
