@@ -21,24 +21,35 @@ package org.apache.tomcat.util.net.jss;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import javax.naming.ConfigurationException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.mozilla.jss.CertDatabaseException;
 import org.mozilla.jss.CryptoManager;
 import org.mozilla.jss.InitializationValues;
+import org.mozilla.jss.KeyDatabaseException;
+import org.mozilla.jss.NoSuchTokenException;
+import org.mozilla.jss.NotInitializedException;
 import org.mozilla.jss.crypto.AlreadyInitializedException;
 import org.mozilla.jss.crypto.CryptoToken;
+import org.mozilla.jss.crypto.TokenException;
 import org.mozilla.jss.ssl.SSLAlertEvent;
 import org.mozilla.jss.ssl.SSLHandshakeCompletedEvent;
 import org.mozilla.jss.ssl.SSLServerSocket;
@@ -49,6 +60,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public class TomcatJSS implements SSLSocketListener {
 
@@ -226,12 +238,12 @@ public class TomcatJSS implements SSLSocketListener {
         this.ocspTimeout = ocspTimeout;
     }
 
-    public void loadJSSConfig(String jssConf) throws Exception {
+    public void loadJSSConfig(String jssConf) throws IOException {
         File configFile = new File(jssConf);
         loadJSSConfig(configFile);
     }
 
-    public void loadJSSConfig(File configFile) throws Exception {
+    public void loadJSSConfig(File configFile) throws IOException {
 
         Properties config = new Properties();
         try (FileReader fr = new FileReader(configFile)) {
@@ -240,7 +252,7 @@ public class TomcatJSS implements SSLSocketListener {
         }
     }
 
-    public void loadJSSConfig(Properties config) throws Exception {
+    public void loadJSSConfig(Properties config) {
 
         String certdbDirProp = config.getProperty("certdbDir");
         if (certdbDirProp != null)
@@ -283,12 +295,14 @@ public class TomcatJSS implements SSLSocketListener {
             setOcspTimeout(Integer.parseInt(ocspTimeoutProp));
     }
 
-    public void loadTomcatConfig(String serverXml) throws Exception {
+    public void loadTomcatConfig(String serverXml)
+            throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
         File configFile = new File(serverXml);
         loadTomcatConfig(configFile);
     }
 
-    public void loadTomcatConfig(File configFile) throws Exception {
+    public void loadTomcatConfig(File configFile)
+            throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
@@ -298,7 +312,7 @@ public class TomcatJSS implements SSLSocketListener {
         loadTomcatConfig(document);
     }
 
-    public void loadTomcatConfig(Document document) throws Exception {
+    public void loadTomcatConfig(Document document) throws XPathExpressionException {
 
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
@@ -354,8 +368,12 @@ public class TomcatJSS implements SSLSocketListener {
 
     /**
      * Load configuration from jss.conf (if available) or server.xml.
+     * @throws IOException
+     * @throws SAXException
+     * @throws ParserConfigurationException
+     * @throws XPathExpressionException
      */
-    public void loadConfig() throws Exception {
+    public void loadConfig() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
         String catalinaBase = System.getProperty("catalina.base");
         String jssConf = catalinaBase + "/conf/jss.conf";
         File configFile = new File(jssConf);
@@ -371,7 +389,10 @@ public class TomcatJSS implements SSLSocketListener {
         }
     }
 
-    public void init() throws Exception {
+    public void init() throws KeyDatabaseException, CertDatabaseException, GeneralSecurityException,
+            NotInitializedException, InstantiationException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException, IOException,
+            NoSuchTokenException, TokenException, ConfigurationException {
 
         if (initialized) {
             return;
@@ -453,7 +474,7 @@ public class TomcatJSS implements SSLSocketListener {
         initialized = true;
     }
 
-    public void login() throws Exception {
+    public void login() throws NoSuchTokenException, TokenException {
 
         logger.debug("TomcatJSS: logging into tokens");
 
@@ -470,7 +491,7 @@ public class TomcatJSS implements SSLSocketListener {
         }
     }
 
-    public void login(String tag) throws Exception {
+    public void login(String tag) throws NoSuchTokenException, TokenException {
 
         CryptoToken token = getToken(tag);
 
@@ -509,7 +530,7 @@ public class TomcatJSS implements SSLSocketListener {
         logger.error("TomcatJSS: failed to log into {}", tag);
     }
 
-    public CryptoToken getToken(String tag) throws Exception {
+    public CryptoToken getToken(String tag) throws NoSuchTokenException {
 
         if (tag.equals("internal")) {
             return manager.getInternalKeyStorageToken();
@@ -524,7 +545,7 @@ public class TomcatJSS implements SSLSocketListener {
         return null;
     }
 
-    public void configureOCSP() throws Exception {
+    public void configureOCSP() throws GeneralSecurityException, ConfigurationException {
 
         logger.info("configuring OCSP");
 
@@ -547,11 +568,11 @@ public class TomcatJSS implements SSLSocketListener {
         // Check to see if the ocsp url and nickname are both set or not set
 
         if (ocspResponderURL == null && ocspResponderCertNickname != null) {
-            throw new Exception("Missing OCSP responder URL");
+            throw new ConfigurationException("Missing OCSP responder URL");
         }
 
         if (ocspResponderURL != null && ocspResponderCertNickname == null) {
-            throw new Exception("Missing OCSP responder certificate nickname");
+            throw new ConfigurationException("Missing OCSP responder certificate nickname");
         }
 
         manager.configureOCSP(
