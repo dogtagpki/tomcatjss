@@ -241,45 +241,45 @@ public class TomcatJSS implements SSLSocketListener {
 
     public void loadJSSConfig(Properties config) throws Exception {
 
-        String certDb = config.getProperty("certdbDir");
-        if (certDb != null)
-            setCertdbDir(certDb);
+        String certdbDirProp = config.getProperty("certdbDir");
+        if (certdbDirProp != null)
+            setCertdbDir(certdbDirProp);
 
-        String passwordClass = config.getProperty("passwordClass");
-        if (passwordClass != null)
-            setPasswordClass(passwordClass);
+        String passwordClassProp = config.getProperty("passwordClass");
+        if (passwordClassProp != null)
+            setPasswordClass(passwordClassProp);
 
-        String passwordFile = config.getProperty("passwordFile");
-        if (passwordFile != null)
-            setPasswordFile(passwordFile);
+        String passwordFileProp = config.getProperty("passwordFile");
+        if (passwordFileProp != null)
+            setPasswordFile(passwordFileProp);
 
-        String enableOCSP = config.getProperty("enableOCSP");
-        if (enableOCSP != null)
-            setEnableOCSP(Boolean.parseBoolean(enableOCSP));
+        String enableOCSPProp = config.getProperty("enableOCSP");
+        if (enableOCSPProp != null)
+            setEnableOCSP(Boolean.parseBoolean(enableOCSPProp));
 
-        String ocspResponderURL = config.getProperty("ocspResponderURL");
-        if (ocspResponderURL != null)
-            setOcspResponderURL(ocspResponderURL);
+        String ocspResponderURLProp = config.getProperty("ocspResponderURL");
+        if (ocspResponderURLProp != null)
+            setOcspResponderURL(ocspResponderURLProp);
 
-        String ocspResponderCertNickname = config.getProperty("ocspResponderCertNickname");
-        if (ocspResponderCertNickname != null)
-            setOcspResponderCertNickname(ocspResponderCertNickname);
+        String ocspResponderCertNicknameProp = config.getProperty("ocspResponderCertNickname");
+        if (ocspResponderCertNicknameProp != null)
+            setOcspResponderCertNickname(ocspResponderCertNicknameProp);
 
-        String ocspCacheSize = config.getProperty("ocspCacheSize");
-        if (StringUtils.isNotEmpty(ocspCacheSize))
-            setOcspCacheSize(Integer.parseInt(ocspCacheSize));
+        String ocspCacheSizeProp = config.getProperty("ocspCacheSize");
+        if (StringUtils.isNotEmpty(ocspCacheSizeProp))
+            setOcspCacheSize(Integer.parseInt(ocspCacheSizeProp));
 
-        String ocspMinCacheEntryDuration = config.getProperty("ocspMinCacheEntryDuration");
-        if (StringUtils.isNotEmpty(ocspMinCacheEntryDuration))
-            setOcspMinCacheEntryDuration(Integer.parseInt(ocspMinCacheEntryDuration));
+        String ocspMinCacheEntryDurationProp = config.getProperty("ocspMinCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMinCacheEntryDurationProp))
+            setOcspMinCacheEntryDuration(Integer.parseInt(ocspMinCacheEntryDurationProp));
 
-        String ocspMaxCacheEntryDuration = config.getProperty("ocspMaxCacheEntryDuration");
-        if (StringUtils.isNotEmpty(ocspMaxCacheEntryDuration))
-            setOcspMaxCacheEntryDuration(Integer.parseInt(ocspMaxCacheEntryDuration));
+        String ocspMaxCacheEntryDurationProp = config.getProperty("ocspMaxCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMaxCacheEntryDurationProp))
+            setOcspMaxCacheEntryDuration(Integer.parseInt(ocspMaxCacheEntryDurationProp));
 
-        String ocspTimeout = config.getProperty("ocspTimeout");
-        if (StringUtils.isNotEmpty(ocspTimeout))
-            setOcspTimeout(Integer.parseInt(ocspTimeout));
+        String ocspTimeoutProp = config.getProperty("ocspTimeout");
+        if (StringUtils.isNotEmpty(ocspTimeoutProp))
+            setOcspTimeout(Integer.parseInt(ocspTimeoutProp));
     }
 
     public void loadTomcatConfig(String serverXml) throws Exception {
@@ -305,49 +305,49 @@ public class TomcatJSS implements SSLSocketListener {
                 "/Server/Service[@name='Catalina']/Connector[@SSLEnabled='true']",
                 document, XPathConstants.NODE);
 
-        String certDb = connector.getAttribute("certdbDir");
-        if (certDb != null)
-            setCertdbDir(certDb);
+        String certDbProp = connector.getAttribute("certdbDir");
+        if (certDbProp != null)
+            setCertdbDir(certDbProp);
 
-        String passwordClass = connector.getAttribute("passwordClass");
-        if (passwordClass != null)
-            setPasswordClass(passwordClass);
+        String passwordClassProp = connector.getAttribute("passwordClass");
+        if (passwordClassProp != null)
+            setPasswordClass(passwordClassProp);
 
-        String passwordFile = connector.getAttribute("passwordFile");
-        if (passwordFile != null)
-            setPasswordFile(passwordFile);
+        String passwordFileProp = connector.getAttribute("passwordFile");
+        if (passwordFileProp != null)
+            setPasswordFile(passwordFileProp);
 
-        String serverCertNickFile = connector.getAttribute("serverCertNickFile");
-        if (serverCertNickFile != null)
-            setServerCertNickFile(serverCertNickFile);
+        String serverCertNickFileProp = connector.getAttribute("serverCertNickFile");
+        if (serverCertNickFileProp != null)
+            setServerCertNickFile(serverCertNickFileProp);
 
-        String enableOCSP = connector.getAttribute("enableOCSP");
-        if (enableOCSP != null)
-            setEnableOCSP(Boolean.parseBoolean(enableOCSP));
+        String enableOCSPProp = connector.getAttribute("enableOCSP");
+        if (enableOCSPProp != null)
+            setEnableOCSP(Boolean.parseBoolean(enableOCSPProp));
 
-        String ocspResponderURL = connector.getAttribute("ocspResponderURL");
-        if (ocspResponderURL != null)
-            setOcspResponderURL(ocspResponderURL);
+        String ocspResponderURLProp = connector.getAttribute("ocspResponderURL");
+        if (ocspResponderURLProp != null)
+            setOcspResponderURL(ocspResponderURLProp);
 
-        String ocspResponderCertNickname = connector.getAttribute("ocspResponderCertNickname");
-        if (ocspResponderCertNickname != null)
-            setOcspResponderCertNickname(ocspResponderCertNickname);
+        String ocspResponderCertNicknameProp = connector.getAttribute("ocspResponderCertNickname");
+        if (ocspResponderCertNicknameProp != null)
+            setOcspResponderCertNickname(ocspResponderCertNicknameProp);
 
-        String ocspCacheSize = connector.getAttribute("ocspCacheSize");
-        if (StringUtils.isNotEmpty(ocspCacheSize))
-            setOcspCacheSize(Integer.parseInt(ocspCacheSize));
+        String ocspCacheSizeProp = connector.getAttribute("ocspCacheSize");
+        if (StringUtils.isNotEmpty(ocspCacheSizeProp))
+            setOcspCacheSize(Integer.parseInt(ocspCacheSizeProp));
 
-        String ocspMinCacheEntryDuration = connector.getAttribute("ocspMinCacheEntryDuration");
-        if (StringUtils.isNotEmpty(ocspMinCacheEntryDuration))
-            setOcspMinCacheEntryDuration(Integer.parseInt(ocspMinCacheEntryDuration));
+        String ocspMinCacheEntryDurationProp = connector.getAttribute("ocspMinCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMinCacheEntryDurationProp))
+            setOcspMinCacheEntryDuration(Integer.parseInt(ocspMinCacheEntryDurationProp));
 
-        String ocspMaxCacheEntryDuration = connector.getAttribute("ocspMaxCacheEntryDuration");
-        if (StringUtils.isNotEmpty(ocspMaxCacheEntryDuration))
-            setOcspMaxCacheEntryDuration(Integer.parseInt(ocspMaxCacheEntryDuration));
+        String ocspMaxCacheEntryDurationProp = connector.getAttribute("ocspMaxCacheEntryDuration");
+        if (StringUtils.isNotEmpty(ocspMaxCacheEntryDurationProp))
+            setOcspMaxCacheEntryDuration(Integer.parseInt(ocspMaxCacheEntryDurationProp));
 
-        String ocspTimeout = connector.getAttribute("ocspTimeout");
-        if (StringUtils.isNotEmpty(ocspTimeout))
-            setOcspTimeout(Integer.parseInt(ocspTimeout));
+        String ocspTimeoutProp = connector.getAttribute("ocspTimeout");
+        if (StringUtils.isNotEmpty(ocspTimeoutProp))
+            setOcspTimeout(Integer.parseInt(ocspTimeoutProp));
     }
 
     /**
