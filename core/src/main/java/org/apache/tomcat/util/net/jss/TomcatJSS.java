@@ -414,7 +414,7 @@ public class TomcatJSS implements SSLSocketListener {
 
         manager = CryptoManager.getInstance();
 
-        passwordStore = (IPasswordStore) Class.forName(passwordClass).newInstance();
+        passwordStore = (IPasswordStore) Class.forName(passwordClass).getDeclaredConstructor().newInstance();
         passwordStore.init(passwordFile);
 
         login();
