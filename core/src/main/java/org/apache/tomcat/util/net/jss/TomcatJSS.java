@@ -234,9 +234,10 @@ public class TomcatJSS implements SSLSocketListener {
     public void loadJSSConfig(File configFile) throws Exception {
 
         Properties config = new Properties();
-        config.load(new FileReader(configFile));
-
-        loadJSSConfig(config);
+        try (FileReader fr = new FileReader(configFile)) {
+            config.load(fr);
+            loadJSSConfig(config);
+        }
     }
 
     public void loadJSSConfig(Properties config) throws Exception {
