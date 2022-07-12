@@ -47,13 +47,13 @@ public class JSSImplementation extends SSLImplementation {
     @Override
     public SSLUtil getSSLUtil(SSLHostConfigCertificate cert) {
         logger.debug("JSSImplementation: getSSLUtil()");
-        logger.debug("JSSImplementation: key alias: " + cert.getCertificateKeyAlias());
-        logger.debug("JSSImplementation: keystore provider: " + cert.getCertificateKeystoreProvider());
+        logger.debug("JSSImplementation: key alias: {}", cert.getCertificateKeyAlias());
+        logger.debug("JSSImplementation: keystore provider: {}", cert.getCertificateKeystoreProvider());
 
         SSLHostConfig hostConfig = cert.getSSLHostConfig();
-        logger.debug("JSSImplementation: key manager alg: " + hostConfig.getKeyManagerAlgorithm());
-        logger.debug("JSSImplementation: truststore alg: " + hostConfig.getTruststoreAlgorithm());
-        logger.debug("JSSImplementation: truststore provider: " + hostConfig.getTruststoreProvider());
+        logger.debug("JSSImplementation: key manager alg: {}", hostConfig.getKeyManagerAlgorithm());
+        logger.debug("JSSImplementation: truststore alg: {}", hostConfig.getTruststoreAlgorithm());
+        logger.debug("JSSImplementation: truststore provider: {}", hostConfig.getTruststoreProvider());
 
         return new JSSUtil(cert);
     }
