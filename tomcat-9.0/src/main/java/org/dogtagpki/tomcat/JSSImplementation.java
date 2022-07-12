@@ -41,7 +41,7 @@ public class JSSImplementation extends SSLImplementation {
     @Override
     public SSLSupport getSSLSupport(SSLSession session) {
         logger.debug("JSSImplementation.getSSLSupport()");
-        return new JSSESupport(session);
+        return new JSSESupport(session, null);
     }
 
     @Override
