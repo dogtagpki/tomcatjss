@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 public class JSSImplementation extends SSLImplementation {
 
-    public static final Logger logger = LoggerFactory.getLogger(JSSUtil.class);
+    public static final Logger logger = LoggerFactory.getLogger(JSSImplementation.class);
 
     public JSSImplementation() {
         logger.debug("JSSImplementation: instance created");
