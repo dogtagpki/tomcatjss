@@ -88,6 +88,12 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
 
+      - name: Rebase to master
+        run: |
+          git remote add jss https://github.com/dogtagpki/tomcatjss.git
+          git fetch tomcatjss
+          git rebase tomcatjss/master
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
