@@ -90,7 +90,7 @@ jobs:
 
       - name: Rebase to master
         run: |
-          git remote add jss https://github.com/dogtagpki/tomcatjss.git
+          git remote add tomcatjss https://github.com/dogtagpki/tomcatjss.git
           git fetch tomcatjss
           git rebase tomcatjss/master
 
