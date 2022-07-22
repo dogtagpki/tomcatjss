@@ -81,11 +81,11 @@ generate_rpm_sources() {
             --format=tar.gz \
             --prefix "$PREFIX/" \
             -o "$WORK_DIR/SOURCES/$TARBALL" \
-            $SOURCE_TAG
+            "$SOURCE_TAG"
 
         if [ "$SOURCE_TAG" != "HEAD" ] ; then
 
-            TAG_ID="$(git -C "$SRC_DIR" rev-parse $SOURCE_TAG)"
+            TAG_ID="$(git -C "$SRC_DIR" rev-parse "$SOURCE_TAG")"
             HEAD_ID="$(git -C "$SRC_DIR" rev-parse HEAD)"
 
             if [ "$TAG_ID" != "$HEAD_ID" ] ; then
@@ -122,7 +122,7 @@ generate_patch() {
     git -C "$SRC_DIR" \
         format-patch \
         --stdout \
-        $SOURCE_TAG \
+        "$SOURCE_TAG" \
         > "$WORK_DIR/SOURCES/$PATCH"
 }
 
@@ -296,7 +296,7 @@ if [ "$BUILD_TARGET" = "dist" ] ; then
     fi
 
     # get Tomcat <major>.<minor> version number
-    TOMCAT_VERSION=`/usr/sbin/tomcat version | sed -n 's/Server number: *\([0-9]\+\.[0-9]\+\).*/\1/p'`
+    TOMCAT_VERSION=$(/usr/sbin/tomcat version | sed -n 's/Server number: *\([0-9]\+\.[0-9]\+\).*/\1/p')
 
     if [ "$VERBOSE" = "true" ] ; then
         echo "Tomcat: $TOMCAT_VERSION"
@@ -308,11 +308,11 @@ if [ "$BUILD_TARGET" = "dist" ] ; then
         OPTIONS+=(-v)
     fi
 
-    OPTIONS+=(-f $SRC_DIR/build.xml)
-    OPTIONS+=(-Dversion=$VERSION)
-    OPTIONS+=(-Djnidir=$JNI_DIR)
-    OPTIONS+=(-Dsrc.dir=tomcat-$TOMCAT_VERSION)
-    OPTIONS+=(-Dbuild.dir=$WORK_DIR)
+    OPTIONS+=(-f "$SRC_DIR/build.xml")
+    OPTIONS+=(-Dversion="$VERSION")
+    OPTIONS+=(-Djnidir="$JNI_DIR")
+    OPTIONS+=(-Dsrc.dir="tomcat-$TOMCAT_VERSION")
+    OPTIONS+=(-Dbuild.dir="$WORK_DIR")
 
     echo ant "${OPTIONS[@]}" compile package
     ant "${OPTIONS[@]}" compile package
@@ -344,12 +344,12 @@ if [ "$BUILD_TARGET" = "install" ] ; then
         OPTIONS+=(-v)
     fi
 
-    OPTIONS+=(-f $SRC_DIR/build.xml)
-    OPTIONS+=(-Dversion=$VERSION)
-    OPTIONS+=(-Dbuild.dir=$WORK_DIR)
-    OPTIONS+=(-Dpackage=$NAME)
-    OPTIONS+=(-Dinstall.doc.dir=$INSTALL_DIR$DOC_DIR)
-    OPTIONS+=(-Dinstall.jar.dir=$INSTALL_DIR$JAVA_DIR)
+    OPTIONS+=(-f "$SRC_DIR"/build.xml)
+    OPTIONS+=(-Dversion="$VERSION")
+    OPTIONS+=(-Dbuild.dir="$WORK_DIR")
+    OPTIONS+=(-Dpackage="$NAME")
+    OPTIONS+=(-Dinstall.doc.dir="$INSTALL_DIR$DOC_DIR")
+    OPTIONS+=(-Dinstall.jar.dir="$INSTALL_DIR$JAVA_DIR")
 
     echo ant "${OPTIONS[@]}" install
     ant "${OPTIONS[@]}" install
