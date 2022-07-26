@@ -420,7 +420,7 @@ public class TomcatJSS implements SSLSocketListener {
 
         logger.debug("TomcatJSS: passwordFile: {}", passwordFile);
 
-        if (serverCertNickFile != null) {
+        if (StringUtils.isNotEmpty(serverCertNickFile)) {
             logger.debug("TomcatJSS: serverCertNickFile: {}", serverCertNickFile);
         }
 
@@ -443,7 +443,7 @@ public class TomcatJSS implements SSLSocketListener {
 
         login();
 
-        if (serverCertNickFile != null) {
+        if (StringUtils.isNotEmpty(serverCertNickFile)) {
             serverCertNick = new String(Files.readAllBytes(Paths.get(serverCertNickFile))).trim();
             logger.debug("serverCertNick: {}", serverCertNick);
         }
