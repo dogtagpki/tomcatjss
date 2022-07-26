@@ -161,7 +161,6 @@ jobs:
           git fetch tomcatjss
           git rebase tomcatjss/${{ needs.retrieve-pr.outputs.pr-base }}
 
-
       - name: Run container
         run: |
           IMAGE=tomcatjss-runner \
