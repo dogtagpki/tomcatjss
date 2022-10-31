@@ -9,9 +9,10 @@ BuildArch:        noarch
 
 # For development (i.e. unsupported) releases, use x.y.z-0.n.<phase>.
 # For official (i.e. supported) releases, use x.y.z-r where r >=1.
+%global           release_number 1
 Version:          8.1.0
-Release:          1%{?_timestamp}%{?_commit_id}%{?dist}
-#global           _phase -alpha1
+Release:          %{release_number}%{?_timestamp}%{?_commit_id}%{?dist}
+#global           _phase
 
 # To generate the source tarball:
 # $ git clone https://github.com/dogtagpki/tomcatjss.git
