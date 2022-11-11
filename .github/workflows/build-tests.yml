@@ -34,7 +34,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        dnf install -y dnf-plugins-core maven
+        dnf install -y dnf-plugins-core maven rpm-build
         dnf copr enable -y ${{ needs.init.outputs.repo }}
         dnf builddep -y --spec tomcatjss.spec
 
@@ -61,3 +61,16 @@ jobs:
         jar tvf ~/build/tomcatjss/jars/tomcatjss.jar | awk '{print $8;}' | sort | tee ant.out
         jar tvf main/target/tomcatjss-main-8.3.0-SNAPSHOT.jar | awk '{print $8;}' | grep -v '^META-INF/maven/' | sort > maven.out
         diff ant.out maven.out
+
+    - name: Build Tomcat JSS RPMS with Ant
+      run: |
+        ./build.sh --work-dir=build rpm
+
+    - name: Install RPMInspect
+      run: |
+        dnf install -y dnf-plugins-core
+        dnf copr enable -y copr.fedorainfracloud.org/dcantrell/rpminspect
+        dnf install -y rpminspect rpminspect-data-fedora
+
+    - name: Run RPMInspect on SRPM and RPMs
+      run: ./tests/bin/rpminspect.sh
