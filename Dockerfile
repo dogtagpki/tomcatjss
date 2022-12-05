@@ -5,7 +5,7 @@
 #
 
 ARG OS_VERSION="latest"
-ARG COPR_REPO="@pki/master"
+ARG COPR_REPO="@pki/11.3"
 
 ################################################################################
 FROM registry.fedoraproject.org/fedora:$OS_VERSION AS tomcatjss-builder
