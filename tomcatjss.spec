@@ -6,19 +6,19 @@ Name:             tomcatjss
 
 # Upstream version number:
 %global           major_version 8
-%global           minor_version 3
+%global           minor_version 4
 %global           update_version 0
 
 # Downstream release number:
 # - development/stabilization (unsupported): 0.<n> where n >= 1
 # - GA/update (supported): <n> where n >= 1
-%global           release_number 0.2
+%global           release_number 0.1
 
 # Development phase:
 # - development (unsupported): alpha<n> where n >= 1
 # - stabilization (unsupported): beta<n> where n >= 1
 # - GA/update (supported): <none>
-%global           phase beta1
+%global           phase alpha1
 
 %undefine         timestamp
 %undefine         commit_id
@@ -74,7 +74,7 @@ BuildRequires:    slf4j
 BuildRequires:    slf4j-jdk14
 
 # JSS
-BuildRequires:    jss = 5.3
+BuildRequires:    jss = 5.4
 
 # Tomcat
 %if 0%{?rhel} && ! 0%{?eln}
@@ -105,7 +105,7 @@ Requires:         slf4j
 Requires:         slf4j-jdk14
 
 # JSS
-Requires:         jss = 5.3
+Requires:         jss = 5.4
 
 # Tomcat
 %if 0%{?rhel} && ! 0%{?eln}
