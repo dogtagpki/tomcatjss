@@ -1,0 +1,41 @@
+name: Build Tomcat JSS
+
+on: [push, pull_request]
+
+jobs:
+  init:
+    name: Initialization
+    uses: ./.github/workflows/init.yml
+    secrets: inherit
+
+  build:
+    name: Building Tomcat JSS
+    needs: init
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build tomcatjss-runner image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          build-args: |
+            OS_VERSION=${{ matrix.os }}
+            COPR_REPO=${{ needs.init.outputs.repo }}
+            BUILD_OPTS=--with-timestamp --with-commit-id
+          tags: tomcatjss-runner
+          target: tomcatjss-runner
+          cache-from: type=local,src=/tmp/.buildx-cache
+          outputs: type=docker,dest=tomcatjss-runner.tar
+
+      - name: Store tomcatjss-runner image
+        uses: actions/cache@v3
+        with:
+          key: tomcatjss-runner-${{ matrix.os }}-${{ github.sha }}
+          path: tomcatjss-runner.tar
