@@ -26,9 +26,8 @@ jobs:
         with:
           context: .
           build-args: |
-            OS_VERSION=${{ matrix.os }}
+            BASE_IMAGE=registry.fedoraproject.org/fedora:${{ matrix.os }}
             COPR_REPO=${{ needs.init.outputs.repo }}
-            BUILD_OPTS=--with-timestamp --with-commit-id
           tags: tomcatjss-runner
           target: tomcatjss-runner
           cache-from: type=local,src=/tmp/.buildx-cache
