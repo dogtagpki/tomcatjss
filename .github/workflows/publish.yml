@@ -1,0 +1,54 @@
+name: Publish Tomcat JSS
+
+on:
+  workflow_run:
+    workflows: [ 'Build Tomcat JSS' ]
+    branches:
+      - master
+    types:
+      - completed
+
+jobs:
+  init:
+    name: Initialization
+    uses: ./.github/workflows/init.yml
+    secrets: inherit
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'
+
+  build:
+    name: Publishing Tomcat JSS
+    needs: init
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retrieve tomcatjss-builder image
+        uses: actions/cache@v3
+        with:
+          key: tomcatjss-builder-${{ matrix.os }}-${{ github.sha }}
+          path: tomcatjss-builder.tar
+
+      - name: Publish tomcatjss-builder image
+        run: |
+          docker load --input tomcatjss-builder.tar
+          docker tag tomcatjss-builder ghcr.io/${{ github.repository_owner }}/tomcatjss-builder
+          docker push ghcr.io/${{ github.repository_owner }}/tomcatjss-builder
+
+      - name: Retrieve tomcatjss-runner image
+        uses: actions/cache@v3
+        with:
+          key: tomcatjss-runner-${{ matrix.os }}-${{ github.sha }}
+          path: tomcatjss-runner.tar
+
+      - name: Publish tomcatjss-runner image
+        run: |
+          docker load --input tomcatjss-runner.tar
+          docker tag tomcatjss-runner ghcr.io/${{ github.repository_owner }}/tomcatjss-runner
+          docker push ghcr.io/${{ github.repository_owner }}/tomcatjss-runner
