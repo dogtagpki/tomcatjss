@@ -5,12 +5,12 @@
 #
 
 ARG BASE_IMAGE="registry.fedoraproject.org/fedora:latest"
-ARG COPR_REPO="@pki/master"
+ARG COPR_REPO=""
 
 ################################################################################
 FROM $BASE_IMAGE AS tomcatjss-base
 
-RUN dnf install -y systemd \
+RUN dnf install -y dnf-plugins-core systemd \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 
@@ -22,7 +22,7 @@ FROM tomcatjss-base AS tomcatjss-deps
 ARG COPR_REPO
 
 # Enable COPR repo if specified
-RUN if [ -n "$COPR_REPO" ]; then dnf install -y dnf-plugins-core; dnf copr enable -y $COPR_REPO; fi
+RUN if [ -n "$COPR_REPO" ]; then dnf copr enable -y $COPR_REPO; fi
 
 # Install Tomcat JSS runtime dependencies
 RUN dnf install -y dogtag-tomcatjss \
@@ -41,10 +41,19 @@ COPY tomcatjss.spec /root/tomcatjss/
 WORKDIR /root/tomcatjss
 
 # Install Tomcat JSS build dependencies
-RUN dnf builddep -y --spec tomcatjss.spec
+RUN dnf builddep -y --skip-unavailable --spec tomcatjss.spec
 
 ################################################################################
 FROM tomcatjss-builder-deps AS tomcatjss-builder
+
+# Import JSS packages from jss-builder
+COPY --from=ghcr.io/dogtagpki/jss-builder:latest /root/jss/build/RPMS /tmp/RPMS/
+
+# Install build depencencies
+RUN dnf localinstall -y /tmp/RPMS/* \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf \
+    && rm -rf /tmp/RPMS
 
 # Import Tomcat JSS source
 COPY . /root/tomcatjss/
@@ -55,10 +64,13 @@ RUN ./build.sh --work-dir=build rpm
 ################################################################################
 FROM tomcatjss-deps AS tomcatjss-runner
 
+# Import JSS packages from jss-builder
+COPY --from=ghcr.io/dogtagpki/jss-builder:latest /root/jss/build/RPMS /tmp/RPMS/
+
 # Import Tomcat JSS packages
 COPY --from=tomcatjss-builder /root/tomcatjss/build/RPMS /tmp/RPMS/
 
-# Install Tomcat JSS packages
+# Install runtime packages
 RUN dnf localinstall -y /tmp/RPMS/* \
     && dnf clean all \
     && rm -rf /var/cache/dnf \

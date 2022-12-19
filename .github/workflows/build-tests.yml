@@ -21,9 +21,18 @@ jobs:
 
     - name: Install dependencies
       run: |
-        dnf install -y dnf-plugins-core maven rpm-build
-        dnf copr enable -y ${{ needs.init.outputs.repo }}
-        dnf builddep -y --spec tomcatjss.spec
+        dnf install -y dnf-plugins-core moby-engine maven rpm-build
+        if [ -n "$COPR_REPO" ]; then dnf copr enable -y $COPR_REPO; fi
+        dnf builddep -y --skip-unavailable --spec tomcatjss.spec
+      env:
+        COPR_REPO: ${{ needs.init.outputs.repo }}
+
+    - name: Install JSS packages from jss-builder
+      run: |
+        docker pull ghcr.io/dogtagpki/jss-builder:latest
+        docker create --name=jss-builder ghcr.io/dogtagpki/jss-builder:latest
+        docker cp jss-builder:/root/jss/build/RPMS /tmp/RPMS/
+        dnf localinstall -y /tmp/RPMS/*
 
     - name: Build Tomcat JSS with Ant
       run: |
