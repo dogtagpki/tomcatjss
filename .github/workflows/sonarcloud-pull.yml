@@ -81,7 +81,7 @@ jobs:
       matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
     steps:
       - name: Clone the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
           ref: ${{ github.event.workflow_run.head_branch }}
@@ -134,7 +134,7 @@ jobs:
         run: docker load --input sonar-runner.tar
 
       - name: Clone the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
           ref: ${{ github.event.workflow_run.head_branch }}
