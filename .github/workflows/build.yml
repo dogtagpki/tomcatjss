@@ -70,6 +70,24 @@ jobs:
           key: tomcatjss-builder-${{ matrix.os }}-${{ github.sha }}
           path: tomcatjss-builder.tar
 
+      - name: Build tomcatjss-dist image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          build-args: |
+            BASE_IMAGE=registry.fedoraproject.org/fedora:${{ matrix.os }}
+            COPR_REPO=${{ needs.init.outputs.repo }}
+          tags: tomcatjss-dist
+          target: tomcatjss-dist
+          cache-from: type=local,src=/tmp/.buildx-cache
+          outputs: type=docker,dest=tomcatjss-dist.tar
+
+      - name: Store tomcatjss-dist image
+        uses: actions/cache@v3
+        with:
+          key: tomcatjss-dist-${{ matrix.os }}-${{ github.sha }}
+          path: tomcatjss-dist.tar
+
       - name: Build tomcatjss-runner image
         uses: docker/build-push-action@v3
         with:

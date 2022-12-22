@@ -29,17 +29,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Retrieve tomcatjss-builder image
+      - name: Retrieve tomcatjss-dist image
         uses: actions/cache@v3
         with:
-          key: tomcatjss-builder-${{ matrix.os }}-${{ github.sha }}
-          path: tomcatjss-builder.tar
+          key: tomcatjss-dist-${{ matrix.os }}-${{ github.sha }}
+          path: tomcatjss-dist.tar
 
-      - name: Publish tomcatjss-builder image
+      - name: Publish tomcatjss-dist image
         run: |
-          docker load --input tomcatjss-builder.tar
-          docker tag tomcatjss-builder ghcr.io/${{ github.repository_owner }}/tomcatjss-builder:latest
-          docker push ghcr.io/${{ github.repository_owner }}/tomcatjss-builder:latest
+          docker load --input tomcatjss-dist.tar
+          docker tag tomcatjss-dist ghcr.io/${{ github.repository_owner }}/tomcatjss-dist:latest
+          docker push ghcr.io/${{ github.repository_owner }}/tomcatjss-dist:latest
 
       - name: Retrieve tomcatjss-runner image
         uses: actions/cache@v3
