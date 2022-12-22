@@ -46,8 +46,8 @@ RUN dnf builddep -y --skip-unavailable --spec tomcatjss.spec
 ################################################################################
 FROM tomcatjss-builder-deps AS tomcatjss-builder
 
-# Import JSS packages from jss-builder
-COPY --from=ghcr.io/dogtagpki/jss-builder:latest /root/jss/build/RPMS /tmp/RPMS/
+# Import JSS packages
+COPY --from=ghcr.io/dogtagpki/jss-dist:latest /root/RPMS /tmp/RPMS/
 
 # Install build depencencies
 RUN dnf localinstall -y /tmp/RPMS/* \
@@ -62,13 +62,19 @@ COPY . /root/tomcatjss/
 RUN ./build.sh --work-dir=build rpm
 
 ################################################################################
-FROM tomcatjss-deps AS tomcatjss-runner
-
-# Import JSS packages from jss-builder
-COPY --from=ghcr.io/dogtagpki/jss-builder:latest /root/jss/build/RPMS /tmp/RPMS/
+FROM alpine:latest AS tomcatjss-dist
 
 # Import Tomcat JSS packages
-COPY --from=tomcatjss-builder /root/tomcatjss/build/RPMS /tmp/RPMS/
+COPY --from=tomcatjss-builder /root/tomcatjss/build/RPMS /root/RPMS/
+
+################################################################################
+FROM tomcatjss-deps AS tomcatjss-runner
+
+# Import JSS packages
+COPY --from=ghcr.io/dogtagpki/jss-dist:latest /root/RPMS /tmp/RPMS/
+
+# Import Tomcat JSS packages
+COPY --from=tomcatjss-dist /root/RPMS /tmp/RPMS/
 
 # Install runtime packages
 RUN dnf localinstall -y /tmp/RPMS/* \

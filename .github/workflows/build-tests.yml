@@ -27,11 +27,12 @@ jobs:
       env:
         COPR_REPO: ${{ needs.init.outputs.repo }}
 
-    - name: Install JSS packages from jss-builder
+    - name: Install JSS packages from jss-dist
       run: |
-        docker pull ghcr.io/dogtagpki/jss-builder:latest
-        docker create --name=jss-builder ghcr.io/dogtagpki/jss-builder:latest
-        docker cp jss-builder:/root/jss/build/RPMS /tmp/RPMS/
+        docker pull ghcr.io/dogtagpki/jss-dist:latest
+        docker create --name=jss-dist ghcr.io/dogtagpki/jss-dist:latest
+        docker cp jss-dist:/root/RPMS /tmp/RPMS/
+        docker rm -f jss-dist
         dnf localinstall -y /tmp/RPMS/*
 
     - name: Build Tomcat JSS with Ant
