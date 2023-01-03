@@ -11,14 +11,12 @@ jobs:
     name: Waiting for build
     needs: init
     runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
     steps:
       - name: Wait for build
         uses: lewagon/wait-on-check-action@v1.2.0
         with:
           ref: ${{ github.ref }}
-          check-name: 'Building Tomcat JSS (${{ matrix.os }})'
+          check-name: 'Building Tomcat JSS'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 30
         if: github.event_name == 'push'
@@ -27,7 +25,7 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.2.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'Building Tomcat JSS (${{ matrix.os }})'
+          check-name: 'Building Tomcat JSS'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 30
         if: github.event_name == 'pull_request'
@@ -38,8 +36,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SHARED: /tmp/workdir/tomcatjss
-    strategy:
-      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -48,7 +44,7 @@ jobs:
       - name: Retrieve tomcatjss-runner image
         uses: actions/cache@v3
         with:
-          key: tomcatjss-runner-${{ matrix.os }}-${{ github.sha }}
+          key: tomcatjss-runner-${{ github.sha }}
           path: tomcatjss-runner.tar
 
       - name: Load tomcatjss-runner image
