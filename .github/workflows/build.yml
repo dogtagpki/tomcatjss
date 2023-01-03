@@ -12,8 +12,6 @@ jobs:
     name: Building Tomcat JSS
     needs: init
     runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -25,7 +23,7 @@ jobs:
         id: cache-buildx
         uses: actions/cache@v3
         with:
-          key: buildx-${{ matrix.os }}-${{ hashFiles('tomcatjss.spec') }}
+          key: buildx-${{ hashFiles('tomcatjss.spec') }}
           path: /tmp/.buildx-cache
 
       - name: Build tomcatjss-deps image
@@ -33,7 +31,7 @@ jobs:
         with:
           context: .
           build-args: |
-            BASE_IMAGE=registry.fedoraproject.org/fedora:${{ matrix.os }}
+            BASE_IMAGE=${{ needs.init.outputs.base-image }}
             COPR_REPO=${{ needs.init.outputs.repo }}
           tags: tomcatjss-deps
           target: tomcatjss-deps
@@ -45,7 +43,7 @@ jobs:
         with:
           context: .
           build-args: |
-            BASE_IMAGE=registry.fedoraproject.org/fedora:${{ matrix.os }}
+            BASE_IMAGE=${{ needs.init.outputs.base-image }}
             COPR_REPO=${{ needs.init.outputs.repo }}
           tags: tomcatjss-builder-deps
           target: tomcatjss-builder-deps
@@ -57,7 +55,7 @@ jobs:
         with:
           context: .
           build-args: |
-            BASE_IMAGE=registry.fedoraproject.org/fedora:${{ matrix.os }}
+            BASE_IMAGE=${{ needs.init.outputs.base-image }}
             COPR_REPO=${{ needs.init.outputs.repo }}
           tags: tomcatjss-builder
           target: tomcatjss-builder
@@ -67,7 +65,7 @@ jobs:
       - name: Store tomcatjss-builder image
         uses: actions/cache@v3
         with:
-          key: tomcatjss-builder-${{ matrix.os }}-${{ github.sha }}
+          key: tomcatjss-builder-${{ github.sha }}
           path: tomcatjss-builder.tar
 
       - name: Build tomcatjss-dist image
@@ -75,7 +73,7 @@ jobs:
         with:
           context: .
           build-args: |
-            BASE_IMAGE=registry.fedoraproject.org/fedora:${{ matrix.os }}
+            BASE_IMAGE=${{ needs.init.outputs.base-image }}
             COPR_REPO=${{ needs.init.outputs.repo }}
           tags: tomcatjss-dist
           target: tomcatjss-dist
@@ -85,7 +83,7 @@ jobs:
       - name: Store tomcatjss-dist image
         uses: actions/cache@v3
         with:
-          key: tomcatjss-dist-${{ matrix.os }}-${{ github.sha }}
+          key: tomcatjss-dist-${{ github.sha }}
           path: tomcatjss-dist.tar
 
       - name: Build tomcatjss-runner image
@@ -93,7 +91,7 @@ jobs:
         with:
           context: .
           build-args: |
-            BASE_IMAGE=registry.fedoraproject.org/fedora:${{ matrix.os }}
+            BASE_IMAGE=${{ needs.init.outputs.base-image }}
             COPR_REPO=${{ needs.init.outputs.repo }}
           tags: tomcatjss-runner
           target: tomcatjss-runner
@@ -103,5 +101,5 @@ jobs:
       - name: Store tomcatjss-runner image
         uses: actions/cache@v3
         with:
-          key: tomcatjss-runner-${{ matrix.os }}-${{ github.sha }}
+          key: tomcatjss-runner-${{ github.sha }}
           path: tomcatjss-runner.tar

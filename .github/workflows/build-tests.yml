@@ -12,9 +12,7 @@ jobs:
     name: Build Test
     needs: init
     runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
-    container: fedora:${{ matrix.os }}
+    container: ${{ needs.init.outputs.base-image }}
     steps:
     - name: Clone repository
       uses: actions/checkout@v3

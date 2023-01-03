@@ -77,8 +77,6 @@ jobs:
     name: Building TomcatJSS
     needs: [init, retrieve-pr]
     runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
     steps:
       - name: Clone the repository
         uses: actions/checkout@v3
@@ -102,7 +100,7 @@ jobs:
         with:
           context: .
           build-args: |
-            BASE_IMAGE=registry.fedoraproject.org/fedora:${{ matrix.os }}
+            BASE_IMAGE=${{ needs.init.outputs.base-image }}
             COPR_REPO=${{ needs.init.outputs.repo }}
           tags: tomcatjss-runner
           target: tomcatjss-runner
@@ -111,7 +109,7 @@ jobs:
       - name: Store runner image
         uses: actions/cache@v3
         with:
-          key: sonar-runner-${{ matrix.os }}-${{ github.event.workflow_run.id }}
+          key: sonar-runner-${{ github.event.workflow_run.id }}
           path: sonar-runner.tar
 
   sonarcloud:
@@ -121,13 +119,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SHARED: /tmp/workdir/ldapjdk
-    strategy:
-      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
     steps:
       - name: Retrieve runner image
         uses: actions/cache@v3
         with:
-          key: sonar-runner-${{ matrix.os }}-${{ github.event.workflow_run.id }}
+          key: sonar-runner-${{ github.event.workflow_run.id }}
           path: sonar-runner.tar
 
       - name: Load runner image
