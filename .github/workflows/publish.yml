@@ -1,0 +1,61 @@
+name: Publish Tomcat JSS
+
+on:
+  push:
+    branches:
+      - v7
+
+jobs:
+  init:
+    name: Initialization
+    uses: ./.github/workflows/init.yml
+    secrets: inherit
+
+  build:
+    name: Waiting for build
+    needs: init
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for build
+        uses: lewagon/wait-on-check-action@v1.2.0
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Building Tomcat JSS'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+
+  publish:
+    name: Publishing Tomcat JSS
+    needs: [init, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retrieve tomcatjss-dist image
+        uses: actions/cache@v3
+        with:
+          key: tomcatjss-dist-${{ github.sha }}
+          path: tomcatjss-dist.tar
+
+      - name: Publish tomcatjss-dist image
+        run: |
+          docker load --input tomcatjss-dist.tar
+          docker tag tomcatjss-dist ghcr.io/${{ github.repository_owner }}/tomcatjss-dist:7
+          docker push ghcr.io/${{ github.repository_owner }}/tomcatjss-dist:7
+
+      - name: Retrieve tomcatjss-runner image
+        uses: actions/cache@v3
+        with:
+          key: tomcatjss-runner-${{ github.sha }}
+          path: tomcatjss-runner.tar
+
+      - name: Publish tomcatjss-runner image
+        run: |
+          docker load --input tomcatjss-runner.tar
+          docker tag tomcatjss-runner ghcr.io/${{ github.repository_owner }}/tomcatjss-runner:7
+          docker push ghcr.io/${{ github.repository_owner }}/tomcatjss-runner:7
