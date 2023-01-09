@@ -4,41 +4,58 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 
-ARG OS_VERSION="34"
-ARG COPR_REPO="@pki/10.13"
+ARG BASE_IMAGE="registry.fedoraproject.org/fedora:34"
+ARG COPR_REPO=""
 
 ################################################################################
-FROM registry.fedoraproject.org/fedora:$OS_VERSION AS tomcatjss-builder
+FROM $BASE_IMAGE AS tomcatjss-builder
 
 ARG COPR_REPO
 ARG BUILD_OPTS
 
+RUN dnf install -y dnf-plugins-core
+
 # Enable COPR repo if specified
-RUN if [ -n "$COPR_REPO" ]; then dnf install -y dnf-plugins-core; dnf copr enable -y $COPR_REPO; fi
+RUN if [ -n "$COPR_REPO" ]; then dnf copr enable -y $COPR_REPO; fi
 
 # Import source
 COPY . /tmp/tomcatjss/
 WORKDIR /tmp/tomcatjss
 
-# Build packages
+# Install build tools
 RUN dnf install -y git rpm-build
-RUN dnf builddep -y --spec tomcatjss.spec
+
+# Install Tomcat JSS build dependencies
+RUN dnf builddep -y --skip-unavailable --spec tomcatjss.spec
+
+# Import JSS packages
+COPY --from=quay.io/dogtagpki/jss-dist:4.9 /root/RPMS /tmp/RPMS/
+
+# Install packages
+RUN dnf localinstall -y /tmp/RPMS/*; rm -rf /tmp/RPMS
+
+# Build Tomcat JSS packages
 RUN ./build.sh $BUILD_OPTS --work-dir=build rpm
 
 ################################################################################
-FROM registry.fedoraproject.org/fedora:$OS_VERSION AS tomcatjss-runner
+FROM $BASE_IMAGE AS tomcatjss-runner
 
 ARG COPR_REPO
 
 EXPOSE 389 8080 8443
 
-# Enable COPR repo if specified
-RUN if [ -n "$COPR_REPO" ]; then dnf install -y dnf-plugins-core; dnf copr enable -y $COPR_REPO; fi
+RUN dnf install -y dnf-plugins-core
 
-# Import packages
+# Enable COPR repo if specified
+RUN if [ -n "$COPR_REPO" ]; then dnf copr enable -y $COPR_REPO; fi
+
+# Import JSS packages
+COPY --from=quay.io/dogtagpki/jss-dist:4.9 /root/RPMS /tmp/RPMS/
+
+# Import Tomcat JSS packages
 COPY --from=tomcatjss-builder /tmp/tomcatjss/build/RPMS /tmp/RPMS/
 
-# Install packages
+# Install runtime packages
 RUN dnf localinstall -y /tmp/RPMS/*; rm -rf /tmp/RPMS
 
 # Install systemd to run the container
