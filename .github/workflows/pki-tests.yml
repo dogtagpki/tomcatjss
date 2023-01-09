@@ -9,33 +9,27 @@ jobs:
     secrets: inherit
 
   build:
-    name: Building TomcatJSS
+    name: Waiting for build
     needs: init
     runs-on: ubuntu-latest
     steps:
-      - name: Clone repository
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build runner image
-        uses: docker/build-push-action@v3
+      - name: Wait for build
+        uses: lewagon/wait-on-check-action@v1.2.0
         with:
-          context: .
-          build-args: |
-            BASE_IMAGE=${{ needs.init.outputs.base-image }}
-            COPR_REPO=${{ needs.init.outputs.repo }}
-            BUILD_OPTS=--with-timestamp --with-commit-id
-          tags: tomcatjss-runner
-          target: tomcatjss-runner
-          outputs: type=docker,dest=/tmp/tomcatjss-runner.tar
+          ref: ${{ github.ref }}
+          check-name: 'Building Tomcat JSS'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+        if: github.event_name == 'push'
 
-      - name: Upload runner image
-        uses: actions/upload-artifact@v3
+      - name: Wait for build
+        uses: lewagon/wait-on-check-action@v1.2.0
         with:
-          name: tomcatjss-runner
-          path: /tmp/tomcatjss-runner.tar
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'Building Tomcat JSS'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+        if: github.event_name == 'pull_request'
 
   ca-test:
     name: Installing CA
@@ -47,14 +41,14 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v3
 
-      - name: Download runner image
-        uses: actions/download-artifact@v3
+      - name: Retrieve tomcatjss-runner image
+        uses: actions/cache@v3
         with:
-          name: tomcatjss-runner
-          path: /tmp
+          key: tomcatjss-runner-${{ github.sha }}
+          path: tomcatjss-runner.tar
 
       - name: Load runner image
-        run: docker load --input /tmp/tomcatjss-runner.tar
+        run: docker load --input tomcatjss-runner.tar
 
       - name: Run container
         run: |
