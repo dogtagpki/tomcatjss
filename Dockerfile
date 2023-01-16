@@ -24,7 +24,7 @@ ARG COPR_REPO
 # Enable COPR repo if specified
 RUN if [ -n "$COPR_REPO" ]; then dnf copr enable -y $COPR_REPO; fi
 
-# Install Tomcaat JSS runtime dependencies
+# Install Tomcat JSS runtime dependencies
 RUN dnf install -y tomcatjss \
     && dnf remove -y jss-* --noautoremove \
     && dnf clean all \
