@@ -27,8 +27,8 @@ jobs:
 
     - name: Install JSS packages from jss-dist
       run: |
-        docker pull ghcr.io/dogtagpki/jss-dist:latest
-        docker create --name=jss-dist ghcr.io/dogtagpki/jss-dist:latest
+        docker pull quay.io/dogtagpki/jss-dist:latest
+        docker create --name=jss-dist quay.io/dogtagpki/jss-dist:latest
         docker cp jss-dist:/root/RPMS /tmp/RPMS/
         docker rm -f jss-dist
         dnf localinstall -y /tmp/RPMS/*
