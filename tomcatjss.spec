@@ -12,13 +12,13 @@ Name:             tomcatjss
 # Downstream release number:
 # - development/stabilization (unsupported): 0.<n> where n >= 1
 # - GA/update (supported): <n> where n >= 1
-%global           release_number 0.2
+%global           release_number 1
 
 # Development phase:
 # - development (unsupported): alpha<n> where n >= 1
 # - stabilization (unsupported): beta<n> where n >= 1
 # - GA/update (supported): <none>
-%global           phase beta1
+#global           phase
 
 %undefine         timestamp
 %undefine         commit_id
@@ -26,7 +26,6 @@ Name:             tomcatjss
 Summary:          JSS Connector for Apache Tomcat
 URL:              https://github.com/dogtagpki/tomcatjss
 License:          LGPLv2+
-BuildArch:        noarch
 Version:          %{major_version}.%{minor_version}.%{update_version}
 Release:          %{release_number}%{?phase:.}%{?phase}%{?timestamp:.}%{?timestamp}%{?commit_id:.}%{?commit_id}%{?dist}
 
@@ -46,6 +45,9 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?p
 #     <version tag> \
 #     > tomcatjss-VERSION-RELEASE.patch
 # Patch: tomcatjss-VERSION-RELEASE.patch
+
+BuildArch:        noarch
+ExclusiveArch:    %{java_arches} noarch
 
 ################################################################################
 # Java
