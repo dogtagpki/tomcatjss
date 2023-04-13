@@ -43,7 +43,7 @@ jobs:
             -Dfile=/usr/lib/java/jss.jar \
             -DgroupId=org.dogtagpki \
             -DartifactId=jss \
-            -Dversion=5.3.0-SNAPSHOT \
+            -Dversion=5.4.0-SNAPSHOT \
             -Dpackaging=jar \
             -DgeneratePom=true
 
