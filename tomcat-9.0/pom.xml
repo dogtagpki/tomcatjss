@@ -4,9 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.dogtagpki</groupId>
+
+    <parent>
+        <groupId>org.dogtagpki.tomcatjss</groupId>
+        <artifactId>tomcatjss-parent</artifactId>
+        <version>${revision}</version>
+    </parent>
+
     <artifactId>tomcatjss-tomcat-9.0</artifactId>
-    <version>8.3.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <dependencies>
 
@@ -17,15 +23,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.dogtagpki</groupId>
-            <artifactId>jss</artifactId>
+            <groupId>org.dogtagpki.jss</groupId>
+            <artifactId>jss-base</artifactId>
             <version>5.4.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>org.dogtagpki</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>tomcatjss-core</artifactId>
-            <version>8.3.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
     </dependencies>
