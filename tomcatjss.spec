@@ -65,23 +65,22 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?p
 
 # Java
 BuildRequires:    ant
-BuildRequires:    apache-commons-lang3
 BuildRequires:    %{java_devel}
-BuildRequires:    jpackage-utils >= 0:1.7.5-15
+BuildRequires:    maven-local
+BuildRequires:    mvn(org.apache.maven.plugins:maven-shade-plugin)
+BuildRequires:    mvn(org.apache.commons:commons-lang3)
 
 # SLF4J
-BuildRequires:    slf4j
-BuildRequires:    slf4j-jdk14
-
-# JSS
-BuildRequires:    jss >= 5.4
+BuildRequires:    mvn(org.slf4j:slf4j-api)
+BuildRequires:    mvn(org.slf4j:slf4j-jdk14)
 
 # Tomcat
-%if 0%{?rhel} && ! 0%{?eln}
-BuildRequires:    pki-servlet-engine >= 1:9.0.7
-%else
-BuildRequires:    tomcat >= 1:9.0.7
-%endif
+BuildRequires:    mvn(org.apache.tomcat:tomcat-catalina)
+BuildRequires:    mvn(org.apache.tomcat:tomcat-coyote)
+BuildRequires:    mvn(org.apache.tomcat:tomcat-juli)
+
+# JSS
+BuildRequires:    mvn(org.dogtagpki.jss:jss-base) >= 5.5.0
 
 %description
 JSS Connector for Apache Tomcat, installed via the tomcatjss package,
@@ -96,23 +95,20 @@ Services (NSS).
 Summary:          JSS Connector for Apache Tomcat
 
 # Java
-Requires:         apache-commons-lang3
 Requires:         %{java_headless}
-Requires:         jpackage-utils >= 0:1.7.5-15
+Requires:         mvn(org.apache.commons:commons-lang3)
 
 # SLF4J
-Requires:         slf4j
-Requires:         slf4j-jdk14
-
-# JSS
-Requires:         jss >= 5.4
+Requires:         mvn(org.slf4j:slf4j-api)
+Requires:         mvn(org.slf4j:slf4j-jdk14)
 
 # Tomcat
-%if 0%{?rhel} && ! 0%{?eln}
-Requires:         pki-servlet-engine >= 1:9.0.7
-%else
-Requires:         tomcat >= 1:9.0.7
-%endif
+Requires:         mvn(org.apache.tomcat:tomcat-catalina)
+Requires:         mvn(org.apache.tomcat:tomcat-coyote)
+Requires:         mvn(org.apache.tomcat:tomcat-juli)
+
+# JSS
+Requires:         mvn(org.dogtagpki.jss:jss-base) >= 5.5.0
 
 Obsoletes:        tomcatjss < %{version}-%{release}
 Provides:         tomcatjss = %{version}-%{release}
@@ -146,38 +142,28 @@ Services (NSS).
 
 export JAVA_HOME=%{java_home}
 
-./build.sh \
-    %{?_verbose:-v} \
-    --name=%{product_id} \
-    --work-dir=%{_vpath_builddir} \
-    --version=%{version} \
-    --jni-dir=%{_jnidir} \
-    dist
+# flatten-maven-plugin is not available in RPM
+%pom_remove_plugin org.codehaus.mojo:flatten-maven-plugin
+
+# build without Javadoc
+%mvn_build -j
 
 ################################################################################
 %install
 ################################################################################
 
-./build.sh \
-    %{?_verbose:-v} \
-    --name=%{product_id} \
-    --work-dir=%{_vpath_builddir} \
-    --version=%{version} \
-    --java-dir=%{_javadir} \
-    --doc-dir=%{_docdir} \
-    --install-dir=%{buildroot} \
-    install
+%mvn_install
+
+install -p main/target/tomcatjss.jar %{buildroot}%{_javadir}/tomcatjss.jar
 
 ################################################################################
-%files -n %{product_id}
+%files -n %{product_id} -f .mfiles
 ################################################################################
 
 %license LICENSE
-
-%defattr(-,root,root)
 %doc README
 %doc LICENSE
-%{_javadir}/*
+%{_javadir}/tomcatjss.jar
 
 ################################################################################
 %changelog
