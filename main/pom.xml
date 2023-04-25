@@ -63,6 +63,7 @@
                                     <exclude>org.dogtagpki.jss:jss-base</exclude>
                                 </excludes>
                             </artifactSet>
+                            <finalName>tomcatjss</finalName>
                         </configuration>
                     </execution>
                 </executions>

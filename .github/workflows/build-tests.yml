@@ -3,6 +3,7 @@ name: Build Tests
 on: [push, pull_request]
 
 env:
+  NAMESPACE: ${{ vars.REGISTRY_NAMESPACE || github.repository_owner }}
   COPR_REPO: ${{ vars.COPR_REPO || '@pki/master' }}
 
 jobs:
@@ -36,6 +37,8 @@ jobs:
 
     - name: Build Tomcat JSS with Ant
       run: |
+        # Ant build needs the full Tomcat package
+        dnf install -y tomcat
         ./build.sh
 
     - name: Install JSS into Maven repo
@@ -55,10 +58,10 @@ jobs:
     - name: Compare tomcatjss.jar
       run: |
         jar tvf ~/build/tomcatjss/jars/tomcatjss.jar | awk '{print $8;}' | sort | tee ant.out
-        jar tvf main/target/tomcatjss-main-8.5.0-SNAPSHOT.jar | awk '{print $8;}' | grep -v '^META-INF/maven/' | sort > maven.out
+        jar tvf main/target/tomcatjss.jar | awk '{print $8;}' | grep -v '^META-INF/maven/' | sort > maven.out
         diff ant.out maven.out
 
-    - name: Build Tomcat JSS RPMS with Ant
+    - name: Build Tomcat JSS RPMS with Maven
       run: |
         ./build.sh --work-dir=build rpm
 
