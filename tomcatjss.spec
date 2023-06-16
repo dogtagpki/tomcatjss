@@ -5,9 +5,9 @@ Name:             tomcatjss
 %global           product_id dogtag-tomcatjss
 
 # Upstream version number:
-%global           major_version 8
-%global           minor_version 4
-%global           update_version 0
+%global           major_version 8.4.1
+%global           minor_version 
+%global           update_version 
 
 # Downstream release number:
 # - development/stabilization (unsupported): 0.<n> where n >= 1
