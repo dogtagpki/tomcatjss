@@ -2,6 +2,9 @@ name: Build Tests
 
 on: [push, pull_request]
 
+env:
+  COPR_REPO: ${{ vars.COPR_REPO || '@pki/master' }}
+
 jobs:
   init:
     name: Initialization
@@ -20,10 +23,8 @@ jobs:
     - name: Install dependencies
       run: |
         dnf install -y dnf-plugins-core moby-engine maven rpm-build
-        if [ -n "$COPR_REPO" ]; then dnf copr enable -y $COPR_REPO; fi
+        if [ -n "${{ env.COPR_REPO }}" ]; then dnf copr enable -y ${{ env.COPR_REPO }}; fi
         dnf builddep -y --skip-unavailable --spec tomcatjss.spec
-      env:
-        COPR_REPO: ${{ needs.init.outputs.repo }}
 
     - name: Install JSS packages from jss-dist
       run: |
