@@ -5,15 +5,24 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.coyote.http11.AbstractHttp11JsseProtocol;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.jss.TomcatJSS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Http11NioProtocol extends org.apache.coyote.http11.Http11NioProtocol {
+public class Http11NioProtocol extends AbstractHttp11JsseProtocol<NioChannel> {
 
     public static Logger logger = LoggerFactory.getLogger(Http11NioProtocol.class);
+    private static final Log log = LogFactory.getLog(Http11NioProtocol.class);
 
     TomcatJSS tomcatjss = TomcatJSS.getInstance();
+
+    public Http11NioProtocol() {
+       super(new JSSNioEndpoint());
+    }
 
     public String getCertdbDir() {
         return tomcatjss.getCertdbDir();
@@ -123,5 +132,35 @@ public class Http11NioProtocol extends org.apache.coyote.http11.Http11NioProtoco
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected Log getLog() {
+        return log;
+    }
+
+    @Override
+    protected String getNamePrefix() {
+        if (isSSLEnabled()) {
+            return "https-" + getSslImplementationShortName()+ "-jss-nio";
+        }
+        return "http-jss-nio";
+    }
+
+    // These methods are temporarly present to replicate the default behaviour provided by tomcat
+    public void setSelectorTimeout(long timeout) {
+        ((JSSNioEndpoint)getEndpoint()).setSelectorTimeout(timeout);
+    }
+
+    public long getSelectorTimeout() {
+        return ((JSSNioEndpoint)getEndpoint()).getSelectorTimeout();
+    }
+
+    public void setPollerThreadPriority(int threadPriority) {
+        ((JSSNioEndpoint)getEndpoint()).setPollerThreadPriority(threadPriority);
+    }
+
+    public int getPollerThreadPriority() {
+      return ((JSSNioEndpoint)getEndpoint()).getPollerThreadPriority();
     }
 }
