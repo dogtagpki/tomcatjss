@@ -105,6 +105,7 @@
   <property name="catalina.jar" value="${tomcat.home}/lib/catalina.jar" />
   <property name="tomcat-api.jar" value="${tomcat.home}/lib/tomcat-api.jar" />
   <property name="tomcat-coyote.jar" value="${tomcat.home}/lib/tomcat-coyote.jar" />
+  <property name="tomcat-util.jar" value="${tomcat.home}/lib/tomcat-util.jar" />
   <property name="tomcat-juli.jar" value="${tomcat.home}/bin/tomcat-juli.jar" />
 
   <property name="jss.home" value="${jnidir}" />
@@ -121,6 +122,7 @@
     <pathelement location="${catalina.jar}"/>
     <pathelement location="${tomcat-api.jar}"/>
     <pathelement location="${tomcat-coyote.jar}"/>
+    <pathelement location="${tomcat-util.jar}"/>
     <pathelement location="${tomcat-juli.jar}"/>
     <pathelement location="${commons-logging.jar}"/>
     <pathelement location="${commons-lang3.jar}"/>
