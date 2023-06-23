@@ -67,7 +67,10 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?p
 BuildRequires:    ant
 BuildRequires:    %{java_devel}
 BuildRequires:    maven-local
-BuildRequires:    mvn(org.apache.maven.plugins:maven-shade-plugin)
+
+# maven-shade-plugin is not available on CentOS/RHEL
+#BuildRequires:    mvn(org.apache.maven.plugins:maven-shade-plugin)
+
 BuildRequires:    mvn(org.apache.commons:commons-lang3)
 
 # SLF4J
@@ -145,8 +148,21 @@ export JAVA_HOME=%{java_home}
 # flatten-maven-plugin is not available in RPM
 %pom_remove_plugin org.codehaus.mojo:flatten-maven-plugin
 
+# disable main module since maven-shade-plugin is not available on CentOS/RHEL
+%pom_disable_module main
+
 # build without Javadoc
 %mvn_build -j
+
+# merge JAR files into tomcatjss.jar
+mkdir -p main/target/classes
+
+pushd main/target/classes
+jar xvf ../../../core/target/tomcatjss-core-%{version}-SNAPSHOT.jar
+jar xvf ../../../tomcat-9.0/target/tomcatjss-tomcat-9.0-%{version}-SNAPSHOT.jar
+popd
+
+jar cvf main/target/tomcatjss.jar -C main/target/classes .
 
 ################################################################################
 %install
