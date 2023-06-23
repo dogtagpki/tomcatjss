@@ -55,15 +55,21 @@ jobs:
       run: |
         mvn package
 
-    - name: Compare tomcatjss.jar
+    - name: Compare tomcatjss.jar built by Ant vs. built by Maven
       run: |
         jar tvf ~/build/tomcatjss/jars/tomcatjss.jar | awk '{print $8;}' | sort | tee ant.out
         jar tvf main/target/tomcatjss.jar | awk '{print $8;}' | grep -v '^META-INF/maven/' | sort > maven.out
         diff ant.out maven.out
 
-    - name: Build Tomcat JSS RPMS with Maven
+    - name: Build Tomcat JSS RPMs
       run: |
         ./build.sh --work-dir=build rpm
+        dnf install -y build/RPMS/*.rpm
+
+    - name: Compare tomcatjss.jar built by Maven vs. from RPM
+      run: |
+        jar tvf /usr/share/java/tomcatjss.jar | awk '{print $8;}' | grep -v '^META-INF/maven/' | sort | tee rpm.out
+        diff maven.out rpm.out
 
     - name: Install RPMInspect
       run: |
