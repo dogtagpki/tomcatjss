@@ -31,7 +31,7 @@ jobs:
 
   - job: copr_build
     trigger: pull_request
-    branch: v11.4
+    branch: v8.4
     additional_repos:
       - "https://download.copr.fedorainfracloud.org/results/%40pki/11.4/rhel-9-x86_64/"
       - "https://download.copr.fedorainfracloud.org/results/%40pki/11.4/fedora-37-x86_64"
@@ -48,7 +48,7 @@ jobs:
 
   - job: copr_build
     trigger: commit
-    branch: v11.4
+    branch: v8.4
     additional_repos:
       - "https://download.copr.fedorainfracloud.org/results/%40pki/11.4/rhel-9-x86_64/"
       - "https://download.copr.fedorainfracloud.org/results/%40pki/11.4/fedora-37-x86_64"
