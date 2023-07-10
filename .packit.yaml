@@ -28,6 +28,9 @@ jobs:
     dist_git_branches:
       - fedora-development
 #     - centos-stream-9-x86_64 # When Packit integration with CentOS is avaiable, enable this
+    actions:
+      get-current-version:
+      - rpmspec -q --qf "%{Version}" --srpm tomcatjss.spec
 
   - job: copr_build
     trigger: pull_request
