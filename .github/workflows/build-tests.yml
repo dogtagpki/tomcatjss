@@ -35,31 +35,34 @@ jobs:
         docker rm -f jss-dist
         dnf localinstall -y /tmp/RPMS/*
 
-    - name: Build Tomcat JSS with Ant
+    - name: Build with Ant
       run: |
         # Ant build needs the full Tomcat package
         dnf install -y tomcat
         ./build.sh
 
-    - name: Install JSS into Maven repo
+    - name: Install JSS into local Maven repo
       run: |
+        # get JSS <major>.<minor>.<update> version
+        JSS_VERSION=$(rpm -q --qf "%{version}" dogtag-jss)
+
         mvn install:install-file \
             -Dfile=/usr/lib/java/jss.jar \
             -DgroupId=org.dogtagpki.jss \
             -DartifactId=jss-base \
-            -Dversion=5.5.0-SNAPSHOT \
+            -Dversion=$JSS_VERSION-SNAPSHOT \
             -Dpackaging=jar \
             -DgeneratePom=true
 
-    - name: Build Tomcat JSS with Maven
+    - name: Build with Maven
       run: |
         mvn package
 
     - name: Compare tomcatjss.jar built by Ant vs. built by Maven
       run: |
-        jar tvf ~/build/tomcatjss/jars/tomcatjss.jar | awk '{print $8;}' | sort | tee ant.out
-        jar tvf main/target/tomcatjss.jar | awk '{print $8;}' | grep -v '^META-INF/maven/' | sort > maven.out
-        diff ant.out maven.out
+        jar tvf ~/build/tomcatjss/jars/tomcatjss.jar | awk '{print $8;}' | sort | tee tomcatjss.ant
+        jar tvf main/target/tomcatjss.jar | awk '{print $8;}' | grep -v '^META-INF/maven/' | sort | tee tomcatjss.maven
+        diff tomcatjss.ant tomcatjss.maven
 
     - name: Build Tomcat JSS RPMs
       run: |
@@ -68,8 +71,8 @@ jobs:
 
     - name: Compare tomcatjss.jar built by Maven vs. from RPM
       run: |
-        jar tvf /usr/share/java/tomcatjss.jar | awk '{print $8;}' | grep -v '^META-INF/maven/' | sort | tee rpm.out
-        diff maven.out rpm.out
+        jar tvf /usr/share/java/tomcatjss.jar | awk '{print $8;}' | grep -v '^META-INF/maven/' | sort | tee tomcatjss.rpm
+        diff tomcatjss.maven tomcatjss.rpm
 
     - name: Install RPMInspect
       run: |
