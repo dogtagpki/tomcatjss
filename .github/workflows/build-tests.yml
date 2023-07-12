@@ -2,6 +2,9 @@ name: Build Tests
 
 on: [push, pull_request]
 
+env:
+  COPR_REPO: ${{ vars.COPR_REPO || '@pki/11.4' }}
+
 jobs:
   init:
     name: Initialization
@@ -22,13 +25,11 @@ jobs:
         dnf install -y dnf-plugins-core moby-engine maven rpm-build
         if [ -n "$COPR_REPO" ]; then dnf copr enable -y $COPR_REPO; fi
         dnf builddep -y --skip-unavailable --spec tomcatjss.spec
-      env:
-        COPR_REPO: ${{ needs.init.outputs.repo }}
 
     - name: Install JSS packages from jss-dist
       run: |
-        docker pull quay.io/dogtagpki/jss-dist:latest
-        docker create --name=jss-dist quay.io/dogtagpki/jss-dist:latest
+        docker pull quay.io/dogtagpki/jss-dist:5.4
+        docker create --name=jss-dist quay.io/dogtagpki/jss-dist:5.4
         docker cp jss-dist:/root/RPMS /tmp/RPMS/
         docker rm -f jss-dist
         dnf localinstall -y /tmp/RPMS/*

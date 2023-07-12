@@ -47,7 +47,7 @@ RUN dnf builddep -y --skip-unavailable --spec tomcatjss.spec
 FROM tomcatjss-builder-deps AS tomcatjss-builder
 
 # Import JSS packages
-COPY --from=quay.io/dogtagpki/jss-dist:latest /root/RPMS /tmp/RPMS/
+COPY --from=quay.io/dogtagpki/jss-dist:5.4 /root/RPMS /tmp/RPMS/
 
 # Install build depencencies
 RUN dnf localinstall -y /tmp/RPMS/* \
@@ -71,7 +71,7 @@ COPY --from=tomcatjss-builder /root/tomcatjss/build/RPMS /root/RPMS/
 FROM tomcatjss-deps AS tomcatjss-runner
 
 # Import JSS packages
-COPY --from=quay.io/dogtagpki/jss-dist:latest /root/RPMS /tmp/RPMS/
+COPY --from=quay.io/dogtagpki/jss-dist:5.4 /root/RPMS /tmp/RPMS/
 
 # Import Tomcat JSS packages
 COPY --from=tomcatjss-dist /root/RPMS /tmp/RPMS/

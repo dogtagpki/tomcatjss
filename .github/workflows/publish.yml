@@ -3,7 +3,7 @@ name: Publish Tomcat JSS
 on:
   push:
     branches:
-      - master
+      - v8.4
 
 env:
   NAMESPACE: ${{ vars.REGISTRY_NAMESPACE || github.repository_owner }}
@@ -93,5 +93,5 @@ jobs:
       - name: Publish tomcatjss-dist image
         run: |
           docker load --input tomcatjss-dist.tar
-          docker tag tomcatjss-dist ${{ vars.REGISTRY }}/$NAMESPACE/tomcatjss-dist:latest
-          docker push ${{ vars.REGISTRY }}/$NAMESPACE/tomcatjss-dist:latest
+          docker tag tomcatjss-dist ${{ vars.REGISTRY }}/$NAMESPACE/tomcatjss-dist:8.4
+          docker push ${{ vars.REGISTRY }}/$NAMESPACE/tomcatjss-dist:8.4
