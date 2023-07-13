@@ -17,7 +17,7 @@ jobs:
       pr-number: ${{ steps.pr-artifact-script.outputs.result }}
       pr-base: ${{ steps.pr-base-script.outputs.result }}
     steps:
-      - name: 'Download PR artifact'
+      - name: Download PR artifact
         uses: actions/github-script@v3.1.0
         id: download-pr
         with:
@@ -28,28 +28,32 @@ jobs:
               repo: context.repo.repo,
               run_id: context.payload.workflow_run.id,
             });
+
             var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "pr"
             })[0];
+
             if (matchArtifact == null){
               core.setFailed("No PR artifact");
               return "False";
             }
+
             var download = await github.actions.downloadArtifact({
               owner: context.repo.owner,
               repo: context.repo.repo,
               artifact_id: matchArtifact.id,
               archive_format: 'zip',
             });
+
             var fs = require('fs');
             fs.writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));
             return "True";
 
-      - name: Unzip the pr
+      - name: Unzip the PR
         if: steps.download-pr.outputs.result == 'True'
         run: unzip pr.zip
 
-      - name: Retrieve the pr number
+      - name: Retrieve the PR number
         if: success()
         id: pr-artifact-script
         uses: actions/github-script@v3.1.0
@@ -60,7 +64,7 @@ jobs:
             var pr_number = Number(fs.readFileSync('./NR'));
             return pr_number;
 
-      - name: Retrieve the pr base
+      - name: Retrieve the PR base
         if: success()
         id: pr-base-script
         uses: actions/github-script@v3.1.0
@@ -89,7 +93,7 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
 
-      - name: Rebase to master
+      - name: Rebase PR
         run: |
           git config user.name "GitHub Workflow Action"
           git remote add tomcatjss ${{ github.event.repository.clone_url }} 
@@ -140,7 +144,7 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
 
-      - name: Rebase to master
+      - name: Rebase PR
         run: |
           git config user.name "GitHub Workflow Action"
           git remote add tomcatjss ${{ github.event.repository.clone_url }} 
