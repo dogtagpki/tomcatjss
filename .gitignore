@@ -3,3 +3,4 @@ build
 dist
 target/
 .flattened-pom.xml
+*.versionsBackup
