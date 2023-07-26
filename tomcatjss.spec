@@ -47,7 +47,7 @@ Source:           https://github.com/dogtagpki/tomcatjss/archive/v%{version}%{?p
 # Patch: tomcatjss-VERSION-RELEASE.patch
 
 BuildArch:        noarch
-%if 0%{?fedora}
+%if 0%{?java_arches:1}
 ExclusiveArch:    %{java_arches} noarch
 %endif
 
