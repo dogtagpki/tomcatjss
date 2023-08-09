@@ -1,49 +1,58 @@
-JSS Connector for Apache Tomcat, installed via the tomcatjss package,
-is a Java Secure Socket Extension (JSSE) module for Apache Tomcat that
-uses Java Security Services (JSS), a Java interface to Network Security
-Services (NSS).
+= Overview =
 
-JSS Connector for Apache Tomcat defines a number of attributes for a Connector
+JSS Connector for Apache Tomcat, installed via the `tomcatjss` package,
+is a Java Secure Socket Extension (JSSE) module for Apache Tomcat that
+uses link:https://github.com/dogtagpki/jss[Java Security Services (JSS)],
+a Java interface to link:https://github.com/nss-dev/nss[Network Security Services (NSS)].
+
+NOTE: Tomcat JSS 8.5 has been link:https://github.com/dogtagpki/jss/blob/master/docs/changes/v5.5.0/Packaging-Changes.adoc[merged] into JSS 5.5.
+
+= Configuration =
+
+JSS Connector for Apache Tomcat defines a number of attributes for a `Connector`
 including:
 
-clientauth: specify if client authentication is required in the connector (or
-port), it can be true or false. If true then client authentication is required.
+* `clientauth`: specify if client authentication is required in the connector (or
+port), it can be `true` or `false`. If `true` then client authentication is required.
 
-sslOptions: specify a comma-delimited list of ssl options to pass into the ssl
-implementation. Each option takes the form of: option=[true|false].
-JSS Connector for Apache Tomcat supports the options: ssl2, ssl3, tls.
+* `sslOptions`: specify a comma-delimited list of ssl options to pass into the ssl
+implementation. Each option takes the form of: `option=[true|false]`.
+JSS Connector for Apache Tomcat supports the options: `ssl2`, `ssl3`, `tls`.
 
-ssl2Ciphers: specify a list of SSL2 ciphers that JSS Connector for
-Apache Tomcat should accept or reject from the client. You can use + to
-denote "accept", - means "reject"
+* `ssl2Ciphers`: specify a list of SSL2 ciphers that JSS Connector for
+Apache Tomcat should accept or reject from the client. You can use `+` to
+denote "accept", `-` means "reject"
 
-ssl3Ciphers: specifies a list of SSL3 ciphers that JSS Connector for
-Apache Tomcat should accept or reject from the client. You can use + to
-denote "accept", - means "reject".
+* `ssl3Ciphers`: specifies a list of SSL3 ciphers that JSS Connector for
+Apache Tomcat should accept or reject from the client. You can use `+` to
+denote "accept", `-` means "reject".
 
-tlsCiphers: specifies a list of TLS ciphers that JSS Connector for
-Apache Tomcat should accept or reject from the client. You can use + to
-denote "accept", - means "reject".
+* `tlsCiphers`: specifies a list of TLS ciphers that JSS Connector for
+Apache Tomcat should accept or reject from the client. You can use `+` to
+denote "accept", `-` means "reject".
 
-serverCertNickFile: a file in which specify the nickname of the
+* `serverCertNickFile`: a file in which specify the nickname of the
 server certificate. The file should contain a single line that contains
 the nickname.
 
-passwordFile: specify a file in which a password that is required to access
+* `passwordFile`: specify a file in which a password that is required to access
 NSS's security database. Each entry in the file needs to appear on its own
-line and has the form: token_name=password
+line and has the form: `token_name=password`
 
-certdbDir: specify the directory the NSS security database resides in.
+* `certdbDir`: specify the directory the NSS security database resides in.
 
-passwordClass: specify the class that will be used to read the password.
+* `passwordClass`: specify the class that will be used to read the password.
 
-sslProtocol: needs to be SSL
+* `sslProtocol`: needs to be `SSL`
 
-sslImplementationName: MUST be org.apache.tomcat.util.net.jss.JSSImplementation
+* `sslImplementationName`: MUST be `org.apache.tomcat.util.net.jss.JSSImplementation`
 in order to use the plugin
+
+= Examples =
 
 Here is an example of a secure connector:
 
+----
 <Connector port="8443"
            protocol="HTTP/1.1"
            SSLEnabled="true"
@@ -77,3 +86,4 @@ Here is an example of a secure connector:
            passwordClass="org.apache.tomcat.util.net.jss.PlainPasswordFile"
            certdbDir="/var/lib/pki/redhat.com-foobar/alias"
 />
+----
