@@ -170,7 +170,7 @@
   -->
   <zip destfile="${dist.base.source}/${src.dist.name}.zip">
      <zipfileset dir="." filemode="755" prefix="${src.dist.name}">
-        <include name="README"/>
+        <include name="README.adoc"/>
         <include name="LICENSE"/>
         <include name="build.xml"/>
         <include name="core/src/**"/>
@@ -179,7 +179,7 @@
     </zip>
     <tar longfile="gnu" destfile="${dist.base.source}/${src.dist.name}.tar">
       <tarfileset dir="." mode="755" prefix="${src.dist.name}">
-        <include name="README"/>
+        <include name="README.adoc"/>
         <include name="LICENSE"/>
         <include name="build.xml"/>
         <include name="core/src/**"/>
@@ -238,7 +238,7 @@
 
   <target name="install" depends="compile,package">
     <copy file="LICENSE" todir="${install.doc.dir}/${package}"/>
-    <copy file="README" todir="${install.doc.dir}/${package}"/>
+    <copy file="README.adoc" todir="${install.doc.dir}/${package}"/>
     <delete file="${install.jar.dir}/tomcatjss.jar"/>
     <copy file="${build.jars}/tomcatjss.jar" tofile="${install.jar.dir}/tomcatjss.jar"/>
   </target>

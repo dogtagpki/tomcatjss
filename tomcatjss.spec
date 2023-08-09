@@ -181,7 +181,7 @@ install -p main/target/tomcatjss.jar %{buildroot}%{_javadir}/tomcatjss.jar
 ################################################################################
 
 %license LICENSE
-%doc README
+%doc README.adoc
 %doc LICENSE
 %{_javadir}/tomcatjss.jar
 
