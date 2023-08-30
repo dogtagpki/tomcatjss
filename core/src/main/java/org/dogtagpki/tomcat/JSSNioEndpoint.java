@@ -40,7 +40,7 @@
  *  limitations under the License. *
  * END COPYRIGHT BLOCK */
 
-package org.dogtagpki.jss.tomcat;
+package org.dogtagpki.tomcat;
 
 
 import java.nio.channels.SocketChannel;

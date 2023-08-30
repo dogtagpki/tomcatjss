@@ -39,7 +39,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. *
  * END COPYRIGHT BLOCK */
-package org.dogtagpki.jss.tomcat;
+package org.dogtagpki.tomcat;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
