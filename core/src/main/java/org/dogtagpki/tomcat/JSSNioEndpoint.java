@@ -62,7 +62,7 @@ public class JSSNioEndpoint extends NioEndpoint {
     /**
      * Code in the following method is almost identical of that available in the base
      * class {@link org.apache.tomcat.util.net.NioEndpoint#setSocketOptions(SocketChannel) from tomcat
-     * git repository for the version 9.0.78..
+     * git repository for the version 9.0.30.
      * <p>
      * The only difference is the instantiation of the JSSSecureNioChannel class instead of the tomcat
      * provided SecureNioChannel class. This is needed because the channel class is hard-coded in the
@@ -87,7 +87,7 @@ public class JSSNioEndpoint extends NioEndpoint {
                         socketProperties.getDirectBuffer());
                 if (isSSLEnabled()) {
 // This is the change from the code in the base class
-                    channel = new JSSSecureNioChannel(bufhandler, this);
+                    channel = new JSSSecureNioChannel(bufhandler, getSelectorPool(), this);
 // End of difference
                 } else {
                     channel = new NioChannel(bufhandler);
@@ -101,14 +101,12 @@ public class JSSNioEndpoint extends NioEndpoint {
             // Set socket properties
             // Disable blocking, polling will be used
             socket.configureBlocking(false);
-            if (getUnixDomainSocketPath() == null) {
                 socketProperties.setProperties(socket.socket());
-            }
 
             socketWrapper.setReadTimeout(getConnectionTimeout());
             socketWrapper.setWriteTimeout(getConnectionTimeout());
             socketWrapper.setKeepAliveLeft(JSSNioEndpoint.this.getMaxKeepAliveRequests());
-            getPoller().register(socketWrapper);
+            getPoller().register(channel, socketWrapper);
             return true;
         } catch (Throwable t) {
             ExceptionUtils.handleThrowable(t);

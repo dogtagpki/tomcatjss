@@ -59,6 +59,7 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.buf.ByteBufferUtils;
 import org.apache.tomcat.util.compat.JreCompat;
 import org.apache.tomcat.util.net.NioEndpoint;
+import org.apache.tomcat.util.net.NioSelectorPool;
 import org.apache.tomcat.util.net.SSLSupport;
 import org.apache.tomcat.util.net.SSLUtil;
 import org.apache.tomcat.util.net.SecureNioChannel;
@@ -73,7 +74,7 @@ import org.mozilla.jss.ssl.javax.JSSSession;
  * <p>
  * Code in the following methods are almost identical of that available in the base
  * class {@link org.apache.tomcat.util.net.SecureNioChannel from tomcat git repository
- * for the version 9.0.78.
+ * for the version 9.0.30.
  * <p>
  * The only difference is the registration of local and remote IP in the SSL engine session.
  * These IPs are required for audit purpose but the tomcat implementation does not provide
@@ -94,8 +95,8 @@ public class JSSSecureNioChannel extends SecureNioChannel {
 
     private final Map<String,List<String>> additionalTlsAttributes = new HashMap<>();
 
-    public JSSSecureNioChannel(SocketBufferHandler bufHandler, NioEndpoint endpoint) {
-        super(bufHandler, endpoint);
+    public JSSSecureNioChannel(SocketBufferHandler bufHandler, NioSelectorPool pool, NioEndpoint endpoint) {
+        super(bufHandler, pool, endpoint);
         this.endpoint = (JSSNioEndpoint) endpoint;
     }
 
@@ -151,7 +152,7 @@ public class JSSSecureNioChannel extends SecureNioChannel {
                         if (sslEngine instanceof SSLUtil.ProtocolInfo) {
                             socketWrapper.setNegotiatedProtocol(
                                     ((SSLUtil.ProtocolInfo) sslEngine).getNegotiatedProtocol());
-                        } else if (JreCompat.isAlpnSupported()) {
+                        } else if (JreCompat.isJre9Available()) {
                             socketWrapper.setNegotiatedProtocol(
                                     JreCompat.getInstance().getApplicationProtocol(sslEngine));
                         }
@@ -289,12 +290,6 @@ public class JSSSecureNioChannel extends SecureNioChannel {
         jsession.setLocalAddr(socketWrapper.getLocalAddr());
         jsession.setRemoteAddr(socketWrapper.getRemoteAddr());
 // End of difference
-        // Populate additional TLS attributes obtained from the handshake that
-        // aren't available from the session
-        additionalTlsAttributes.put(SSLSupport.REQUESTED_PROTOCOL_VERSIONS_KEY,
-                extractor.getClientRequestedProtocols());
-        additionalTlsAttributes.put(SSLSupport.REQUESTED_CIPHERS_KEY,
-                extractor.getClientRequestedCipherNames());
 
         // Ensure the application buffers (which have to be created earlier) are
         // big enough.
@@ -319,14 +314,5 @@ public class JSSSecureNioChannel extends SecureNioChannel {
     }
 
 
-
-    @Override
-    public SSLSupport getSSLSupport() {
-        if (sslEngine != null) {
-            SSLSession session = sslEngine.getSession();
-            return endpoint.getSslImplementation().getSSLSupport(session, additionalTlsAttributes);
-        }
-        return null;
-    }
 
 }
