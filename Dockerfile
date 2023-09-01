@@ -41,6 +41,7 @@ COPY tomcatjss.spec /root/tomcatjss/
 WORKDIR /root/tomcatjss
 
 # Install Tomcat JSS build dependencies
+RUN dnf module enable -y tomcat
 RUN dnf builddep -y --skip-unavailable --spec tomcatjss.spec
 
 ################################################################################
@@ -77,6 +78,7 @@ COPY --from=quay.io/dogtagpki/jss-dist:4.9 /root/RPMS /tmp/RPMS/
 COPY --from=tomcatjss-dist /root/RPMS /tmp/RPMS/
 
 # Install runtime packages
+RUN dnf module enable -y tomcat
 RUN dnf localinstall -y /tmp/RPMS/* \
     && dnf clean all \
     && rm -rf /var/cache/dnf \

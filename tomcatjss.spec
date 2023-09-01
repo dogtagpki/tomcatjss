@@ -72,7 +72,7 @@ BuildRequires:    slf4j-jdk14
 BuildRequires:    jss = 4.9
 
 # Tomcat
-BuildRequires:    tomcat
+BuildRequires:   tomcat >= 1:9.0.7, tomcat < 1:9.0.40
 
 ################################################################################
 # Runtime Dependencies
@@ -92,9 +92,9 @@ Requires:         jss = 4.9
 
 # Tomcat
 %if 0%{?rhel} && ! 0%{?eln}
-Requires:         pki-servlet-engine >= 1:9.0.7
+Requires:         pki-servlet-engine >= 1:9.0.7, pki-servlet-engine < 1:9.0.40
 %else
-Requires:         tomcat >= 1:9.0.7
+Requires:         tomcat >= 1:9.0.7, tomcat < 1:9.0.40
 %endif
 
 Provides:         tomcatjss = %{major_version}.%{minor_version}
