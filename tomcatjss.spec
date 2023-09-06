@@ -5,7 +5,7 @@ Name:             tomcatjss
 # Upstream version number:
 %global           major_version 7
 %global           minor_version 7
-%global           update_version 0
+%global           update_version 3
 
 Summary:          JSS Connector for Apache Tomcat
 URL:              http://www.dogtagpki.org/wiki/TomcatJSS
@@ -17,7 +17,7 @@ BuildArch:        noarch
 %global           release_number 1
 Version:          %{major_version}.%{minor_version}.%{update_version}
 Release:          %{release_number}%{?_timestamp}%{?_commit_id}%{?dist}
-#global           _phase -alpha1
+#global           _phase
 
 # To generate the source tarball:
 # $ git clone https://github.com/dogtagpki/tomcatjss.git
