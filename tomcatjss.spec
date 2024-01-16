@@ -74,11 +74,7 @@ BuildRequires:    slf4j-jdk14
 BuildRequires:    jss = 4.10
 
 # Tomcat
-%if 0%{?rhel} && ! 0%{?eln}
-BuildRequires:    pki-servlet-engine >= 1:9.0.7
-%else
-BuildRequires:    tomcat >= 1:9.0.7
-%endif
+BuildRequires:    tomcat
 
 %description
 JSS Connector for Apache Tomcat, installed via the tomcatjss package,
@@ -105,11 +101,7 @@ Requires:         slf4j-jdk14
 Requires:         jss = 4.10
 
 # Tomcat
-%if 0%{?rhel} && ! 0%{?eln}
-Requires:         pki-servlet-engine >= 1:9.0.7
-%else
-Requires:         tomcat >= 1:9.0.7
-%endif
+Requires:         tomcat
 
 Obsoletes:        tomcatjss < %{version}-%{release}
 Provides:         tomcatjss = %{version}-%{release}
