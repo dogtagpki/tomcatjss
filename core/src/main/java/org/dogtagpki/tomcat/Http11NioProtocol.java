@@ -102,26 +102,4 @@ public class Http11NioProtocol extends org.apache.coyote.http11.Http11NioProtoco
     public void setOcspTimeout(int ocspTimeout) {
         tomcatjss.setOcspTimeout(ocspTimeout);
     }
-
-    public void setKeystorePassFile(String keystorePassFile) {
-        try {
-            Path path = Paths.get(keystorePassFile);
-            String password = new String(Files.readAllBytes(path)).trim();
-            setKeystorePass(password);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void setTruststorePassFile(String truststorePassFile) {
-        try {
-            Path path = Paths.get(truststorePassFile);
-            String password = new String(Files.readAllBytes(path)).trim();
-            setTruststorePass(password);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

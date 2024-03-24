@@ -58,7 +58,7 @@
     Set the properties related to the source tree
   -->
   <exec executable="pwd" failonerror="true" outputproperty="cwd"/>
-  <property name="src.dir" value="tomcat-9.0"/>
+  <property name="src.dir" value="tomcat-10.0"/>
   <property name="lib.dir" value="lib"/>
   <property name="docs.dir" value="docs"/>
 

@@ -163,7 +163,7 @@ mkdir -p main/target/classes
 
 pushd main/target/classes
 jar xvf ../../../core/target/tomcatjss-core-%{version}-SNAPSHOT.jar
-jar xvf ../../../tomcat-9.0/target/tomcatjss-tomcat-9.0-%{version}-SNAPSHOT.jar
+jar xvf ../../../tomcat-10.0/target/tomcatjss-tomcat-10.0-%{version}-SNAPSHOT.jar
 popd
 
 jar cvf main/target/tomcatjss.jar -C main/target/classes .

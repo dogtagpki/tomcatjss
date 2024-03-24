@@ -15,7 +15,7 @@
 
     <modules>
         <module>core</module>
-        <module>tomcat-9.0</module>
+        <module>tomcat-10.0</module>
         <module>main</module>
     </modules>
 
