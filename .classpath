@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="core/src/main/java"/>
-	<classpathentry kind="src" path="tomcat-10.0/src/main/java"/>
+	<classpathentry kind="src" path="tomcat-9.0/src/main/java"/>
 	<classpathentry kind="lib" path="/usr/share/java/apache-commons-lang3.jar"/>
 	<classpathentry kind="lib" path="/usr/share/java/apache-commons-logging.jar"/>
 	<classpathentry kind="lib" path="/usr/lib/java/jss.jar"/>

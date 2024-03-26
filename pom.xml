@@ -11,11 +11,13 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.tomcat.majorVersion>9</project.tomcat.majorVersion>
+        <project.tomcat.version>9.0.50</project.tomcat.version>
     </properties>
 
     <modules>
         <module>core</module>
-        <module>tomcat-10.0</module>
+        <module>tomcat-${project.tomcat.majorVersion}.0</module>
         <module>main</module>
     </modules>
 
