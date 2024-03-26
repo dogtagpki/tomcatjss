@@ -11,39 +11,27 @@
         <version>8.5.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>tomcatjss-core</artifactId>
+    <artifactId>tomcatjss-tomcat-10.0</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
 
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.32</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-catalina</artifactId>
-            <version>${project.tomcat.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-coyote</artifactId>
-            <version>${project.tomcat.version}</version>
+            <artifactId>tomcat-juli</artifactId>
+            <version>10.1.6</version>
         </dependency>
 
         <dependency>
             <groupId>org.dogtagpki.jss</groupId>
             <artifactId>jss-base</artifactId>
             <version>5.5.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>tomcatjss-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
     </dependencies>

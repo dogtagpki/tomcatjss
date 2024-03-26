@@ -39,6 +39,7 @@
   <property name="name" value="tomcatjss"/>
   <property name="version" value="7.6.1"/>
   <property name="manifest-version" value="${version}-a1"/>
+  <property name="tomcat.major-version" value="9" />
 
   <!--
     Set the properties that control various build options
@@ -58,7 +59,7 @@
     Set the properties related to the source tree
   -->
   <exec executable="pwd" failonerror="true" outputproperty="cwd"/>
-  <property name="src.dir" value="tomcat-9.0"/>
+  <property name="src.dir" value="tomcat-${tomcat.major-version}.0"/>
   <property name="lib.dir" value="lib"/>
   <property name="docs.dir" value="docs"/>
 
